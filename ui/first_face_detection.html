@@ -5,11 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="stylesheets/reset.css"/>
     <link rel="stylesheet" href="stylesheets/first_face_detection.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="./scripts/first_face_detection.js" defer></script>
     <title>Vireality_註冊_臉部掃描</title>
 </head>
 <body>
-    <div class="teachDescription">請慢慢轉動頭部，直到中間圈圈填滿</div>
+    <!-- 告訴使用者要如何偵測 -->
+    <div class="teachDescription">{{ teachMessage }}</div>
+    <!-- 偵測不到臉部的時候需要顯示什麼 正常時不顯示-->
+    <div class="warningNoDetection" v-if="showWarningMessage">
+        <img class="warningImg" src="media/warning.png" />
+        <span class="warningMessage">{{ warningMessage }}</span>
+    </div>
+    <!-- 顯示進度圈圈 -->
     <img class="progressFaceDetection" src="media/loader.png" />
-    <img class="compeleteFaceDetection" src="media/compelete.png" />
+    <!-- 完成之後會顯示此圖 未完成時不出現 -->
+    <img v-if="showCompeleteFaceDetection" class="compeleteFaceDetection" src="media/compelete.png" />
 </body>
 </html>
