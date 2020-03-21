@@ -7,8 +7,8 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/',
-      name: 'AR',
+      path: '/ar_example',
+      name: 'AR_example',
       component: ARComponent
     }
   ]

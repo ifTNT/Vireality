@@ -3,6 +3,7 @@
 > A social media of augmented reality.
 
 ## Build UI
+== node version: >=6.0.0 <11.0.0 ==
 
 ```bash
 cd ui/
