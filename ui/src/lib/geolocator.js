@@ -1,4 +1,4 @@
-import Absolute2DSpeedSensor from "./absolute2DSpeedSensor.js";
+import Absolute2DSpeedSensor from "./absolute_2d_speed_sensor.js";
 export default class Geolocator {
   constructor() {
     this.speedSensor = new Absolute2DSpeedSensor();
@@ -96,8 +96,8 @@ export default class Geolocator {
     //Read previous estimatation
     let {
       timestamp,
-      //latitude,
-      //longitude,
+      latitude,
+      longitude,
       variance,
       x,
       y

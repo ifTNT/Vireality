@@ -1,4 +1,4 @@
-import MovingAverage2D from "./movingAverage2D.js";
+import MovingAverage2D from "./moving_average_2d.js";
 
 export default class Absolute2DSpeedSensor {
   constructor() {
