@@ -123,7 +123,7 @@ export default {
 
       //Add markers to the scene
       const spriteMap = new THREE.TextureLoader().load(
-        "./media/placeholder.png"
+        "/static/media/placeholder.png"
       );
       this.spriteMaterial = new THREE.SpriteMaterial({
         map: spriteMap,
@@ -236,5 +236,5 @@ video, canvas
   left 50%
   transform translate(-50%, -50%)
 video
-  z-index -1 
+  z-index -1
 </style>

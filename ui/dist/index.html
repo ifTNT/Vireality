@@ -1,1 +1,8 @@
-<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"><meta http-equiv=X-UA-Compatible content="ie=edge"><link rel=stylesheet href=static/styles/reset.css><title>Vireality - AR component example</title><link href=/static/css/app.1d179e137b03e6a74bf629ef59a2d7ff.css rel=stylesheet></head><body><div id=my-app><ar-component></ar-component></div><script src=dist/build.js></script><script type=text/javascript src=/static/js/manifest.2ae2e69a05c33dfc65f8.js></script><script type=text/javascript src=/static/js/vendor.5e8301a534beaa6c98d7.js></script><script type=text/javascript src=/static/js/app.cd0fa85deb75ba960f24.js></script></body></html>
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"><meta http-equiv=X-UA-Compatible content="ie=edge"><link rel=manifest href=/static/manifest.json><link rel=stylesheet href=static/styles/reset.css><title>Vireality</title><link href=/static/css/app.e0c73b3c42db94d6ba51b9cdc7c05313.css rel=stylesheet></head><body><div id=app></div><script>// Load service worker
+      // Check that service workers are supported
+      if ("serviceWorker" in navigator) {
+        // Use the window load event to keep the page load performant
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js");
+        });
+      }</script><script type=text/javascript src=/static/js/manifest.2ae2e69a05c33dfc65f8.js></script><script type=text/javascript src=/static/js/vendor.ff15135df951bad9d2c0.js></script><script type=text/javascript src=/static/js/app.0f081d9e61c58017b1f4.js></script></body></html>
