@@ -153,7 +153,7 @@ export default {
       this.renderer.render(this.scene, this.camera);
     },
     addMarker: function() {
-      let {x, y} = this.camera.position;
+      let { x, y } = this.camera.position;
       let sprite = new THREE.Sprite(spriteMaterial);
       sprite.position.set(x, y, 0);
       sprite.scale.set(0.5, 0.5, 0.5);
@@ -197,44 +197,41 @@ export default {
 };
 </script>
 
-<style>
-#overlay {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-}
-.btn {
-  padding: 1em;
-  box-sizing: border-box;
-  border: solid black 1px;
-  background-color: rgba(255, 255, 255, 0.5);
-}
+<style scoped lang="stylus">
+#overlay
+  width 100vw
+  height 100vh
+  display flex
+  justify-content center
+  align-items center
+  position fixed
 
-#content {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
-#content video,
-canvas {
-  /* Make video to at least 100% wide and tall */
-  min-width: 100%;
-  min-height: 100%;
+.btn
+  padding 1em
+  box-sizing border-box
+  border solid black 1px
+  background-color rgba(255, 255, 255, 0.5)
 
-  /* Setting width & height to auto prevents the browser from stretching or squishing the video */
-  width: auto;
-  height: auto;
+#content
+  position absolute
+  top 0
+  bottom 0
+  width 100vw
+  height 100vh
+  overflow hidden
 
-  /* Center the video */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
+  video, canvas
+    /* Make video to at least 100% wide and tall */
+    min-width 100%
+    min-height 100%
+
+    /* Setting width & height to auto prevents the browser from stretching or squishing the video */
+    width auto
+    height auto
+
+    /* Center the video */
+    position absolute
+    top 50%
+    left 50%
+    transform translate(-50%, -50%)
 </style>
