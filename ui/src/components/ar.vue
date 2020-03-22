@@ -23,7 +23,7 @@
 import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 export default {
-  name: "AR",
+  name: "AR_view",
   data() {
     return {
       camera: null,

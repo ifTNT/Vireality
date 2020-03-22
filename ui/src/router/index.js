@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import ARComponent from '@/components/ar-component'
+import ARView from '@/components/ar'
 import ListRoute from '@/components/list_route'
 
 Vue.use(Router)
@@ -17,7 +17,7 @@ let router = new Router({
     {
       path: '/ar_example',
       name: 'AR example',
-      component: ARComponent
+      component: ARView
     }
   ]
 })
