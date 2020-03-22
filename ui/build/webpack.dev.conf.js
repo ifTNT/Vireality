@@ -78,7 +78,9 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         ignore: [".*"]
       }
     ]),
-    new GenerateSW()
+    new GenerateSW({
+      importScripts: ["./static/workbox_debug.js"]
+    })
   ]
 });
 
