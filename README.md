@@ -19,3 +19,14 @@ npm run build
 # build for production and view the bundle analyzer report
 npm run build --report
 ```
+
+## Build Server
+```bash
+cd server/
+
+# install dependencies
+npm install
+
+# run the server
+npm run start
+```
