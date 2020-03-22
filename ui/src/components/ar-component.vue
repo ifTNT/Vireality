@@ -28,7 +28,7 @@ export default {
     return {
       camera: null,
       scene: null,
-      axisHepler: null,
+      axesHelper: null,
       vground: null,
       renderer: null,
       controls: null,
@@ -118,7 +118,7 @@ export default {
 
       //An axes helper
       this.axesHelper = new THREE.AxesHelper(1);
-      this.axesHelper.position.set(10, 10, 5);
+      this.axesHelper.position.set(0, 0, 0);
       this.scene.add(this.axesHelper);
 
       //Add markers to the scene
@@ -210,6 +210,7 @@ export default {
   padding 1em
   box-sizing border-box
   border solid black 1px
+  border-radius 1em
   background-color rgba(255, 255, 255, 0.5)
 
 #content
@@ -220,18 +221,20 @@ export default {
   height 100vh
   overflow hidden
 
-  video, canvas
-    /* Make video to at least 100% wide and tall */
-    min-width 100%
-    min-height 100%
+video, canvas
+  /* Make video to at least 100% wide and tall */
+  min-width 100%
+  min-height 100%
 
-    /* Setting width & height to auto prevents the browser from stretching or squishing the video */
-    width auto
-    height auto
+  /* Setting width & height to auto prevents the browser from stretching or squishing the video */
+  width auto
+  height auto
 
-    /* Center the video */
-    position absolute
-    top 50%
-    left 50%
-    transform translate(-50%, -50%)
+  /* Center the video */
+  position absolute
+  top 50%
+  left 50%
+  transform translate(-50%, -50%)
+video
+  z-index -1 
 </style>
