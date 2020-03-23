@@ -1,0 +1,125 @@
+body {
+  background-color: #808080;
+  color: #fff;
+}
+header .goBackBtn {
+  padding: 1vh 1vw;
+}
+header .goBackBtn img {
+  height: 1.5em;
+}
+.articleBody {
+  margin: 1vh 0;
+  height: 92vh;
+  position: relative;
+}
+.articleBody .articleHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.articleBody .articleHeader .articleAuthor {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.articleBody .articleHeader .articleAuthor img {
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+}
+.articleBody .articleHeader .articleAuthor p {
+  display: inline-block;
+  font-size: 1.2em;
+  padding: 0.3em 0.5em;
+  text-align: center;
+}
+.articleBody .articlePictures {
+  width: 100vw;
+  height: 45vh;
+  margin: 2vh auto;
+  overflow: hidden;
+  position: relative;
+}
+.articleBody .articlePictures ul {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.articleBody .articlePictures ul li {
+  float: left;
+  width: 100%;
+  height: 100%;
+}
+.articleBody .articlePictures ul li a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.articleBody .articlePictures ul li a img {
+  width: 100vw;
+  height: 45vh;
+  overflow: hidden;
+}
+.articleBody .articlePictures ol {
+  width: 90px;
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  margin-left: -45px;
+}
+.articleBody .articlePictures ol li {
+  width: 10px;
+  height: 10px;
+  background: #999;
+  border-radius: 50%;
+  float: left;
+  margin: 3px;
+}
+.articleBody .articlePictures ol .on {
+  background: #fff;
+}
+.articleBody .articleText {
+  margin: 1vh auto;
+  width: 100vw;
+  padding: 0 5vw;
+}
+.articleBody .articleText textarea {
+  border: 0;
+  background: rgba(0,0,0,0);
+  min-height: 25vh;
+}
+.articleBody .articleRespondBlock {
+  margin: 1vh 2.5vw;
+  width: 95vw;
+  position: absolute;
+  bottom: 0;
+}
+.articleBody .articleRespondBlock .wrapInput {
+  position: relative;
+}
+.articleBody .articleRespondBlock .wrapInput input {
+  -webkit-box-sizing: border-box /* Safari/Chrome, other WebKit */;
+  -moz-box-sizing: border-box /* Firefox, other Gecko */;
+  box-sizing: border-box;
+  background: rgba(0,0,0,0);
+  border-radius: 2em;
+  height: 2.5em;
+  width: 100%;
+  color: #fff;
+  padding-left: 1em;
+  padding-right: 3em;
+  -webkit-appearance: none;
+}
+.articleBody .articleRespondBlock .wrapInput nav {
+  z-index: 100;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0.25em 0.3em 0.3em 0.3em;
+  padding: 0.2em 0.2em 0.3em 0.2em;
+}
+.articleBody .articleRespondBlock .wrapInput nav img {
+  width: 1.2em;
+  height: 1.2em;
+}

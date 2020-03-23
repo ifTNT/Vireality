@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="scripts/lib/vue.js"></script>
+    <script src="https://npmcdn.com/jquery@3.1.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flexslider/2.6.3/jquery.flexslider.js"></script>
+    <link rel="stylesheet" href="https://npmcdn.com/flexslider@2.6.0/flexslider.css">
+    <link rel="stylesheet" href="stylesheets\reset.css">
+    <link rel="stylesheet" href="stylesheets\article.css">
+
+    <title>Vireality_article</title>
+</head>
+
+<body>
+    <!-- 相機畫面做背景 -->
+    <header>
+        <nav class="goBackBtn">
+            <img src="media/back.svg">
+        </nav>
+    </header>
+    <div class="articleBody">
+        <div class="articleHeader">
+            <nav class="articleAuthor">
+                <img src="https://fakeimg.pl/250x100/ff0000/">
+                <p>{{ autherName }}</p>
+            </nav>
+            <nav class="articleTime">
+
+            </nav>
+        </div>
+        <div class="articlePictures">
+            <ul>
+                <li>
+                    <a data-href="http://www.itstrive.com">
+                        <img src="https://fakeimg.pl/2500x2000/ffff00/">
+                    </a>
+                </li>
+                <li>
+                    <a data-href="http://www.baidu.com">
+                        <img src="https://fakeimg.pl/2500x2000/ffff00/">
+                    </a>
+                </li>
+                <li>
+                    <a data-href="http://www.taobao.com">
+                        <img src="https://fakeimg.pl/2500x2000/ffff00/">
+                    </a>
+                </li>
+                <li>
+                    <a data-href="http://www.tmall.com">
+                        <img src="https://fakeimg.pl/2500x2000/ffff00/">
+                    </a>
+                </li>
+                <li>
+                    <a data-href="http://www.itstrive.com">
+                        <img src="https://fakeimg.pl/2500x2000/ffff00/">
+                    </a>
+                </li>
+            </ul>
+            <ol>
+                <li class="on"></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ol>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var oBox = document.querySelector('.articlePictures');
+                var oUl = oBox.getElementsByTagName('ul')[0];
+                var aLi = oUl.children;
+                var oOl = oBox.getElementsByTagName('ol')[0];
+                var aBtn = oOl.children;
+                var aA = oUl.getElementsByTagName('a');
+                //複製一個
+                oUl.innerHTML += oUl.innerHTML;
+                oUl.style.width = aLi.length * aLi[0].offsetWidth + 'px';
+                var W = oUl.offsetWidth / 2;
+                var tX = 0;
+                var iNow = 0;
+                oUl.addEventListener('touchstart', function (ev) {
+                    var downX = ev.targetTouches[0].pageX;
+                    var disX = downX - tX;
+                    clearInterval(oUl.timer);
+                    function fnMove(ev) {
+                        tX = ev.targetTouches[0].pageX - disX;
+                        if (tX < 0) {
+                            oUl.style.WebkitTransform = 'translateX(' + tX % W + 'px)';
+                        } else {
+                            oUl.style.WebkitTransform = 'translateX(' + (tX % W - W) % W + 'px)';
+                        }
+                        ev.preventDefault();
+                    }
+                    function fnEnd(ev) {
+                        var upX = ev.changedTouches[0].pageX;
+                        if (Math.abs(downX - upX) < 50) {
+                            startMove(oUl, -iNow * aLi[0].offsetWidth);
+                        } else {
+                            if (downX > upX) { //++
+                                iNow++;
+                                startMove(oUl, -iNow * aLi[0].offsetWidth);
+                                tab();
+                            } else {
+                                iNow--;
+                                startMove(oUl, -iNow * aLi[0].offsetWidth);
+                                tab();
+                            }
+                        }
+                        oUl.removeEventListener('touchmove', fnMove, false);
+                        oUl.removeEventListener('touchend', fnEnd, false);
+                    }
+                    oUl.addEventListener('touchmove', fnMove, false);
+                    oUl.addEventListener('touchend', fnEnd, false);
+                }, false);
+
+                //按鈕切換
+                function tab() {
+                    for (var i = 0; i < aBtn.length; i++) {
+                        aBtn[i].className = '';
+                    }
+                    console.log(iNow)
+                    if (iNow > 0) {
+                        aBtn[iNow % aBtn.length].className = 'on';
+                    } else {
+                        aBtn[(iNow % aBtn.length + aBtn.length) % aBtn.length].className = 'on';
+                    }
+                }
+
+                function startMove(obj, iTarget) {
+                    clearInterval(obj.timer);
+                    var count = Math.floor(500 / 30);
+                    var start = tX;
+                    var dis = iTarget - start;
+                    var n = 0;
+                    obj.timer = setInterval(function () {
+                        n++;
+                        var a = 1 - n / count;
+                        tX = start + dis * (1 - a * a * a);
+                        if (tX < 0) {
+                            oUl.style.WebkitTransform = 'translateX(' + tX % W + 'px)';
+                        } else {
+                            oUl.style.WebkitTransform = 'translateX(' + (tX % W - W) % W + 'px)';
+                        }
+                        if (n == count) {
+                            clearInterval(obj.timer);
+                        }
+                    }, 30);
+                }
+
+                oUl.addEventListener('click', function () {
+                    var n = iNow > 0 ? iNow % aBtn.length : (iNow % aBtn.length + aBtn.length) % aBtn.length;
+                    window.location.href = aA[n].dataset.href;
+                }, false);
+
+            }, false);
+
+        </script>
+
+
+        <div class="articleText">
+            <textarea style="width:300px;height:100px;">
+                {{ articleTexts }}
+                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Molestiae ab maxime ducimus blanditiis voluptatibus pariatur dolorem, dolores eaque hic. Ea debitis voluptates quis dolore eum ratione aliquam repellat molestias cum?
+                Odit tempore quibusdam libero sunt ducimus obcaecati repudiandae? Quo quidem nobis omnis dolorum? Accusantium veritatis, illo recusandae maiores, quo iste autem voluptatem consectetur suscipit nobis id pariatur vero veniam nisi?
+                Eligendi cumque ipsum voluptatibus incidunt autem omnis quas magnam ipsa consectetur consequatur. Ratione laborum accusantium omnis mollitia iste ut, rerum commodi est fugit laboriosam deleniti placeat temporibus, exercitationem adipisci neque.
+                Provident quisquam porro cumque voluptatum tenetur iure fugiat praesentium ipsum placeat neque? Quo non aut id iusto, nam recusandae vitae beatae voluptates aliquam omnis ullam blanditiis repudiandae labore esse dignissimos.
+                In, distinctio molestiae! Ab animi, reiciendis ullam perspiciatis est soluta sunt? Excepturi quaerat, odio maiores eius accusantium ab esse ad culpa aspernatur sit dicta similique nobis placeat hic ipsa optio?
+                Eligendi expedita vero inventore illum rem et atque quis at quo maiores veritatis nobis omnis, aliquid labore ut sequi, nemo quidem corrupti eius necessitatibus dolorem rerum amet magni totam. Consequatur.
+                Est dicta quam cupiditate autem velit facere totam, distinctio quia, optio voluptatibus repudiandae ad recusandae voluptate ut at ducimus nobis. Blanditiis itaque modi eum qui necessitatibus nostrum culpa maiores velit.
+                Quam architecto fuga, aperiam tenetur enim id accusantium deserunt exercitationem officia? Illo voluptatem accusantium ex veritatis officiis deserunt consequuntur? Ipsam tempore beatae aliquid quasi deleniti obcaecati dicta error maiores alias?
+                Est autem explicabo doloremque eius tempore, assumenda quo, nemo quisquam a ducimus quaerat! Magni, veniam cumque voluptas maiores, repellat soluta delectus suscipit quas possimus odio qui quaerat natus, culpa alias?
+                Voluptatibus nam aut culpa vitae. Earum possimus nulla libero iure autem veritatis fugit odit quia eius perspiciatis provident tempora, dolorum architecto, corporis laudantium neque non sint, itaque deserunt iste. Fugiat?
+            </textarea>
+        </div>
+        <div class="articleRespondBlock">
+            <div class="wrapInput">
+                <input v-model="message">
+                <!-- onclick -->
+                <nav class="send">
+                    <img src="media/send.svg" alt="">
+                </nav>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+<script src="scripts/article.js"></script>
+
+</html>

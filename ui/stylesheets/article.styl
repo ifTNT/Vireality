@@ -1,0 +1,110 @@
+body
+    background-color: gray
+    color: white
+
+header
+    .goBackBtn
+        padding: 1vh 1vw
+        img
+            height 1.5em;
+
+.articleBody
+    margin: 1vh 0
+    height: 92vh
+    position relative
+
+    .articleHeader
+        display: flex
+        flex-direction:row
+        justify-content: space-between
+        .articleAuthor
+            display: flex
+            flex-direction:row
+            justify-content:flex-start
+            img
+                display: inline-block
+                width  2em
+                height  2em
+            p
+                display: inline-block
+                font-size 1.2em
+                padding: 0.3em 0.5em
+                text-align: center
+                
+    .articlePictures
+        width: 100vw
+        height: 45vh
+        margin: 2vh auto
+        overflow: hidden
+        position: relative
+        ul
+            position: absolute
+            left: 0
+            top: 0
+            li
+                float: left
+                width: 100%
+                height: 100%
+                a
+                    display: block
+                    width: 100%
+                    height: 100%
+                    img 
+                        width: 100vw
+                        height: 45vh
+                        overflow: hidden
+        ol
+            width: 90px
+            position: absolute
+            bottom: 8px
+            left: 50%
+            margin-left: -45px
+            li
+                width: 10px
+                height: 10px
+                background: #999
+                border-radius: 50%
+                float: left
+                margin: 3px
+            .on
+                background: #ffffff
+    .articleText
+        margin: 1vh auto
+        width: 100vw
+        padding: 0 5vw
+        textarea
+            border 0
+            background: rgba(0,0,0,0)
+            min-height: 25vh
+    .articleRespondBlock
+        margin: 1vh 2.5vw
+        width: 95vw
+        position absolute
+        bottom 0
+        .wrapInput
+            position relative
+            input
+                -webkit-box-sizing: border-box /* Safari/Chrome, other WebKit */
+                -moz-box-sizing: border-box    /* Firefox, other Gecko */
+                box-sizing: border-box  // IE
+                background: rgba(0,0,0,0)
+                border-radius: 2em
+                height 2.5em
+                width 100%
+                color white
+                padding-left 1em
+                padding-right: 3em
+                -webkit-appearance: none
+            nav
+                z-index 100
+                position absolute
+                top 0
+                right 0
+                margin 0.25em 0.3em 0.3em 0.3em
+                padding: 0.2em 0.2em 0.3em 0.2em
+                img
+                    width 1.2em
+                    height 1.2em
+            
+
+
