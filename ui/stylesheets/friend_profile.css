@@ -1,0 +1,61 @@
+.profile{
+    width: 600px;
+    height: 1000px;
+    background-color: rgba(0,0,0,0.3);
+    border-radius:50px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    margin: -500px 0 0 -300px;
+    text-align:center;
+}
+.changePicture{
+    width:30px;
+    height:30px;
+    position: absolute;
+    left:63%;
+    top:28%;
+}
+.circle{
+    width:200px;
+    height:200px;
+    background:white;
+    border-radius: 100px;
+    position: absolute;
+    left:33%;
+    top:10%; 
+}
+.userName{
+    color:white;
+    font-size: 45px;
+    font-family: Microsoft JhengHei;
+    position: relative;
+    top:35%;
+}
+.hobbies{
+    font-size: 30px;
+    font-family: Microsoft JhengHei;
+    color:white;
+    position:relative;
+    top:45%;
+    left:-35%;
+}
+.description{
+    font-size: 30px;
+    font-family: Microsoft JhengHei;
+    color:white;
+    position:relative;
+    top:60%;
+    left:-20%;
+}
+.button{
+    background-color:#E8E8E8;
+    border:none;
+    color:black; 
+    padding:15px 32px;
+    text-align:center;
+    font-size:20px;
+    position:absolute;
+    top:85%;
+    left:40%;
+}
