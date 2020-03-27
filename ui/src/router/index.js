@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import ARView from '@/components/ar'
 import ListRoute from '@/components/list_route'
-import Article from '@/components/article'
+import Post from '@/components/article'
 
 Vue.use(Router)
 
@@ -21,9 +21,9 @@ let router = new Router({
       component: ARView
     },
     {
-      path: '/article',
-      name: 'Article',
-      component: Article
+      path: '/post',
+      name: 'Post',
+      component: Post
     }
   ]
 })

@@ -50,9 +50,7 @@
         </ol>
       </div>
       <div class="articleText">
-        <p  style="width:300px;height:100px;">
-            {{articleTexts}}
-            </p>
+        <p style="width:300px;height:100px;">{{articleTexts}}</p>
       </div>
       <div class="articleRespondBlock">
         <div class="wrapInput">
@@ -68,7 +66,7 @@
 </template>
 <script>
 export default {
-  name: "article",
+  name: "post",
   data() {
     return {
       message: "",
@@ -76,17 +74,16 @@ export default {
       articleTexts: ""
     };
   },
-  mounted(){
-      this.articleImage(),
-      this.articleText()
+  mounted() {
+    this.articleImage(), this.articleText();
   },
   methods: {
-      sendRespondMessage: function(){
-          this.message
-      },
-      articleText(){
-          this.articleTexts = "testetstetstetstetsttestet"
-      },
+    sendRespondMessage: function() {
+      this.message;
+    },
+    articleText() {
+      this.articleTexts = "testetstetstetstetsttestet";
+    },
     articleImage() {
       document.addEventListener(
         "DOMContentLoaded",
@@ -248,32 +245,21 @@ header {
 
   .articlePictures {
     width: 100vw;
-    height: 45vh;
+    // height: 45vh;
     margin: 2vh auto;
     overflow: hidden;
     position: relative;
 
     ul {
-      position: absolute;
-      left: 0;
-      top: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
 
-      li {
-        float: left;
-        width: 100%;
-        height: 100%;
-
-        a {
-          display: block;
-          width: 100%;
-          height: 100%;
-
-          img {
-            width: 100vw;
-            height: 45vh;
-            overflow: hidden;
-          }
-        }
+      li a img {
+        width: 100vw;
+        height: auto;
+        object-position: center;
+        object-fit: cover;
       }
     }
 
@@ -304,6 +290,7 @@ header {
     width: 100vw;
     padding: 0 5vw;
     box-sizing: border-box;
+
     textarea {
       border: 0;
       background: rgba(0, 0, 0, 0);
