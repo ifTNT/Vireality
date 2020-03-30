@@ -66,7 +66,7 @@
 </template>
 <script>
 export default {
-  name: "post",
+  // name: "",
   data() {
     return {
       message: "",
