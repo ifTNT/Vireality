@@ -83,6 +83,7 @@ header .goBackBtn img {
   margin: 1vh auto;
   width: 100vw;
   padding: 0 5vw;
+  box-sizing: border-box;
 }
 .articleBody .articleText textarea {
   border: 0;

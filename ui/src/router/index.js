@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import ARView from '@/components/ar'
 import ListRoute from '@/components/list_route'
 import FirstFaceDetection from '@/components/first_face_detection'
+import Article from '@/components/article'
 
 Vue.use(Router)
 
@@ -24,6 +25,11 @@ let router = new Router({
       path: '/first_face_detection',
       name: 'First face detection',
       component: FirstFaceDetection
+    },
+    {
+      path: '/article',
+      name: 'Article',
+      component: Article
     }
   ]
 })
