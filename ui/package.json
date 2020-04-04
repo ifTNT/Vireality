@@ -15,8 +15,10 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "svg-progress-bar": "^0.1.17",
     "three": "^0.114.0",
     "vue": "^2.5.2",
+    "vue-progress-path": "0.0.2",
     "vue-router": "^3.0.1"
   },
   "devDependencies": {
