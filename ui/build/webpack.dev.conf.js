@@ -55,7 +55,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     watchOptions: {
       poll: config.dev.poll
     },
-    https: config.dev.httpsServer
+    https: config.dev.httpsServer,
+    disableHostCheck: true, //For ngrok
   },
   plugins: [
     new webpack.DefinePlugin({
