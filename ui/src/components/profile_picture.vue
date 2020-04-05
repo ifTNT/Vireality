@@ -24,26 +24,21 @@ import axios from 'axios';
             "ok": "true",
             "avatar": "https://i.imgur.com/07XbOpL.png"
         }*/
-var avatar = document.getElementsByClassName('avatar');
-
+var Avatar = document.getElementsByClassName('avatar');
+var Id = 'a123';
 export default {
     name:"profile_picture",
     data(){
         return{
-        };
+        }
     },
-    getpic () {
-        axios({
-            method: 'get',
-            url: '/api/v1/user/test/avatar',
-            params: {
-                id: user.id
-            }
-        })
-        .then(response => (avatar.style.backgroundImage ="url('" + response.avatar + "')" ))
-        .catch(error => console.log(error))
+    mounted ()  {
+        axios
+            .get(server.apiUrl('/user/'+ Id +'/avatar'))
+            .then(response => {Avatar.style.backgroundImage ="url('" + response.avatar + "')" })
+            .catch(error =>{ console.log(error)})
     }
-};
+}
 </script>
 
 <style scoped>
