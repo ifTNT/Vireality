@@ -1,7 +1,8 @@
 <template>
   <div>
     <div id="content" ref="content">
-      <video autoplay id="capture" ref="capture"></video>
+      <!--<video autoplay id="capture" ref="capture"></video>-->
+      <camera />
     </div>
     <div id="overlay">
       <div
@@ -22,6 +23,7 @@
 //Reference: https://stackoverflow.com/questions/47849626/import-and-use-three-js-library-in-vue-component
 import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
+import Camera from "@/components/camera";
 export default {
   name: "AR_view",
   data() {
@@ -193,6 +195,9 @@ export default {
   },
   created() {
     this.initCamera();
+  },
+  components:{
+    'camera': Camera
   }
 };
 </script>
