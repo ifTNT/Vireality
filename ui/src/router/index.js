@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import ARView from '@/components/ar'
 import ListRoute from '@/components/list_route'
+import Camera from '@/components/camera'
+import Post from '@/components/article'
 import FirstFaceDetection from '@/components/first_face_detection'
 import Article from '@/components/article'
 import Toolbar from '@/components/toolbar'
@@ -22,6 +24,16 @@ let router = new Router({
       path: '/ar_example',
       name: 'AR example',
       component: ARView
+    },
+    {
+      path: '/camera_test',
+      name: 'Camera test',
+      component: Camera
+    },
+    {
+      path: '/post',
+      name: 'Post',
+      component: Post,
     },
     {
       path: '/first_face_detection',

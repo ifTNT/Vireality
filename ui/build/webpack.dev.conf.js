@@ -55,11 +55,13 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     watchOptions: {
       poll: config.dev.poll
     },
-    https: config.dev.httpsServer
+    https: config.dev.httpsServer,
+    disableHostCheck: true, //For ngrok
   },
   plugins: [
     new webpack.DefinePlugin({
-      "process.env": require("../config/dev.env")
+      "process.env": require("../config/dev.env"),
+      "server": require("../config/server")
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
