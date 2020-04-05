@@ -8,6 +8,7 @@ import FirstFaceDetection from '@/components/first_face_detection'
 import Article from '@/components/article'
 import Toolbar from '@/components/toolbar'
 import ProfilePicture from '@/components/profile_picture'
+import TimeLine from '@/components/timeline'
 
 Vue.use(Router)
 
@@ -54,7 +55,14 @@ let router = new Router({
       path:'/profile_picture',
       name:'Propic',
       component:ProfilePicture 
+    },
+    //==========test================
+    {
+      path: '/timeline',
+      name: 'feef',
+      component: TimeLine
     }
+    //=======end test===============
   ]
 })
 
