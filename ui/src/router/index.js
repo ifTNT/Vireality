@@ -4,6 +4,8 @@ import ARView from '@/components/ar'
 import ListRoute from '@/components/list_route'
 import Camera from '@/components/camera'
 import Post from '@/components/article'
+import FirstFaceDetection from '@/components/first_face_detection'
+import Article from '@/components/article'
 
 Vue.use(Router)
 
@@ -22,15 +24,24 @@ let router = new Router({
       component: ARView
     },
     {
-<<<<<<< HEAD
       path: '/camera_test',
       name: 'Camera test',
       component: Camera
-=======
+    },
+    {
       path: '/post',
       name: 'Post',
-      component: Post
->>>>>>> 7bf8cca7a5278b39ac5aa1463bb4a9bc7056b333
+      component: Post,
+    },
+    {
+      path: '/first_face_detection',
+      name: 'First face detection',
+      component: FirstFaceDetection
+    },
+    {
+      path: '/article',
+      name: 'Article',
+      component: Article
     }
   ]
 })
