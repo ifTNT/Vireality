@@ -1,6 +1,6 @@
 <template>
     <div class="profilePicture">
-        <div class="avatar"></div>
+        <img class="avatar" :style="styleObject" :src="imgSrc" />
     </div>
 </template>
 
@@ -30,12 +30,17 @@ export default {
     name:"profile_picture",
     data(){
         return{
+            imgSrc:null,
+            styleObject: {
+                height: '0px',
+                width: '0px'
+            }
         }
     },
     mounted ()  {
         axios
             .get(server.apiUrl('/user/'+ Id +'/avatar'))
-            .then(response => {Avatar.style.backgroundImage ="url('" + response.avatar + "')" })
+            .then(function(response){this.imgSrc = response.data.avatar}.bind(this))
             .catch(error =>{ console.log(error)})
     }
 }
@@ -43,9 +48,6 @@ export default {
 
 <style scoped>
     .avatar{
-        height: 500px;
-        width: 500px;
-        background-color:coral ;
         border-radius: 50%;
     }
 </style>
