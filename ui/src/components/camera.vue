@@ -20,6 +20,7 @@ export default {
     markImgReady: false,
     width: window.innerWidth,
     height: window.innerHeight,
+    facingMode: 'enviorment'
   }),
   mounted() {
     this.initCamera();
@@ -46,7 +47,7 @@ export default {
             video: {
               //width: window.innerWidth,
               height: this.height,
-              facingMode: { exact: "environment" },
+              facingMode: { exact: this.facingMode },
             },
           })
           .then((stream) => {
