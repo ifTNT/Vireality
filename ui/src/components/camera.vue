@@ -13,17 +13,14 @@
 import pico from "../lib/pico.js";
 export default {
   name: "camera",
-  data() {
-    return {
-      cameraReady: false,
-      facefinderClassifyRegion: {},
-      dets: {},
-      markImg: new Image(),
-      markImgReady: false,
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
-  },
+  data: () => ({
+    cameraReady: false,
+    facefinderClassifyRegion: {},
+    markImg: new Image(),
+    markImgReady: false,
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }),
   mounted() {
     this.initCamera();
     this.initPico();
@@ -48,33 +45,32 @@ export default {
           .getUserMedia({
             video: {
               //width: window.innerWidth,
-              height: { min: this.height },
+              height: this.height,
               facingMode: { exact: "environment" },
             },
           })
-          .then(
-            function (stream) {
-              this.$refs.capture.srcObject = stream;
-            }.bind(this)
-          )
-          .catch(function (error) {
-            console.log(
-              `Get webcam error:\n  ${error.name}:${error.constraint}`
-            ,error);
+          .then((stream) => {
+            this.$refs.capture.srcObject = stream;
+          })
+          .catch((error) => {
+            console.log(`[Face Detection] Get webcam error`, error);
           });
       }
 
       //Adjuest canvas size and start picojs after video is ready
-      let self = this;
       this.$refs.capture.addEventListener(
         "loadedmetadata",
-        function (e) {
-          self.$refs.canvas.width = this.videoWidth;
-          self.$refs.canvas.height = this.videoHeight;
-          self.cameraReady = true;
-          self.$emit("cameraReady", this.videoWidth, this.videoHeight);
-          console.log(`VideoWidth: ${this.videoWidth}`);
-          self.updatePico();
+        () => {
+          let width = this.$refs.capture.videoWidth;
+          let height = this.$refs.capture.videoHeight;
+          this.$refs.canvas.width = width;
+          this.$refs.canvas.height = height;
+          this.cameraReady = true;
+          this.$emit("cameraReady", width, height);
+          console.log(
+            `[Face Detection] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
+          );
+          this.updatePico();
         },
         false
       );
@@ -82,23 +78,23 @@ export default {
     initPico: function () {
       var cascadeurl = "/static/model/facefinder";
       fetch(cascadeurl)
-        .then(function (response) {
-          return response.arrayBuffer();
-        })
-        .then(
-          function (buffer) {
-            var bytes = new Int8Array(buffer);
-            this.facefinderClassifyRegion = pico.unpack_cascade(bytes);
-            console.log("* facefinder loaded");
-          }.bind(this)
-        );
+        .then((response) => response.arrayBuffer())
+        .then((buffer) => {
+          let bytes = new Int8Array(buffer);
+          this.facefinderClassifyRegion = pico.unpack_cascade(bytes);
+          console.log("[Face Detection] facefinder loaded");
+        });
     },
     initMarkImage() {
       this.markImg.addEventListener("load", () => {
+        console.log("[Face Detection] marker loaded");
         this.markImgReady = true;
       });
       this.markImg.src = "/static/media/placeholder.png";
     },
+
+    /* Detection Queue of picojs */
+    updateMemory: pico.instantiate_detection_memory(5),
     updatePico: function () {
       requestAnimationFrame(this.updatePico);
       if (!this.markImgReady) return;
@@ -124,20 +120,17 @@ export default {
       // run the cascade over the frame and cluster the obtained detections
       // dets is an array that contains (r, c, s, q) quadruplets
       // (representing row, column, scale and detection score)
-      this.dets = pico.run_cascade(
-        image,
-        this.facefinderClassifyRegion,
-        params
-      );
-      this.dets = this.updateMemory(this.dets);
-      this.dets = pico.cluster_detections(this.dets, 0.2); // set IoU threshold to 0.2
+      let dets = pico.run_cascade(image, this.facefinderClassifyRegion, params);
+      dets = this.updateMemory(dets);
+      dets = pico.cluster_detections(dets, 0.2); // set IoU threshold to 0.2
+
       // draw detections
       // check the detection score
       // if it's above the threshold, draw it
       // (the constant 50.0 is empirical: other cascades might require a different one)
       ctx.strokeStyle = "white";
       ctx.font = "20px Ubuntu";
-      for (let face of this.dets) {
+      for (let face of dets) {
         if (face[3] > 50.0) {
           ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
           let _width = face[2] / 2;
@@ -147,34 +140,11 @@ export default {
           //Draw box of detected face
           const aspect_ratio = 1;
           let _height = _width * aspect_ratio;
-          _y -= _height; //Negative is ok.
-          _y -= _height * 0.8;
-          //ctx.fillRect(_x, _y, _width, _height);
+          _y -= _height * 1.8; //Calculate offset. Negative is ok.
           ctx.drawImage(this.markImg, _x, _y, _width, _height);
-          //ctx.strokeRect(_x, _y, _width, _height);
-
-          //Draw text
-          // let font_x = _x + 0.1 * _width;
-          // let font_y = _y + 0.5 * (_height - 20);
-          // ctx.fillStyle = "white";
-          // ctx.fillText(
-          //   "It works! " + (face[3] / 100).toFixed(2),
-          //   font_x,
-          //   font_y
-          // );
-          //Draw face
-          //ctx.lineWidth = 1;
-          //ctx.strokeStyle = "blue";
-          //ctx.strokeRect(
-          //  face[1] - face[2] / 2,
-          //  face[0] - face[2] / 2,
-          //  face[2],
-          //  face[2]
-          //);
         }
       }
     },
-    updateMemory: pico.instantiate_detection_memory(5),
   },
 };
 </script>
@@ -182,9 +152,8 @@ export default {
 <style scoped lang="stylus">
 .content
     overflow hidden
-    // width 100vw
-    // height 100vh
 
+    /* hide the original video*/
     video
       display none
     canvas
@@ -196,7 +165,7 @@ export default {
        width auto
        height auto
 
-       /* Center the video */
+       /* Center the canvas */
        position relative
        top 50%
        left 50%
