@@ -13,6 +13,12 @@
 import pico from "../lib/pico.js";
 export default {
   name: "camera",
+  props: {
+    facingMode: {
+      type: String,
+      default: 'environment'
+    }
+  },
   data: () => ({
     cameraReady: false,
     facefinderClassifyRegion: {},
@@ -20,7 +26,6 @@ export default {
     markImgReady: false,
     width: window.innerWidth,
     height: window.innerHeight,
-    facingMode: 'enviorment'
   }),
   mounted() {
     this.initCamera();
@@ -42,11 +47,12 @@ export default {
     },
     initCamera: function () {
       if (navigator.mediaDevices.getUserMedia) {
+        console.log(`[Face Detection] Facing Mode:${this.facingMode}, Height: ${this.height}`)
         navigator.mediaDevices
           .getUserMedia({
             video: {
               //width: window.innerWidth,
-              height: this.height,
+              height: {ideal: this.height},
               facingMode: { exact: this.facingMode },
             },
           })
