@@ -1,16 +1,9 @@
 <template>
   <div>
-    <div id="content" ref="content">
-      <!--<video autoplay id="capture" ref="capture"></video>-->
-      <camera />
-    </div>
+    <camera class="fullScreen" v-on:camera-ready="onCameraReady" />
+    <canvas class="fullScreen" ref="arCanvas"></canvas>
     <div id="overlay">
-      <div
-        class="btn"
-        ref="start"
-        v-on:click="initAR"
-        v-if="cameraReady && !started"
-      >
+      <div class="btn" ref="start" v-on:click="initAR" v-if="!started">
         Start
       </div>
       <div class="btn" ref="add" v-on:click="addMarker" v-if="false && started">
@@ -39,17 +32,17 @@ export default {
       cameraHeight: 1.4, //Distance between camera and ground
       cameraFoV: 67.35, //Average value for mobile
       started: false,
-      cameraReady: false
+      videoWidth: 0,
+      videoHeight: 0,
     };
   },
   methods: {
-    initCamera: function() {
-      var self = this;
-      this.getCameraStream(function() {
-        self.cameraReady = true;
-      });
+    onCameraReady(videoWidth, videoHeight) {
+      this.videoWidth = videoWidth;
+      this.videoHeight = videoHeight;
+      console.log(this.videoWidth, videoHeight);
     },
-    initAR: function() {
+    initAR: function () {
       this.started = true;
 
       //==================Camera and Control=============================================
@@ -60,9 +53,9 @@ export default {
       //================================================================================|
 
       //If the video had been croped, adjuest FoV
-      if (this.$refs.capture.videoHeight > window.innerHeight) {
+      if (this.videoHeight > window.innerHeight) {
         //How much video had been croped
-        let scaleFactor = window.innerHeight / capture.videoHeight;
+        let scaleFactor = window.innerHeight / this.videoHeight;
 
         //Full-frame CCD (36mm)
         let referenceCCDSize = 36;
@@ -111,7 +104,7 @@ export default {
       );
       var groundMaterial = new THREE.MeshBasicMaterial({
         color: 0xaaaaaa,
-        wireframe: true
+        wireframe: true,
       });
       this.vground = new THREE.Mesh(groundGeometry, groundMaterial);
       this.vground.position.set(0, 0, 0);
@@ -129,20 +122,19 @@ export default {
       );
       this.spriteMaterial = new THREE.SpriteMaterial({
         map: spriteMap,
-        color: 0xffffff
+        color: 0xffffff,
       });
 
-      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer = new THREE.WebGLRenderer({ canvas: this.$refs.arCanvas, antialias: true, alpha: true });
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.$refs.content.appendChild(this.renderer.domElement);
 
       //
 
       window.addEventListener("resize", this.onWindowResize, false);
       this.animate();
     },
-    animate: function() {
+    animate: function () {
       window.requestAnimationFrame(this.animate.bind(this));
       this.controls.update();
       this.axesHelper.position.x = this.camera.position.x;
@@ -154,51 +146,24 @@ export default {
       }
       this.renderer.render(this.scene, this.camera);
     },
-    addMarker: function() {
+    addMarker: function () {
       let { x, y } = this.camera.position;
       let sprite = new THREE.Sprite(spriteMaterial);
       sprite.position.set(x, y, 0);
       sprite.scale.set(0.5, 0.5, 0.5);
       this.scene.add(sprite);
     },
-    onWindowResize: function() {
-      //Resize the video stream from webcam
-      getCameraStream(() => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+    onWindowResize: function () {
+      //Camera aspect ratio
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
 
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
     },
-    getCameraStream: function(callback) {
-      if (navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices
-          .getUserMedia({
-            video: {
-              //width: window.innerWidth,
-              height: { min: window.innerHeight },
-              facingMode: { exact: "environment" }
-            }
-          })
-          .then(
-            function(stream) {
-              this.$refs.capture.srcObject = stream;
-              callback();
-            }.bind(this)
-          )
-          .catch(function(error) {
-            console.log(error);
-            alert(`Get webcam error:\n  ${error.name}:${error.constraint}`);
-          });
-      }
-    }
   },
-  created() {
-    this.initCamera();
+  components: {
+    camera: Camera,
   },
-  components:{
-    'camera': Camera
-  }
 };
 </script>
 
@@ -218,7 +183,7 @@ export default {
   border-radius 1em
   background-color rgba(255, 255, 255, 0.5)
 
-#content
+.fullScreen
   position absolute
   top 0
   bottom 0
@@ -226,20 +191,18 @@ export default {
   height 100vh
   overflow hidden
 
-video, canvas
+//canvas
   /* Make video to at least 100% wide and tall */
-  min-width 100%
-  min-height 100%
+  //min-width 100%
+  //min-height 100%
 
   /* Setting width & height to auto prevents the browser from stretching or squishing the video */
-  width auto
-  height auto
+  //width 100vw
+  //height 100vh
 
   /* Center the video */
-  position absolute
-  top 50%
-  left 50%
-  transform translate(-50%, -50%)
-video
-  z-index -1
+  //position absolute
+  //top 50%
+  //left 50%
+  //transform translate(-50%, -50%)
 </style>
