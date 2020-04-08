@@ -16,8 +16,11 @@ export default {
   props: {
     facingMode: {
       type: String,
-      default: 'environment'
-    }
+      default: "environment",
+      validator: (
+        value // The value must match one of two strings
+      ) => ["environment", "user"].indexOf(value) !== -1,
+    },
   },
   data: () => ({
     cameraReady: false,
@@ -47,12 +50,14 @@ export default {
     },
     initCamera: function () {
       if (navigator.mediaDevices.getUserMedia) {
-        console.log(`[Face Detection] Facing Mode:${this.facingMode}, Height: ${this.height}`)
+        console.log(
+          `[Face Detection] Facing Mode:${this.facingMode}, Height: ${this.height}`
+        );
         navigator.mediaDevices
           .getUserMedia({
             video: {
               //width: window.innerWidth,
-              height: {ideal: this.height},
+              height: { ideal: this.height },
               facingMode: { exact: this.facingMode },
             },
           })
