@@ -34,7 +34,7 @@ module.exports = {
 
     cssSourceMap: true,
     
-    httpsServer: false
+    httpsServer: true
   },
 
   build: {

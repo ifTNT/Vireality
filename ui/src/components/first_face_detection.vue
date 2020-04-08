@@ -69,7 +69,7 @@ export default {
   /*justify-content: center;*/
   flex-direction: column;
   align-items: center;
-  font-family: "Microsoft JhengHei", Arial, Helvetica, sans-serif;
+  font-family: "Microsoft JhengHei", Verdana;
 }
 
 .teachDescription {
