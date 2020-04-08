@@ -1,5 +1,10 @@
 <template>
-  <div class="content" ref="content">
+  <div
+    class="content"
+    v-bind:style="{ width: canvasWidth, height: canvasHeight }"
+    ref="content"
+  >
+  <!--Issue: 2px heigther than content?-->
     <video autoplay ref="capture"></video>
     <canvas ref="canvas"></canvas>
   </div>
@@ -25,6 +30,9 @@ export default {
     markImgReady: false,
     cascadeReady: false,
 
+    canvasWidth: window.innerWidth,
+    canvasHeight: window.innerHeight,
+
     //Parameters for drawing video
     drawParameter: {
       x: 0,
@@ -37,8 +45,8 @@ export default {
     this.initCamera();
     this.initPico();
     this.initMarkImage();
-    this.$refs.canvas.width = window.innerWidth;
-    this.$refs.canvas.height = window.innerHeight;
+    this.$refs.canvas.width = this.canvasWidth;
+    this.$refs.canvas.height = this.canvasHeight;
   },
   methods: {
     rgba_to_grayscale: function(rgba, nrows, ncols) {
@@ -71,8 +79,8 @@ export default {
           //==========Scale video to fit canvas============
 
           //Size of canvas
-          let canvasWidth = window.innerWidth;
-          let canvasHeight = window.innerHeight;
+          let canvasWidth = this.canvasWidth;
+          let canvasHeight = this.canvasHeight;
 
           //Calculate scale factor
           let scale = Math.max(canvasWidth / width, canvasHeight / height);
@@ -103,7 +111,6 @@ export default {
             }
           })
           .then(stream => {
-            console.log(stream);
             this.$refs.capture.srcObject = stream;
           })
           .catch(error => {
@@ -137,6 +144,9 @@ export default {
       if (!this.markImgReady || !this.cascadeReady) return;
 
       let ctx = this.$refs.canvas.getContext("2d");
+
+      let width = this.canvasWidth;
+      let height = this.canvasHeight;
 
       //Draw video to canvas
       ctx.drawImage(
