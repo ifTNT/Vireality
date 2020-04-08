@@ -10,7 +10,7 @@ export default {
 };
 </script>
 
-<style lang="stylus">
+<style scoped lang="stylus">
 .container
   font-family "Microsoft JhengHei", "微軟正黑體", arial, sans-serif
   /* Reference: https://gist.github.com/hsleonis/55712b0eafc9b25f1944 */
