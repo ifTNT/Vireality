@@ -28,7 +28,8 @@ export default {
     };
   },
   mounted() {
-    this.getNowDate()
+    this.getNowDate(),
+    this.monthChange(0)
   },
   methods: {
     monthChange(e) {
@@ -131,7 +132,6 @@ export default {
   margin-left: -30vw;
   display: flex;
   justify-content: space-around;
-  animation-duration:0.2s;
 
   p {
     margin: 0.25em 0;

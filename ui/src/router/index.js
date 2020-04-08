@@ -6,6 +6,8 @@ import Camera from '@/components/camera'
 import Post from '@/components/article'
 import FirstFaceDetection from '@/components/first_face_detection'
 import Article from '@/components/article'
+import Profile from '@/components/profile'
+import Gesture from '@/components/main_gesture'
 import Toolbar from '@/components/toolbar'
 import ProfilePicture from '@/components/profile_picture'
 import TimeLine from '@/components/timeline'
@@ -45,6 +47,16 @@ let router = new Router({
       path: '/article',
       name: 'Article',
       component: Article
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: Profile
+    },
+    {
+      path: '/main_gesture',
+      name: 'Gesture',
+      component: Gesture
     },
     {
       path:'/toolbar',
