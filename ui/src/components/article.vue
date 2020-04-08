@@ -16,27 +16,27 @@
       <div class="articlePictures">
         <ul>
           <li>
-            <a data-href="http://www.itstrive.com">
+            <a>
               <img src="https://fakeimg.pl/2500x2000/ffff00/" />
             </a>
           </li>
           <li>
-            <a data-href="http://www.baidu.com">
+            <a>
               <img src="https://fakeimg.pl/2500x2000/ffff00/" />
             </a>
           </li>
           <li>
-            <a data-href="http://www.taobao.com">
+            <a>
               <img src="https://fakeimg.pl/2500x2000/ffff00/" />
             </a>
           </li>
           <li>
-            <a data-href="http://www.tmall.com">
+            <a>
               <img src="https://fakeimg.pl/2500x2000/ffff00/" />
             </a>
           </li>
           <li>
-            <a data-href="http://www.itstrive.com">
+            <a>
               <img src="https://fakeimg.pl/2500x2000/ffff00/" />
             </a>
           </li>
