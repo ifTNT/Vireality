@@ -80,10 +80,12 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         ignore: [".*"]
       }
     ]),
+  ].concat(config.dev.serviceWorker?[
     new GenerateSW({
       importScripts: ["./static/workbox_debug.js"]
     })
-  ]
+    ]:[]
+  )
 });
 
 module.exports = new Promise((resolve, reject) => {
