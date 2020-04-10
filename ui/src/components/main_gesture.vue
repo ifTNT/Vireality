@@ -1,56 +1,87 @@
 <template>
-    <div ref="testElement" :class="{testElement:true, expand: tapped}"></div>
+    <div ref="testElement" :class="{'testElement':true, 'expand': tapped, 'post':swiped, 'timeLine':panned}"></div>
 </template>
 
 <script>
-
+import * as Hammer from 'hammerjs';
 export default {
     data(){
         return{
-            tapped: false
+            tapped: false,
+            panned: false,
+            swiped: false
         };
     },
     mounted(){
-        var testElement = this.$ref.testElement;
+        var direction;
+        var testElement = this.$refs.testElement;
         var manager = new Hammer.Manager(testElement);
+        //點擊展開文章
         var Tap = new Hammer.Tap({
             taps:1
         });
         manager.add(Tap);
-        manager.on('tap', (function(e){
+        manager.on('tap', (function(event){
             this.tapped = !this.tapped;
         }).bind(this));
-    },
-    gestureDetect(){
-            
-            //var hammertime = new Hammer(testElement);
+        //
+        //上滑發文
+        var Swipeup = new Hammer.Swipe({
+            direction: Hammer.DIRECTION_UP
+        });
+        manager.add(Swipeup);
+        manager.on('swipeup', (function(event){
+            this.swiped = !this.swiped;
+        }).bind(this));
+        //
+        //左右滑動跳出時間軸
+        var Panleft = new Hammer.Pan({
+            direction: Hammer.DIRECTION_LEFT
+        });
+        manager.add(Panleft);
+        manager.on('panleft', (function(event){
+            this.panned = !this.panned;
+        }).bind(this));
 
-            // hammer.on("panup panleft panright pinchin pinchout tap", function(ev){ //上滑 左滑 右滑 縮小 放大 點擊
-            //     testElement.textContent = ev.type + "gesture detected.";
-            // });
-            // hammertime.on('press', function(e){
-            //     e.target.classList.toggle('expand');
-            //     console.log("You're pressing me!");
-            //     console.log(e);
-            // });
-    }
+        var Panright = new Hammer.Pan({
+            direction: Hammer.DIRECTION_RIGHT
+        });
+        manager.add(Panright);
+        manager.on('panright', (function(event){
+            this.panned = !this.panned;
+        }).bind(this));
+        //
+    },
 };
 </script>
 
 <style scoped>
 .testElement{
     width: 50%;
-    height: 50%;
+    height: 30%;
     position: fixed;
-    left:0vw;
-    top:0vh;
+    left:25vw;
+    top:35vh;
     background-color:black;
     transition: transform 300ms ease-out;
-    /* text-align:center;
-    font: 30px/300px Helvetica, Arial, sans-serif;
-    color:white; */
 }
 .expand{
     transform: scale(2.5);
+}
+.post{
+    width:80%;
+    height: 80%;
+    position:fixed;
+    left:0vw;
+    top:0vh;
+    background-color:silver;
+}
+.timeLine{
+    width:80%;
+    height:5%;
+    position:fixed;
+    left:10vw;
+    top: 5vh;
+    background-color: blue;
 }
 </style>
