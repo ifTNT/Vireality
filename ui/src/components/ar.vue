@@ -79,7 +79,7 @@ export default {
       this.camera = new THREE.PerspectiveCamera(
         this.cameraFoV, //Calcualted FoV.
         window.innerWidth / window.innerHeight, //Aspect ratio
-        1, //Near plate
+        0.5, //Near plate
         1100 //Far plate
       );
 
@@ -115,7 +115,7 @@ export default {
       //================End Virtual Ground Object=================
 
       //An axes helper
-      this.axesHelper = new THREE.AxesHelper(1);
+      this.axesHelper = new THREE.AxesHelper(0.1);
       this.axesHelper.position.set(0, 0, 0);
       this.scene.add(this.axesHelper);
 
@@ -140,8 +140,13 @@ export default {
     animate: function () {
       window.requestAnimationFrame(this.animate.bind(this));
       this.controls.update();
-      this.axesHelper.position.x = this.camera.position.x;
-      this.axesHelper.position.y = this.camera.position.y;
+
+      //Stick axes helper in front of camera
+      var vec = new THREE.Vector3( 0, 0, -1 );
+      vec.applyQuaternion( this.camera.quaternion );
+      vec.add(this.camera.position);
+      this.axesHelper.position.copy( vec );
+      
       if (this.vground !== null) {
         //Fix the position of vground relative to camera
         this.vground.position.x = this.camera.position.x;
