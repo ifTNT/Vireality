@@ -40,7 +40,7 @@ export default {
     onCameraReady(videoWidth, videoHeight) {
       this.videoWidth = videoWidth;
       this.videoHeight = videoHeight;
-      console.log(this.videoWidth, videoHeight);
+      console.log(`[AR] Camera ready: Width: ${this.videoWidth} Height: ${videoHeight}`);
     },
     initAR: function () {
       this.started = true;
@@ -53,9 +53,12 @@ export default {
       //================================================================================|
 
       //If the video had been croped, adjuest FoV
-      if (this.videoHeight > window.innerHeight) {
+      if (this.videoHeight > window.innerHeight || this.videoWidth > window.innerWidth) {
         //How much video had been croped
-        let scaleFactor = window.innerHeight / this.videoHeight;
+        let scaleFactor = Math.min(
+            window.innerHeight / this.videoHeight,
+            window.innerWidth / this.videoWidth
+        );
 
         //Full-frame CCD (36mm)
         let referenceCCDSize = 36;
