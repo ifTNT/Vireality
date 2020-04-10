@@ -7,7 +7,7 @@
     </div>
     <div class="line"></div>
     <div class="date">
-      <transition>
+      <transition name= "date-move" mode="out-in">
         <p v-bind:key="isEditing">
           ▲
           <br />
@@ -15,8 +15,10 @@
         </p>
       </transition>
     </div>
+    <!-- for test -->
     <button v-on:click="minusChangDate">AddLeft</button>
     <button v-on:click="addChangDate">AddRight</button>
+    <!-- end for test -->
   </div>
 </template>
 <script>
@@ -43,6 +45,7 @@ export default {
         switch (parseInt(whichMonth[whichMonth.length - 1])) {
           case 1:
             this.date = 31;
+            break;
           case 2:
             var year;
             if (whichMonth.length === 1) {
@@ -58,25 +61,34 @@ export default {
             } else {
               this.date = 28;
             }
-            console.log("test")
+            break;
           case 3:
             this.date = 31;
+            break;
           case 4:
             this.date = 30;
+            break;
           case 5:
             this.date = 31;
+            break;
           case 6:
             this.date = 30;
+            break;
           case 7:
             this.date = 31;
+            break;
           case 8:
             this.date = 31;
+            break;
           case 9:
             this.date = 30;
+            break;
           case 10:
             this.date = 31;
+            break;
           case 11:
             this.date = 30;
+            break;
           case 12:
             this.date = 31;
         }
@@ -88,7 +100,7 @@ export default {
       if (this.date < 28) {
         this.date = this.date + 1;
       } else {
-        var whichMonth = String(this.items[0]).split(" ");
+        var whichMonth = String(this.items[1]).split(" ");
         switch (parseInt(whichMonth[whichMonth.length - 1])) {
           case 1:
             if (this.date === 31) {
@@ -97,6 +109,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 2:
             var year;
             if (whichMonth.length === 1) {
@@ -127,6 +140,7 @@ export default {
                 this.date = this.date + 1;
               }
             }
+            break;
           case 3:
             if (this.date === 31) {
               this.date = 1;
@@ -134,6 +148,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 4:
             if (this.date === 30) {
               this.date = 1;
@@ -141,6 +156,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 5:
             if (this.date === 31) {
               this.date = 1;
@@ -148,6 +164,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 6:
             if (this.date === 30) {
               this.date = 1;
@@ -155,6 +172,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 7:
             if (this.date === 31) {
               this.date = 1;
@@ -162,6 +180,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 8:
             if (this.date === 31) {
               this.date = 1;
@@ -169,6 +188,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 9:
             if (this.date === 30) {
               this.date = 1;
@@ -176,6 +196,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 10:
             if (this.date === 31) {
               this.date = 1;
@@ -183,6 +204,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 11:
             if (this.date === 30) {
               this.date = 1;
@@ -190,6 +212,7 @@ export default {
             } else {
               this.date = this.date + 1;
             }
+            break;
           case 12:
             if (this.date === 31) {
               this.date = 1;
