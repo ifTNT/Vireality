@@ -12,6 +12,7 @@ import Toolbar from '@/components/toolbar'
 import ProfilePicture from '@/components/profile_picture'
 import TimeLine from '@/components/timeline'
 import FriendListAround from '@/components/friend_list_around'
+import Main from '@/components/main'
 
 Vue.use(Router)
 
@@ -68,6 +69,11 @@ let router = new Router({
       path:'/profile_picture',
       name:'Propic',
       component:ProfilePicture 
+    },
+    {
+      path:'/main',
+      name:'Main',
+      component:Main 
     },
     //==========test================
     {
