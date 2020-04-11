@@ -1,7 +1,6 @@
 <template>
-    <div class="profilePicture">
-        <img class="avatar" :style="styleObject" :src="imgSrc" />
-    </div>
+    <!-- 新增style 其height,width為父類別傳入的直徑大小 -->
+    <img class="avatar"  :src="imgSrc" :style="{height : h, width : w}"/>
 </template>
 
 <script>
@@ -24,17 +23,22 @@ import axios from 'axios';
             "ok": "true",
             "avatar": "https://i.imgur.com/07XbOpL.png"
         }*/
-var Avatar = document.getElementsByClassName('avatar');
 var Id = 'a123';
 export default {
     name:"profile_picture",
+    props: {
+          diameter: {
+              type:String,
+              //預設為0px 避免父類別沒有傳入資料   
+              default: "0px"
+          }
+    },
     data(){
         return{
             imgSrc:null,
-            styleObject: {
-                height: '0px',
-                width: '0px'
-            }
+            //傳入父類別指定大小
+            h:this.diameter,
+            w:this.diameter
         }
     },
     mounted ()  {
@@ -42,6 +46,9 @@ export default {
             .get(server.apiUrl('/user/'+ Id +'/avatar'))
             .then(function(response){this.imgSrc = response.data.avatar}.bind(this))
             .catch(error =>{ console.log(error)})
+    },
+    methods: {
+
     }
 }
 </script>
