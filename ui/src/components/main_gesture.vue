@@ -18,11 +18,13 @@ export default {
         var manager = new Hammer.Manager(testElement);
         //點擊展開文章
         var tap = new Hammer.Tap({
+        
             taps:1
         });
         manager.add(tap);
         manager.on('tap', (function(event){
             this.tapped = !this.tapped;
+            console.log("click");
         }).bind(this));
         //
         //上滑發文
@@ -32,6 +34,7 @@ export default {
         manager.add(swipeUp);
         manager.on('swipeup', (function(event){
             this.swiped = !this.swiped;
+            console.log("swip up");
         }).bind(this));
         //
         //左右滑動跳出時間軸
@@ -48,6 +51,7 @@ export default {
         manager.add(panLeft);
         manager.on('panleft', (function(event){
             this.panned = !this.panned;
+            console.log("left");
         }).bind(this));
 
         var panRight = new Hammer.Pan({
@@ -56,6 +60,7 @@ export default {
         manager.add(panRight);
         manager.on('panright', (function(event){
             this.panned = !this.panned;
+            console.log("right");
         }).bind(this));
         //縮小手勢將文章聚合
         var pinch = new Hammer.Pinch({
