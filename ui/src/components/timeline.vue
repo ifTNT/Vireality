@@ -1,17 +1,24 @@
 <template>
   <div>
     <div class="month">
-      <p class="month0">{{month0}}</p>
-      <p class="month1">{{month1}}</p>
-      <p class="month2">{{month2}}</p>
-      <p class="month3">{{month3}}</p>
-      <p class="month4">{{month4}}</p>
+      <transition-group name="list-complete" tag="p" class="monthList">
+        <span v-for="item in items" v-bind:key="item" class="list-complete-item">{{ item }}</span>
+      </transition-group>
     </div>
     <div class="line"></div>
     <div class="date">
-      <p>▲</p>
-      <p>{{ date }}</p>
+      <transition name= "date-move" mode="out-in">
+        <p v-bind:key="isEditing">
+          ▲
+          <br />
+          {{ isEditing ? date : date }}
+        </p>
+      </transition>
     </div>
+    <!-- for test -->
+    <button v-on:click="minusChangDate">AddLeft</button>
+    <button v-on:click="addChangDate">AddRight</button>
+    <!-- end for test -->
   </div>
 </template>
 <script>
@@ -20,63 +27,237 @@ export default {
   data() {
     return {
       date: "",
-      month0: "",
-      month1: "",
-      month2: "",
-      month3: "",
-      month4: ""
+      items: [],
+      isEditing: true
     };
   },
   mounted() {
-    this.getNowDate(),
-    this.monthChange(0)
+    this.getNowDate();
   },
+  computed: {},
   methods: {
-    monthChange(e) {
-      if (e === 0) {
-        var d = new Date();
-        var target = document.querySelectorAll('.month p');
-        
-        var clName = parseInt(target[0].className.split('h')[1]);
-        var newTar = document.createElement('p');
-        newTar.className = ''.concat('month',clName-1);
-        var path = Math.abs(clName-3) - this.month2;
-        if(path >= 0){
-          var year = d.getFullYear() - Math.floor(path/12) - 1;
-          if(path % 12 != 0){
-            newTar.innerText = ''.concat(year,' ',12 - path % 12);
-          }else{
-            newTar.innerText = ''.concat(year,' ',12);
-          }
-        }else{
-          newTar.innerText = this.month2 - Math.abs(clName-3);
-        }
-        console.log(newTar.innerText)
-        target[4].parentNode.removeChild(target[4]);
-        target[0].parentNode.insertBefore(newTar,target[0]);
+    minusChangDate: function() {
+      this.isEditing = !this.isEditing;
+      if (this.date != 1) {
+        this.date = this.date - 1;
       } else {
-        var d = new Date();
-        var target = document.querySelectorAll('.month p');
-        var clName = parseInt(target[4].className.split('h')[1]);
-        var newTar = document.createElement('p');
-        newTar.className = ''.concat('month',clName+1);
-        newTar.style+="width: 10em;";
-        var path = Math.abs(clName-1) + this.month2;
-        if(path >= 12){
-          var year = d.getFullYear() + Math.floor(path/12);
-          if(path % 12 != 0){
-            newTar.innerText = ''.concat(year,' ',1 + path % 12);
-          }else{
-            newTar.innerText = ''.concat(year,' ',1);
-          }
-        }else{
-          newTar.innerText = this.month2 + Math.abs(clName - 1);
+        var whichMonth = String(this.items[0]).split(" ");
+        switch (parseInt(whichMonth[whichMonth.length - 1])) {
+          case 1:
+            this.date = 31;
+            break;
+          case 2:
+            var year;
+            if (whichMonth.length === 1) {
+              var d = new Date();
+              year = d.getFullYear();
+            } else {
+              year = parseInt(whichMonth[0]);
+            }
+            if (year % 4 == 0 && year % 100 != 0) {
+              this.date = 29;
+            } else if (year % 400 == 0) {
+              this.date = 29;
+            } else {
+              this.date = 28;
+            }
+            break;
+          case 3:
+            this.date = 31;
+            break;
+          case 4:
+            this.date = 30;
+            break;
+          case 5:
+            this.date = 31;
+            break;
+          case 6:
+            this.date = 30;
+            break;
+          case 7:
+            this.date = 31;
+            break;
+          case 8:
+            this.date = 31;
+            break;
+          case 9:
+            this.date = 30;
+            break;
+          case 10:
+            this.date = 31;
+            break;
+          case 11:
+            this.date = 30;
+            break;
+          case 12:
+            this.date = 31;
         }
-        console.log(newTar.innerText)
-
-        target[0].parentNode.removeChild(target[0]);
-        target[4].parentNode.appendChild(newTar);
+        this.addLeft();
       }
+    },
+    addChangDate: function() {
+      this.isEditing = !this.isEditing;
+      if (this.date < 28) {
+        this.date = this.date + 1;
+      } else {
+        var whichMonth = String(this.items[1]).split(" ");
+        switch (parseInt(whichMonth[whichMonth.length - 1])) {
+          case 1:
+            if (this.date === 31) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 2:
+            var year;
+            if (whichMonth.length === 1) {
+              var d = new Date();
+              year = d.getFullYear();
+            } else {
+              year = parseInt(whichMonth[0]);
+            }
+            if (year % 4 == 0 && year % 100 != 0) {
+              if (this.date === 29) {
+                this.date = 1;
+                this.addRight();
+              } else {
+                this.date = this.date + 1;
+              }
+            } else if (year % 400 == 0) {
+              if (this.date === 29) {
+                this.date = 1;
+                this.addRight();
+              } else {
+                this.date = this.date + 1;
+              }
+            } else {
+              if (this.date === 28) {
+                this.date = 1;
+                this.addRight();
+              } else {
+                this.date = this.date + 1;
+              }
+            }
+            break;
+          case 3:
+            if (this.date === 31) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 4:
+            if (this.date === 30) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 5:
+            if (this.date === 31) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 6:
+            if (this.date === 30) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 7:
+            if (this.date === 31) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 8:
+            if (this.date === 31) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 9:
+            if (this.date === 30) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 10:
+            if (this.date === 31) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 11:
+            if (this.date === 30) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+            break;
+          case 12:
+            if (this.date === 31) {
+              this.date = 1;
+              this.addRight();
+            } else {
+              this.date = this.date + 1;
+            }
+        }
+      }
+    },
+    addLeft() {
+      var d = new Date();
+      var whichYear = String(this.items[0]).split(" ");
+      this.items.splice(2, 1);
+      this.items.splice(
+        0,
+        0,
+        parseInt(whichYear[whichYear.length - 1]) === 1
+          ? whichYear.length > 1
+            ? parseInt(whichYear[0]) - 1 === d.getFullYear()
+              ? "12"
+              : "".concat(parseInt(whichYear[0]) - 1, " ", "12")
+            : "".concat(d.getFullYear() - 1, " ", "12")
+          : whichYear.length > 1
+          ? "".concat(whichYear[0], " ", parseInt(whichYear[1]) - 1)
+          : parseInt(whichYear[0]) - 1
+      );
+    },
+    addRight() {
+      var d = new Date();
+      var whichYear = String(this.items[2]).split(" ");
+      this.items.splice(0, 1);
+      this.items.splice(
+        2,
+        0,
+        parseInt(whichYear[whichYear.length - 1]) === 12
+          ? whichYear.length > 1
+            ? parseInt(whichYear[0]) + 1 === d.getFullYear()
+              ? "1"
+              : "".concat(parseInt(whichYear[0]) + 1, " ", "1")
+            : "".concat(d.getFullYear() + 1, " ", "1")
+          : whichYear.length > 1
+          ? "".concat(whichYear[0], " ", parseInt(whichYear[1]) + 1)
+          : parseInt(whichYear[0]) + 1
+      );
     },
     dateChange() {
       this.date;
@@ -85,31 +266,17 @@ export default {
       var d = new Date();
       this.date = d.getDate();
       var m = d.getMonth() + 1;
-      this.month0 =
-        m <= 2
-          ? "".concat(
-              d.getFullYear() - 1,
-              " ",
-              m === 2 ? "12" : "11"
-            )
-          : m - 2;
-      this.month1 =
-        m === 1
-          ? "".concat(d.getFullYear() - 1, " ", "12")
-          : m - 1;
-      this.month2 = m;
-      this.month3 =
-        m === 12
-          ? "".concat(d.getFullYear() + 1, " ", "1")
-          : m + 1;
-      this.month4 =
-        m >= 11
-          ? "".concat(
-              d.getFullYear() + 1,
-              " ",
-              m === 12 ? "12" : "11"
-            )
-          : m + 2;
+      this.items.splice(
+        0,
+        0,
+        m === 1 ? "".concat(d.getFullYear() - 1, " ", "12") : m - 1
+      );
+      this.items.splice(1, 0, m);
+      this.items.splice(
+        2,
+        0,
+        m === 12 ? "".concat(d.getFullYear() + 1, " ", "1") : m + 1
+      );
     }
   }
 };
@@ -125,40 +292,40 @@ export default {
   margin: 0 6vw;
 }
 
-.month {
+.monthList {
   box-sizing: border-box;
   height: 2em;
-  width: 160vw;
-  margin-left: -30vw;
+  width: 100vw;
   display: flex;
   justify-content: space-around;
 
-  p {
+  .list-complete-item {
     margin: 0.25em 0;
     display: inline-block;
     text-align: center;
     font-size: 1.5em;
     height: 1.5em;
     width: 10em;
+    transition-duration: 0.2s;
   }
+}
 
-  .month1 {
-  }
+.list-complete-enter, .list-complete-leave-to {
+  opacity: 0;
+  transform: translateY(-5vw);
+}
 
-  .month2 {
-  }
-
-  .month3 {
-  }
+.list-complete-leave-active {
+  position: absolute;
 }
 
 .date {
   margin-top: 0.2em;
   line-height: 1.5em;
   text-align: center;
-  p
-  {
-    font-size 1.5em
+
+  p {
+    font-size: 1.5em;
   }
 }
 </style>
