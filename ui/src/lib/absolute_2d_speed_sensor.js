@@ -113,7 +113,7 @@ export default class Absolute2DSpeedSensor {
   }
   readSpeed() {
     let { x, y } = this.speed.getAvg();
-    let accuracy = Math.sqrt(1/2*this.totalTime*this.totalTime*this.accel.getVar());
+    let accuracy = Math.sqrt(this.totalTime*this.accel.getVar());
     return {
       x,
       y,
@@ -136,7 +136,7 @@ export default class Absolute2DSpeedSensor {
   }
   readPosition() {
     let { x, y } = this.pos.getAvg();
-    let accuracy = Math.sqrt(1/6*Math.pow(this.totalTime,3)*this.accel.getVar());
+    let accuracy = Math.sqrt(this.totalTime*this.totalTime*this.accel.getVar());
     return {
       x,
       y,

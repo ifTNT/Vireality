@@ -105,7 +105,7 @@ export default {
       this.draw();
     },
     onCanvasPan(e) {
-      if (e.type==="panend") {
+      if (e.type === "panend") {
         this.deltaX += e.deltaX;
         this.deltaY += e.deltaY;
         this.activeDeltaX = 0;
@@ -125,7 +125,7 @@ export default {
       } else if (this.gridSize * this.activeScale > window.innerWidth / 2) {
         this.activeScale = window.innerWidth / 2 / this.gridSize;
       }
-      if (e.type==="pinchend") {
+      if (e.type === "pinchend") {
         this.scale = this.activeScale;
       }
       window.requestAnimationFrame(this.draw.bind(this));
