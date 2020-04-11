@@ -11,6 +11,7 @@ import Gesture from '@/components/main_gesture'
 import Toolbar from '@/components/toolbar'
 import ProfilePicture from '@/components/profile_picture'
 import TimeLine from '@/components/timeline'
+import TestGeolocator from '@/components/test_geolocator'
 
 Vue.use(Router)
 
@@ -66,14 +67,19 @@ let router = new Router({
     {
       path:'/profile_picture',
       name:'Propic',
-      component:ProfilePicture 
+      component:ProfilePicture
     },
     //==========test================
     {
       path: '/timeline',
       name: 'feef',
       component: TimeLine
-    }
+    },
+    {
+      path: '/test_geolocator',
+      name: 'Test Geolocator',
+      component: TestGeolocator
+    },
     //=======end test===============
   ]
 })

@@ -19,8 +19,7 @@ import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import Camera from "@/components/camera";
 export default {
   name: "AR_view",
-  data() {
-    return {
+  data: () => ({
       camera: null,
       scene: null,
       axesHelper: null,
@@ -33,8 +32,7 @@ export default {
       started: false,
       videoWidth: 0,
       videoHeight: 0,
-    };
-  },
+  }),
   methods: {
     onCameraReady(videoWidth, videoHeight) {
       this.videoWidth = videoWidth;
