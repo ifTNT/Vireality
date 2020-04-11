@@ -11,6 +11,7 @@ import Gesture from '@/components/main_gesture'
 import Toolbar from '@/components/toolbar'
 import ProfilePicture from '@/components/profile_picture'
 import TimeLine from '@/components/timeline'
+import FriendListAround from '@/components/friend_list_around'
 
 Vue.use(Router)
 
@@ -73,6 +74,10 @@ let router = new Router({
       path: '/timeline',
       name: 'feef',
       component: TimeLine
+    },{
+      path: '/friend_list',
+      name: 'feef',
+      component: FriendListAround
     }
     //=======end test===============
   ]
