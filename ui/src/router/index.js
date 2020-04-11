@@ -12,6 +12,7 @@ import Toolbar from '@/components/toolbar'
 import ProfilePicture from '@/components/profile_picture'
 import TimeLine from '@/components/timeline'
 import TestGeolocator from '@/components/test_geolocator'
+import FriendListAround from '@/components/friend_list_around'
 
 Vue.use(Router)
 
@@ -80,6 +81,11 @@ let router = new Router({
       name: 'Test Geolocator',
       component: TestGeolocator
     },
+    {
+      path: '/friend_list',
+      name: 'feef',
+      component: FriendListAround
+    }
     //=======end test===============
   ]
 })

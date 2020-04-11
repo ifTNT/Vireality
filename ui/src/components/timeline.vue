@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="wrap">
     <div class="month">
       <transition-group name="list-complete" tag="p" class="monthList">
         <span v-for="item in items" v-bind:key="item" class="list-complete-item">{{ item }}</span>
@@ -283,6 +283,9 @@ export default {
 </script>
 
 <style scoped lang="stylus">
+.wrap{
+  z-index 100
+}
 .line {
   box-sizing: border-box;
   border-bottom: solid 2px;
