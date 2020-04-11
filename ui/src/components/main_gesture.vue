@@ -17,39 +17,59 @@ export default {
         var testElement = this.$refs.testElement;
         var manager = new Hammer.Manager(testElement);
         //點擊展開文章
-        var Tap = new Hammer.Tap({
+        var tap = new Hammer.Tap({
             taps:1
         });
-        manager.add(Tap);
+        manager.add(tap);
         manager.on('tap', (function(event){
             this.tapped = !this.tapped;
         }).bind(this));
         //
         //上滑發文
-        var Swipeup = new Hammer.Swipe({
+        var swipeUp = new Hammer.Swipe({
             direction: Hammer.DIRECTION_UP
         });
-        manager.add(Swipeup);
+        manager.add(swipeUp);
         manager.on('swipeup', (function(event){
             this.swiped = !this.swiped;
         }).bind(this));
         //
         //左右滑動跳出時間軸
-        var Panleft = new Hammer.Pan({
+        // var pan = new Hammer.Pan({
+        //     direction: Hammer.DIRECTION_ALL
+        // });
+        // manager.add(pan);
+        // manager.on('panleft panright', (function(event){
+        //     this.panned = !this.panned;
+        // }).bind(this));
+        var panLeft = new Hammer.Pan({
             direction: Hammer.DIRECTION_LEFT
         });
-        manager.add(Panleft);
+        manager.add(panLeft);
         manager.on('panleft', (function(event){
             this.panned = !this.panned;
         }).bind(this));
 
-        var Panright = new Hammer.Pan({
+        var panRight = new Hammer.Pan({
             direction: Hammer.DIRECTION_RIGHT
         });
-        manager.add(Panright);
+        manager.add(panRight);
         manager.on('panright', (function(event){
             this.panned = !this.panned;
         }).bind(this));
+        //縮小手勢將文章聚合
+        var pinch = new Hammer.Pinch({
+            direction: Hammer.DIRECTION_ALL
+        });
+        manager.add(pinch)
+        manager.on('pinchin', (function(event){
+
+        }));
+        //
+        //放大手勢散開文章
+        manager.on('pinchout', (function(event){
+
+        }));
         //
     },
 };
