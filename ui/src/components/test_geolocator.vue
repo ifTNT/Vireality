@@ -17,6 +17,7 @@
       Compare to Init: ({{ (rawX - initX).toFixed(5) }},{{
           (rawY - initY).toFixed(5)
         }})
+      Speed: {{speed.norm}} m/s, Heading: {{speed.heading}}
       Timestamp: {{ timestamp() }}
       History Count: {{ cnt }}
       </pre>
@@ -67,6 +68,22 @@ export default {
     },
     totalDeltaY: function() {
       return this.deltaY + this.activeDeltaY;
+    },
+    speed: function(){
+      if(this.cnt<2){
+        return {
+          norm: 0,
+          heading: 0
+        }
+      }
+      let speed = {
+        x: this.history[this.cnt-1].x - this.history[this.cnt-2].x,
+        y: this.history[this.cnt-1].y - this.history[this.cnt-2].y
+      }
+      return {
+        norm: Math.sqrt(speed.x*speed.x+speed.y*speed.y).toFixed(5),
+        heading: (180/Math.PI*Math.atan(-speed.y/speed.x)).toFixed(5)
+      };
     }
   },
   mounted() {

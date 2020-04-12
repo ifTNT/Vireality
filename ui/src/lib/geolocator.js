@@ -99,6 +99,11 @@ export default class Geolocator {
   // Estimation: Accelerometer
   _updateCurrentPositionKalman(pos) {
     
+    // If variance of accelerometer is too large,
+    // switch to estimate via constant speed 
+    const untrustThreshold = 100;
+    const estimateSpeed = 3; // m/s
+
     // The standard deviation of this mesurement
     // Accuracy is a confidence interval with 95% confidence level
     // i.e. accuracy = 4*(Standard Deviation)
@@ -138,12 +143,19 @@ export default class Geolocator {
         y: y + relativePosEstimation.y,
       };
       
-      let diff_time = pos.timestamp - timestamp;
+      let diff_time = (pos.timestamp - timestamp)/1000;
       let estimate_var = variance;
       if (diff_time > 0) {
         // time has moved on, so the uncertainty in the current position increases
         let estimate_sd = relativePosEstimation.accuracy;
-        estimate_var += diff_time * estimate_sd * estimate_sd;
+        if(estimate_var + diff_time * estimate_sd * estimate_sd <= untrustThreshold){
+          estimate_var += diff_time * estimate_sd * estimate_sd;
+        }else{
+          // Switch to use constant speed estimation
+          estimate_var += diff_time * estimateSpeed * estimateSpeed;
+          // Restore previous estimation
+          estimatePos = {x,y};
+        }
         timestamp = pos.timestamp;
       }
       estimatePos.var = estimate_var;
