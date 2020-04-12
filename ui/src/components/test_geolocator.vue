@@ -5,22 +5,26 @@
       <h1>
         Debugger:
         <div class="btn" v-on:click="clearHistory">Clear History</div>
+        <div class="btn" v-if="lockLast" v-on:click="lockLast = !lockLast">
+          Panning mode
+        </div>
+        <div class="btn" v-if="!lockLast" v-on:click="lockLast = !lockLast">
+          Lock last point
+        </div>
       </h1>
       <br />
       <pre>
-      1 grid = {{(1/this.activeScale).toFixed(2)}} m
+      1 grid = {{ (gridSize / activeScale).toFixed(2) }} m
       Kalman Gain: {{ K.toFixed(5) }}
       Varience of Estimate:   {{ estimatePos.var.toFixed(5) }}
       Varience of Measurment: {{ measurePos.var.toFixed(5) }}
       Estimate: ({{ estimatePos.x.toFixed(5) }}, {{ estimatePos.y.toFixed(5) }})
       Measured: ({{ measurePos.x.toFixed(5) }}, {{ measurePos.y.toFixed(5) }})
       Filtered: ({{ rawX.toFixed(5) }}, {{ rawY.toFixed(5) }})
-      Compare to Init: ({{ (rawX - initX).toFixed(5) }},{{
-          (rawY - initY).toFixed(5)
-        }})
-      Speed: {{speed.norm}} m/s, Heading: {{speed.heading}}
+      Speed: {{ speed.norm }} m/s, Heading: {{ speed.heading }}
       Timestamp: {{ timestamp() }}
       History Count: {{ cnt }}
+      Display Offset: ({{this.deltaX}},{{this.deltaY}}) 
       </pre>
       <!-- <ul>
          <li v-for="(item, index) in history">
@@ -49,41 +53,36 @@ export default {
     measurePos: { x: 0, y: 0, var: 0 },
     K: 0,
     accuracy: -1,
-    initX: 0,
-    initY: 0,
     deltaX: 0,
     deltaY: 0,
-    activeDeltaX: 0,
-    activeDeltaY: 0,
+    lastCenterX: 0,
+    lastCenterY: 0,
     history: [],
     gridSize: 10, // pixels
-    scale: 1,
-    activeScale: 1
+    scale: 10, //1m = 10px
+    activeScale: 10,
+    centerX: 0, //The center coordinate of canvas
+    centerY: 0,
+    lockLast: true
   }),
   computed: {
     cnt: function() {
       return this.history.length;
     },
-    totalDeltaX: function() {
-      return this.deltaX + this.activeDeltaX;
-    },
-    totalDeltaY: function() {
-      return this.deltaY + this.activeDeltaY;
-    },
-    speed: function(){
-      if(this.cnt<2){
+    speed: function() {
+      if (this.cnt < 2) {
         return {
           norm: 0,
           heading: NaN
-        }
+        };
       }
       let speed = {
-        x: this.history[this.cnt-1].x - this.history[this.cnt-2].x,
-        y: this.history[this.cnt-1].y - this.history[this.cnt-2].y
-      }
+        x: this.history[this.cnt - 1].x - this.history[this.cnt - 2].x,
+        y: this.history[this.cnt - 1].y - this.history[this.cnt - 2].y
+      };
       return {
-        norm: Math.sqrt(speed.x*speed.x+speed.y*speed.y).toFixed(5),
-        heading: (180/Math.PI*Math.atan(-speed.y/speed.x)).toFixed(5)
+        norm: Math.sqrt(speed.x * speed.x + speed.y * speed.y).toFixed(5),
+        heading: ((180 / Math.PI) * Math.atan(-speed.y / speed.x)).toFixed(5)
       };
     }
   },
@@ -110,26 +109,35 @@ export default {
       this.rawX = pos.x;
       this.rawY = pos.y;
       this.accuracy = pos.accuracy;
-      if (this.cnt == 0) {
-        this.initX = this.rawX;
-        this.initY = this.rawY;
-      }
-      let x = this.rawX - this.initX;
-      let y = -(this.rawY - this.initY); //Invert Y-axis
 
       // Push new point and draw
-      this.history.push({ x, y });
+      this.history.push({ x: pos.x, y: pos.y });
+
+      //Move center to last point in lock mode
+      if (this.lockLast) {
+        this.centerX = this.rawX;
+        this.centerY = this.rawY;
+        this.lastCenterX = this.rawX;
+        this.lastCenterY = this.rawY;
+      }
       this.draw();
     },
     onCanvasPan(e) {
+      //Disable panning when in lock mode
+      if (this.lockLast) {
+        this.deltaX = 0;
+        this.deltaY = 0;
+        return;
+      }
+
       if (e.type === "panend") {
-        this.deltaX += e.deltaX;
-        this.deltaY += e.deltaY;
-        this.activeDeltaX = 0;
-        this.activeDeltaY = 0;
+        this.deltaX += e.deltaX/this.activeScale;
+        this.deltaY -= e.deltaY/this.activeScale;
+        this.centerX = this.lastCenterX - this.deltaX;
+        this.centerY = this.lastCenterY - this.deltaY;
       } else {
-        this.activeDeltaX = e.deltaX;
-        this.activeDeltaY = e.deltaY;
+        this.centerX = this.lastCenterX - (this.deltaX+e.deltaX/this.activeScale);
+        this.centerY = this.lastCenterY - (this.deltaY-e.deltaY/this.activeScale);
       }
 
       window.requestAnimationFrame(this.draw.bind(this));
@@ -155,7 +163,7 @@ export default {
       this.ctx.beginPath();
       //Verticle
       for (
-        let i = this.totalDeltaX % this.gridSize;
+        let i = (this.centerX*this.gridSize*this.activeScale) % this.gridSize;
         i < window.innerWidth;
         i += this.gridSize
       ) {
@@ -164,7 +172,7 @@ export default {
       }
       //Horizontal
       for (
-        let i = this.totalDeltaY % this.gridSize * this.activeScale;
+        let i = (this.centerY*this.gridSize*this.activeScale) % this.gridSize;
         i < window.innerHeight;
         i += this.gridSize
       ) {
@@ -176,12 +184,10 @@ export default {
 
       this.ctx.translate(window.innerWidth / 2, window.innerHeight / 2);
 
-      //Draw history point(1grid = 1m)
+      //Draw history point(default 1 grid = 1 m)
       for (let [index, point] of this.history.entries()) {
-        let newX =
-          point.x * this.gridSize * this.activeScale + this.totalDeltaX;
-        let newY =
-          point.y * this.gridSize * this.activeScale + this.totalDeltaY;
+        let newX = (point.x - this.centerX) *  this.activeScale;
+        let newY = -(point.y - this.centerY) * this.activeScale;
         //Use different color to indicate the age of point.
         this.ctx.fillStyle = `hsl(0,${((index + 1) / this.history.length) *
           100}%,50%)`;

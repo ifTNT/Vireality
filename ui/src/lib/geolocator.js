@@ -30,12 +30,11 @@ export default class Geolocator {
   watchPosition(callback) {
     this.posUpdateCB = callback;
   }
-  
+
   watchDebug(callback) {
     this.debug = true;
     this.posUpdateCB = callback;
   }
-
 
   getPosition(callback) {
     if (this.ready === false) {
@@ -98,9 +97,8 @@ export default class Geolocator {
   // Measurement: GPS
   // Estimation: Accelerometer
   _updateCurrentPositionKalman(pos) {
-    
     // If variance of accelerometer is too large,
-    // switch to estimate via constant speed 
+    // switch to estimate via constant speed
     const untrustThreshold = 100;
     const estimateSpeed = 3; // m/s
 
@@ -108,8 +106,8 @@ export default class Geolocator {
     // Accuracy is a confidence interval with 95% confidence level
     // i.e. accuracy = 4*(Standard Deviation)
     let measure_sd = pos.coords.accuracy / 4;
-    let measure_var = measure_sd*measure_sd;
-    
+    let measure_var = measure_sd * measure_sd;
+
     //Read previous estimatation
     let {
       timestamp,
@@ -119,11 +117,11 @@ export default class Geolocator {
       x,
       y
     } = this.currentPosition;
-    
+
     let measurePos = this._convertGeolocation(pos.coords);
     measurePos.var = measure_var;
-    let estimatePos = {x: measurePos.x, y: measurePos.y};
-    
+    let estimatePos = { x: measurePos.x, y: measurePos.y, var: measurePos.var };
+
     if (this.ready === false) {
       // If object is unitialised,initialise with current values
       timestamp = pos.timestamp;
@@ -135,26 +133,29 @@ export default class Geolocator {
       this.ready = true;
     } else {
       // else apply Kalman filter methodology
-      
+
       // Get the position estimation from accelerometer
       let relativePosEstimation = this.speedSensor.readPosition();
       estimatePos = {
         x: x + relativePosEstimation.x,
-        y: y + relativePosEstimation.y,
+        y: y + relativePosEstimation.y
       };
-      
-      let diff_time = (pos.timestamp - timestamp)/1000;
+
+      let diff_time = (pos.timestamp - timestamp) / 1000;
       let estimate_var = variance;
       if (diff_time > 0) {
         // time has moved on, so the uncertainty in the current position increases
         let estimate_sd = relativePosEstimation.accuracy;
-        if(estimate_var + diff_time * estimate_sd * estimate_sd <= untrustThreshold){
+        if (
+          estimate_var + diff_time * estimate_sd * estimate_sd <=
+          untrustThreshold
+        ) {
           estimate_var += diff_time * estimate_sd * estimate_sd;
-        }else{
+        } else {
           // Switch to use constant speed estimation
           estimate_var += diff_time * estimateSpeed * estimateSpeed;
           // Restore previous estimation
-          estimatePos = {x,y};
+          estimatePos = { x, y };
         }
         timestamp = pos.timestamp;
       }
@@ -168,10 +169,12 @@ export default class Geolocator {
         this.speedFromGPS = {
           x:
             pos.coords.speed *
-            Math.cos(Math.PI*5/2 - this.radians(pos.coords.heading)),
+            Math.cos((Math.PI * 5) / 2 - this.radians(pos.coords.heading)),
           y:
             pos.coords.speed *
-            Math.sin(Math.PI*5/2 - this.radians(pos.coords.heading)-Math.PI/2)
+            Math.sin(
+              (Math.PI * 5) / 2 - this.radians(pos.coords.heading) - Math.PI / 2
+            )
         };
       }
       this.speedSensor.reset(this.speedFromGPS);
@@ -196,9 +199,9 @@ export default class Geolocator {
     };
 
     let accuracy = Math.sqrt(variance);
-    if(!this.debug){
+    if (!this.debug) {
       this.posUpdateCB({ x, y, accuracy });
-    }else{
+    } else {
       this.posUpdateCB({ x, y, accuracy, estimatePos, measurePos, K });
     }
   }
@@ -226,7 +229,7 @@ export default class Geolocator {
     //North -> y+
     //East -> x+
     let x = r * longitude * Math.cos(baseLatitude) * scaleFactor;
-    let y = r * (latitude-baseLatitude) * scaleFactor;
+    let y = r * (latitude - baseLatitude) * scaleFactor;
 
     return { x, y };
   }
