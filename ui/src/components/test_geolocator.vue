@@ -63,7 +63,8 @@ export default {
     activeScale: 10,
     centerX: 0, //The center coordinate of canvas
     centerY: 0,
-    lockLast: true
+    lockLast: true,
+    isZooming: false
   }),
   computed: {
     cnt: function() {
@@ -130,6 +131,9 @@ export default {
         return;
       }
 
+      //Prevent panning from zooming
+      if(this.isZooming) return;
+
       if (e.type === "panend") {
         this.deltaX += e.deltaX/this.activeScale;
         this.deltaY -= e.deltaY/this.activeScale;
@@ -144,8 +148,12 @@ export default {
     },
     onCanvasZoom(e) {
       this.activeScale = this.scale * e.scale;
+      this.isZooming = true;
       if (e.type === "pinchend") {
         this.scale = this.activeScale;
+
+        //Debounce to prevent pan after zooming
+        setTimeout(()=>{this.isZooming = false;}, 100);
       }
       window.requestAnimationFrame(this.draw.bind(this));
     },
@@ -163,7 +171,7 @@ export default {
       this.ctx.beginPath();
       //Verticle
       for (
-        let i = (this.centerX*this.gridSize*this.activeScale) % this.gridSize;
+        let i = -(this.centerX*this.activeScale) % this.gridSize;
         i < window.innerWidth;
         i += this.gridSize
       ) {
@@ -172,7 +180,7 @@ export default {
       }
       //Horizontal
       for (
-        let i = (this.centerY*this.gridSize*this.activeScale) % this.gridSize;
+        let i = -(-this.centerY*this.activeScale) % this.gridSize;
         i < window.innerHeight;
         i += this.gridSize
       ) {
