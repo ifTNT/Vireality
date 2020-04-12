@@ -3,11 +3,12 @@
     <canvas ref="canvas"></canvas>
     <div class="debug" ref="debug">
       <h1>
-        Debugger: (grid = 1m)
+        Debugger:
         <div class="btn" v-on:click="clearHistory">Clear History</div>
       </h1>
       <br />
       <pre>
+      1 grid = {{(1/this.activeScale).toFixed(2)}} m
       Kalman Gain: {{ K.toFixed(5) }}
       Varience of Estimate:   {{ estimatePos.var.toFixed(5) }}
       Varience of Measurment: {{ measurePos.var.toFixed(5) }}
@@ -73,7 +74,7 @@ export default {
       if(this.cnt<2){
         return {
           norm: 0,
-          heading: 0
+          heading: NaN
         }
       }
       let speed = {
@@ -93,7 +94,6 @@ export default {
     this.$refs.canvas.width = window.innerWidth;
     this.$refs.canvas.height = window.innerHeight;
     this.ctx = this.$refs.canvas.getContext("2d");
-    this.ctx.fillStyle = "red";
 
     let gesture = new Hammer(this.$refs.canvas);
     gesture.get("pan").set({ direction: Hammer.DIRECTION_ALL });
@@ -135,13 +135,7 @@ export default {
       window.requestAnimationFrame(this.draw.bind(this));
     },
     onCanvasZoom(e) {
-      let minimalGrid = 10;
       this.activeScale = this.scale * e.scale;
-      if (this.gridSize * this.activeScale < minimalGrid) {
-        this.activeScale = minimalGrid / this.gridSize;
-      } else if (this.gridSize * this.activeScale > window.innerWidth / 2) {
-        this.activeScale = window.innerWidth / 2 / this.gridSize;
-      }
       if (e.type === "pinchend") {
         this.scale = this.activeScale;
       }
@@ -161,18 +155,18 @@ export default {
       this.ctx.beginPath();
       //Verticle
       for (
-        let i = this.totalDeltaX % (this.gridSize * this.activeScale);
+        let i = this.totalDeltaX % this.gridSize;
         i < window.innerWidth;
-        i += this.gridSize * this.activeScale
+        i += this.gridSize
       ) {
         this.ctx.moveTo(i, 0);
         this.ctx.lineTo(i, window.innerHeight);
       }
       //Horizontal
       for (
-        let i = this.totalDeltaY % (this.gridSize * this.activeScale);
+        let i = this.totalDeltaY % this.gridSize * this.activeScale;
         i < window.innerHeight;
-        i += this.gridSize * this.activeScale
+        i += this.gridSize
       ) {
         this.ctx.moveTo(0, i);
         this.ctx.lineTo(window.innerWidth, i);
