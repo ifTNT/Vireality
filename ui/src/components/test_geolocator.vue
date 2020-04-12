@@ -23,7 +23,6 @@
       Speed: {{ speed.norm }} m/s, Heading: {{ speed.heading }}
       Timestamp: {{ timestamp() }}
       History Count: {{ cnt }}
-      Display Offset: ({{ this.deltaX }},{{ this.deltaY }}) 
       </pre>
       <!-- <ul>
          <li v-for="(item, index) in history">
