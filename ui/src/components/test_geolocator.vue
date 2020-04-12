@@ -3,7 +3,7 @@
     <canvas ref="canvas"></canvas>
     <div class="debug" ref="debug">
       <h1>
-        Debugger:
+        <div v-on:click="showInfo = !showInfo">Debugger:</div>
         <div class="btn" v-on:click="clearHistory">Clear History</div>
         <div class="btn" v-if="lockLast" v-on:click="lockLast = !lockLast">
           Panning mode
@@ -12,19 +12,18 @@
           Lock last point
         </div>
       </h1>
-      <br />
-      <pre>
+      <pre v-if="showInfo">
       1 grid = {{ (gridSize / activeScale).toFixed(2) }} m
       Kalman Gain: {{ K.toFixed(5) }}
-      Varience of Estimate:   {{ estimatePos.var.toFixed(5) }}
-      Varience of Measurment: {{ measurePos.var.toFixed(5) }}
+      Varience of Estimate:   {{ /*estimatePos.var.toFixed(5)*/ }}
+      Varience of Measurment: {{ /*measurePos.var.toFixed(5)*/ }}
       Estimate: ({{ estimatePos.x.toFixed(5) }}, {{ estimatePos.y.toFixed(5) }})
       Measured: ({{ measurePos.x.toFixed(5) }}, {{ measurePos.y.toFixed(5) }})
       Filtered: ({{ rawX.toFixed(5) }}, {{ rawY.toFixed(5) }})
       Speed: {{ speed.norm }} m/s, Heading: {{ speed.heading }}
       Timestamp: {{ timestamp() }}
       History Count: {{ cnt }}
-      Display Offset: ({{this.deltaX}},{{this.deltaY}}) 
+      Display Offset: ({{ this.deltaX }},{{ this.deltaY }}) 
       </pre>
       <!-- <ul>
          <li v-for="(item, index) in history">
@@ -64,7 +63,8 @@ export default {
     centerX: 0, //The center coordinate of canvas
     centerY: 0,
     lockLast: true,
-    isZooming: false
+    isZooming: false,
+    showInfo: true
   }),
   computed: {
     cnt: function() {
@@ -132,16 +132,18 @@ export default {
       }
 
       //Prevent panning from zooming
-      if(this.isZooming) return;
+      if (this.isZooming) return;
 
       if (e.type === "panend") {
-        this.deltaX += e.deltaX/this.activeScale;
-        this.deltaY -= e.deltaY/this.activeScale;
+        this.deltaX += e.deltaX / this.activeScale;
+        this.deltaY -= e.deltaY / this.activeScale;
         this.centerX = this.lastCenterX - this.deltaX;
         this.centerY = this.lastCenterY - this.deltaY;
       } else {
-        this.centerX = this.lastCenterX - (this.deltaX+e.deltaX/this.activeScale);
-        this.centerY = this.lastCenterY - (this.deltaY-e.deltaY/this.activeScale);
+        this.centerX =
+          this.lastCenterX - (this.deltaX + e.deltaX / this.activeScale);
+        this.centerY =
+          this.lastCenterY - (this.deltaY - e.deltaY / this.activeScale);
       }
 
       window.requestAnimationFrame(this.draw.bind(this));
@@ -153,7 +155,9 @@ export default {
         this.scale = this.activeScale;
 
         //Debounce to prevent pan after zooming
-        setTimeout(()=>{this.isZooming = false;}, 100);
+        setTimeout(() => {
+          this.isZooming = false;
+        }, 100);
       }
       window.requestAnimationFrame(this.draw.bind(this));
     },
@@ -171,7 +175,7 @@ export default {
       this.ctx.beginPath();
       //Verticle
       for (
-        let i = -(this.centerX*this.activeScale) % this.gridSize;
+        let i = -(this.centerX * this.activeScale) % this.gridSize;
         i < window.innerWidth;
         i += this.gridSize
       ) {
@@ -180,7 +184,7 @@ export default {
       }
       //Horizontal
       for (
-        let i = -(-this.centerY*this.activeScale) % this.gridSize;
+        let i = -(-this.centerY * this.activeScale) % this.gridSize;
         i < window.innerHeight;
         i += this.gridSize
       ) {
@@ -194,7 +198,7 @@ export default {
 
       //Draw history point(default 1 grid = 1 m)
       for (let [index, point] of this.history.entries()) {
-        let newX = (point.x - this.centerX) *  this.activeScale;
+        let newX = (point.x - this.centerX) * this.activeScale;
         let newY = -(point.y - this.centerY) * this.activeScale;
         //Use different color to indicate the age of point.
         this.ctx.fillStyle = `hsl(0,${((index + 1) / this.history.length) *

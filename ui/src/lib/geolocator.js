@@ -122,6 +122,9 @@ export default class Geolocator {
     measurePos.var = measure_var;
     let estimatePos = { x: measurePos.x, y: measurePos.y, var: measurePos.var };
 
+    //Kalman Gain
+    let K = NaN;
+
     if (this.ready === false) {
       // If object is unitialised,initialise with current values
       timestamp = pos.timestamp;
@@ -181,7 +184,7 @@ export default class Geolocator {
 
       // Kalman gain matrix K = Covarariance * Inverse(Covariance + MeasurementVariance)
       // NB: because K is dimensionless, it doesn't matter that variance has different units to lat and lng
-      var K = estimate_var / (estimate_var + measure_var);
+      K = estimate_var / (estimate_var + measure_var);
       // apply K
       x += K * (measurePos.x - estimatePos.x);
       y += K * (measurePos.y - estimatePos.y);
