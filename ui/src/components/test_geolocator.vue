@@ -15,8 +15,8 @@
       <pre v-if="showInfo">
       1 grid = {{ (gridSize / activeScale).toFixed(2) }} m
       Kalman Gain: {{ K.toFixed(5) }}
-      Varience of Estimate:   {{ /*estimatePos.var.toFixed(5)*/ }}
-      Varience of Measurment: {{ /*measurePos.var.toFixed(5)*/ }}
+      Varience of Estimate:   {{ estimatePos.var.toFixed(5) }}
+      Varience of Measurment: {{ measurePos.var.toFixed(5) }}
       Estimate: ({{ estimatePos.x.toFixed(5) }}, {{ estimatePos.y.toFixed(5) }})
       Measured: ({{ measurePos.x.toFixed(5) }}, {{ measurePos.y.toFixed(5) }})
       Filtered: ({{ rawX.toFixed(5) }}, {{ rawY.toFixed(5) }})
