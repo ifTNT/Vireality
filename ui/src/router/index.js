@@ -87,11 +87,6 @@ let router = new Router({
       name: 'Test Geolocator',
       component: TestGeolocator
     },
-    {
-      path: '/friend_list',
-      name: 'feef',
-      component: FriendListAround
-    }
     //=======end test===============
   ]
 })
