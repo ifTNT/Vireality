@@ -9,7 +9,7 @@
       <div class="articleHeader">
         <nav class="articleAuthor">
           <!-- 前者是要丟給child(profile_picture) props的參數名稱 後者是在parent(article) data區域之參數名稱 -->
-           <proPic  :diameter="parentDiameter"></proPic>
+           <proPic  :diameter="parentDiameter" :Id="a123"></proPic>
           <p>{{ autherName }}</p>
         </nav>
         <nav class="articleTime"></nav>
