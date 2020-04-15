@@ -19,15 +19,20 @@ export default class Geolocator {
       y: NaN,
       longitude: NaN,
       latitude: NaN,
-      accuracy: NaN,
       variance: NaN,
       timestamp: NaN
     };
     this.speedFromGPS = { x: 0, y: 0 };
     this.ready = false; //Whether the currentPosition is valid
+    this.debug = false; //Flag for debugging
   }
 
   watchPosition(callback) {
+    this.posUpdateCB = callback;
+  }
+
+  watchDebug(callback) {
+    this.debug = true;
     this.posUpdateCB = callback;
   }
 
@@ -88,11 +93,21 @@ export default class Geolocator {
   //   this.posUpdateCB({ x, y, accuracy });
   // }
 
+  // The Kalman Filter to reduce the error of raw GPS data.
+  // Measurement: GPS
+  // Estimation: Accelerometer
   _updateCurrentPositionKalman(pos) {
-    const minAccuracy = 1;
-    //let Q_metres_per_second = this.speedSensor.readSpeed().norm; //Adjuest this value by speed
-    //let Q_metres_per_second = 10; //Adjuest this value by speed
-    let accuracy = pos.coords.accuracy; //The uncertainty of this mesurement
+    // If variance of accelerometer is too large,
+    // switch to estimate via constant speed
+    const untrustThreshold = 100;
+    const estimateSpeed = 3; // m/s
+
+    // The standard deviation of this mesurement
+    // Accuracy is a confidence interval with 95% confidence level
+    // i.e. accuracy = 4*(Standard Deviation)
+    let measure_sd = pos.coords.accuracy / 4;
+    let measure_var = measure_sd * measure_sd;
+
     //Read previous estimatation
     let {
       timestamp,
@@ -102,75 +117,96 @@ export default class Geolocator {
       x,
       y
     } = this.currentPosition;
-    let xy_measure = this._convertGeolocation(pos.coords);
-    if (accuracy < minAccuracy) {
-      //Cut off the accuracy
-      accuracy = minAccuracy;
-    }
+
+    let measurePos = this._convertGeolocation(pos.coords);
+    measurePos.var = measure_var;
+    let estimatePos = { x: measurePos.x, y: measurePos.y, var: measurePos.var };
+
+    //Kalman Gain
+    let K = NaN;
+
     if (this.ready === false) {
       // If object is unitialised,initialise with current values
       timestamp = pos.timestamp;
       latitude = pos.coords.latitude;
       longitude = pos.coords.longitude;
-      variance = accuracy * accuracy;
-      x = xy_measure.x;
-      y = xy_measure.y;
+      variance = measure_var;
+      x = measurePos.x;
+      y = measurePos.y;
       this.ready = true;
     } else {
       // else apply Kalman filter methodology
-      let diff_time = pos.timestamp - timestamp;
+
+      // Get the position estimation from accelerometer
+      let relativePosEstimation = this.speedSensor.readPosition();
+      estimatePos = {
+        x: x + relativePosEstimation.x,
+        y: y + relativePosEstimation.y
+      };
+
+      let diff_time = (pos.timestamp - timestamp) / 1000;
+      let estimate_var = variance;
       if (diff_time > 0) {
         // time has moved on, so the uncertainty in the current position increases
-        let sensorPosAccuracy = this.speedSensor.readPosition().accuracy;
-        variance += sensorPosAccuracy * sensorPosAccuracy;
-        //  (diff_time * Q_metres_per_second * Q_metres_per_second) / 1000;
+        let estimate_sd = relativePosEstimation.accuracy;
+        if (
+          estimate_var + diff_time * estimate_sd * estimate_sd <=
+          untrustThreshold
+        ) {
+          estimate_var += diff_time * estimate_sd * estimate_sd;
+        } else {
+          // Switch to use constant speed estimation
+          estimate_var += diff_time * estimateSpeed * estimateSpeed;
+          // Restore previous estimation
+          estimatePos = { x, y };
+        }
         timestamp = pos.timestamp;
       }
-      //TODO: Use covararience instead of varaience
+      estimatePos.var = estimate_var;
 
-      let posBySensor = this.speedSensor.readPosition();
+      // Correct the speed estimation of accelerometer with measured value.
+      // Heading is the direction of movement in degree and clockwise.
+      // 0deg means toward north.
+      // 450deg-heading to convert it into normalized plane.(east->x+, north->y+)
       if (pos.coords.speed !== null && pos.coords.heading !== null) {
         this.speedFromGPS = {
           x:
             pos.coords.speed *
-            Math.cos(this.radians(pos.coords.heading) + Math.PI / 2),
+            Math.cos((Math.PI * 5) / 2 - this.radians(pos.coords.heading)),
           y:
             pos.coords.speed *
-            Math.sin(this.radians(pos.coords.heading) + Math.PI / 2)
+            Math.sin(
+              (Math.PI * 5) / 2 - this.radians(pos.coords.heading) - Math.PI / 2
+            )
         };
       }
       this.speedSensor.reset(this.speedFromGPS);
 
       // Kalman gain matrix K = Covarariance * Inverse(Covariance + MeasurementVariance)
       // NB: because K is dimensionless, it doesn't matter that variance has different units to lat and lng
-      let K = variance / (variance + accuracy * accuracy);
+      K = estimate_var / (estimate_var + measure_var);
       // apply K
-      //longitude += K * (pos.coords.longitude - longitude);
-      //latitude += K * (pos.coords.latitude - latitude);
-      let xy_estimate = {
-        x: x + posBySensor.x,
-        y: y + posBySensor.y
-      };
-      x += K * (xy_measure.x - xy_estimate.x);
-      y += K * (xy_measure.y - xy_estimate.y);
+      x += K * (measurePos.x - estimatePos.x);
+      y += K * (measurePos.y - estimatePos.y);
       // new Covarariance  matrix is (IdentityMatrix - K) * Covarariance
-      variance = (1 - K) * variance;
-      //let estimate_xy = this._convertGeolocationTWD97({ longitude, latitude });
-      //x = estimate_xy.x;
-      //y = estimate_xy.y;
+      variance = (1 - K) * estimate_var;
     }
     //Write back estimation
-    accuracy = Math.sqrt(variance);
     this.currentPosition = {
       x,
       y,
       latitude,
       longitude,
-      accuracy,
       variance,
       timestamp
     };
-    this.posUpdateCB({ x, y, accuracy });
+
+    let accuracy = Math.sqrt(variance);
+    if (!this.debug) {
+      this.posUpdateCB({ x, y, accuracy });
+    } else {
+      this.posUpdateCB({ x, y, accuracy, estimatePos, measurePos, K });
+    }
   }
 
   _handleError(err) {
@@ -186,15 +222,17 @@ export default class Geolocator {
 
     let r = 6371000; //Radius of earth (m);
     let scaleFactor = 1;
-    let baseLatitude = 23.5;
+    let baseLatitude = this.radians(23.5);
 
     //Degree to radians
     longitude = this.radians(longitude);
     latitude = this.radians(latitude);
 
     //For small area, euqalrectangular projection is fine.
-    let y = -r * longitude * Math.cos(baseLatitude) * scaleFactor;
-    let x = r * latitude * scaleFactor;
+    //North -> y+
+    //East -> x+
+    let x = r * longitude * Math.cos(baseLatitude) * scaleFactor;
+    let y = r * (latitude - baseLatitude) * scaleFactor;
 
     return { x, y };
   }

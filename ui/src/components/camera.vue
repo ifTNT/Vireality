@@ -69,7 +69,6 @@ export default {
           let width = this.$refs.capture.videoWidth;
           let height = this.$refs.capture.videoHeight;
           this.cameraReady = true;
-          this.$emit("cameraReady", width, height);
           console.log(
             `[Face Detection] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
           );
@@ -93,7 +92,10 @@ export default {
             width: width * scale,
             height: height * scale
           };
+          console.log(`[Face Detection] Scaled Video Width: ${width*scale} Height: ${height*scale}`)
           //=============================================
+          
+          this.$emit("camera-ready", width*scale, height*scale);
           this.updatePico();
         },
         false

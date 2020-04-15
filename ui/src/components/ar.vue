@@ -6,8 +6,8 @@
       <div class="btn" ref="start" v-on:click="initAR" v-if="!started">
         Start
       </div>
-      <div class="btn" ref="add" v-on:click="addMarker" v-if="false && started">
-        Add Marker
+      <div class="btn" ref="add" v-on:click="addArticle" v-if="started">
+        Add GeoArticle
       </div>
     </div>
   </div>
@@ -19,8 +19,7 @@ import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import Camera from "@/components/camera";
 export default {
   name: "AR_view",
-  data() {
-    return {
+  data: () => ({
       camera: null,
       scene: null,
       axesHelper: null,
@@ -29,54 +28,61 @@ export default {
       controls: null,
       spriteMaterial: null,
       geolocator: null,
-      cameraHeight: 1.4, //Distance between camera and ground
-      cameraFoV: 67.35, //Average value for mobile
+      cameraHeight: 1.4, //Distance between camera and ground(m)
       started: false,
       videoWidth: 0,
       videoHeight: 0,
-    };
-  },
+  }),
   methods: {
     onCameraReady(videoWidth, videoHeight) {
       this.videoWidth = videoWidth;
       this.videoHeight = videoHeight;
-      console.log(this.videoWidth, videoHeight);
+      console.log(
+        `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
+      );
     },
     initAR: function () {
       this.started = true;
 
-      //==================Camera and Control=============================================
-      //                                                                                |
-      //This camera is expect to have the same FoV and height with the camera on device |
-      //The controller rotate camera accroding to device orientation                    |
-      //                                                                                |
-      //================================================================================|
+      //===============Camera and Control================
+      //                                                |
+      // This camera is expect to have the same FoV,    |
+      //  and the same height with the screen           |
+      // The controller rotate camera accroding         |
+      //  to device orientation                         |
+      //                                                |
+      //=================================================
 
-      //If the video had been croped, adjuest FoV
-      if (this.videoHeight > window.innerHeight) {
-        //How much video had been croped
-        let scaleFactor = window.innerHeight / this.videoHeight;
+      // Because the video may had been cropped,
+      // calculating new FoV is needed.
 
-        //Full-frame CCD (36mm)
-        let referenceCCDSize = 36;
+      // Three.js only sets the vertical FoV.
+      // How much video had been croped in height.
+      let scale = window.innerHeight / this.videoHeight;
 
-        //27mm is the average equivalent focal length on mobile phone
-        let referenceFocalLength = 27;
+      // Full-frame CCD (36mm)
+      let refCCDSize = 36;
 
-        //Calculate the new FoV by the definition.
-        this.cameraFoV =
-          (180 / Math.PI) *
-          2 *
-          Math.atan(
-            ((referenceCCDSize / 2) * scaleFactor) / referenceFocalLength
-          );
-      }
+      // 27mm is the average equivalent focal length
+      //  on mobile phone.
+      let refFocalLength = 27;
+
+      //Calculate the new FoV by the definition.
+      //The unit of the result is degree.
+      let cameraFoV =
+        (180 / Math.PI) *
+        2 * Math.atan(
+          ((refCCDSize / 2) * scale) / refFocalLength
+        );
+      console.log(
+        `[AR] FoV of Virtual Camera: ${this.cameraFoV}`
+      );
 
       //Make a camera that have equivlent FoV of device's camera
       this.camera = new THREE.PerspectiveCamera(
-        this.cameraFoV, //Calcualted FoV.
+        cameraFoV, //Calcualted FoV.
         window.innerWidth / window.innerHeight, //Aspect ratio
-        1, //Near plate
+        0.5, //Near plate
         1100 //Far plate
       );
 
@@ -88,57 +94,82 @@ export default {
 
       this.scene = new THREE.Scene();
 
-      //==================Virtual Ground Object===================
-      //                                                         |
-      //This object is a reference ground object while debugging |
-      //It's been placed at below the camera                     |
-      //                                                         |
-      //==========================================================
-      var groundGeometry = new THREE.BoxBufferGeometry(
-        1000,
-        1000,
-        0.001,
-        100,
-        100,
-        1
+      //=========Virtual Ground Object=============
+      //                                          |
+      // This object is a reference               |
+      //  ground object while debugging           |
+      // It's been placed right below the camera. |
+      //                                          |
+      //===========================================
+      let groundRange = 10; //The radius of ground.
+      let groundSegments = 64; //The triangles in circle.
+      var groundGeometry = new THREE.CircleBufferGeometry(
+        groundRange, // Raduis of the ground.
+        groundSegments // How much triangles contains in ground.
       );
       var groundMaterial = new THREE.MeshBasicMaterial({
-        color: 0xaaaaaa,
-        wireframe: true,
+        color: 0xaaaaaa, // The color of mesh.
+        wireframe: true, // Use wireframe for debugging.
       });
-      this.vground = new THREE.Mesh(groundGeometry, groundMaterial);
+      this.vground = new THREE.Mesh(
+        groundGeometry, groundMaterial
+      );
       this.vground.position.set(0, 0, 0);
+
+      // Generate grids of the ground
+      // The grid size is one meter.
+      for(let i=1; i<groundRange; i++){
+        let gridGeometry = new THREE.CircleBufferGeometry(
+          i, //Raduis of circle.
+          groundSegments //How much triangles in circle.
+        );
+        let grid = new THREE.Mesh(gridGeometry, groundMaterial);
+        
+        // Append the grid object to the ground object. 
+        this.vground.add(grid);
+        grid.position.set(0,0,0);
+      }
       this.scene.add(this.vground);
-      //================End Virtual Ground Object=================
+      //=========End Virtual Ground Object============
 
       //An axes helper
-      this.axesHelper = new THREE.AxesHelper(1);
+      this.axesHelper = new THREE.AxesHelper(0.1);
       this.axesHelper.position.set(0, 0, 0);
       this.scene.add(this.axesHelper);
 
       //Add markers to the scene
       const spriteMap = new THREE.TextureLoader().load(
-        "/static/media/placeholder.png"
+        //"/static/media/placeholder.png"
+        "/static/media/test_article.png"
       );
       this.spriteMaterial = new THREE.SpriteMaterial({
         map: spriteMap,
         color: 0xffffff,
       });
 
-      this.renderer = new THREE.WebGLRenderer({ canvas: this.$refs.arCanvas, antialias: true, alpha: true });
+      this.renderer = new THREE.WebGLRenderer({
+          canvas: this.$refs.arCanvas,
+          antialias: true,
+          alpha: true
+      });
       this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+      );
 
-      //
-
-      window.addEventListener("resize", this.onWindowResize, false);
       this.animate();
     },
     animate: function () {
       window.requestAnimationFrame(this.animate.bind(this));
       this.controls.update();
-      this.axesHelper.position.x = this.camera.position.x;
-      this.axesHelper.position.y = this.camera.position.y;
+
+      // Stick axes helper in front of camera
+      var vec = new THREE.Vector3( 0, 0, -1 );
+      vec.applyQuaternion( this.camera.quaternion );
+      vec.add(this.camera.position);
+      this.axesHelper.position.copy( vec );
+      
       if (this.vground !== null) {
         //Fix the position of vground relative to camera
         this.vground.position.x = this.camera.position.x;
@@ -146,19 +177,13 @@ export default {
       }
       this.renderer.render(this.scene, this.camera);
     },
-    addMarker: function () {
+    addArticle: function () {
       let { x, y } = this.camera.position;
-      let sprite = new THREE.Sprite(spriteMaterial);
-      sprite.position.set(x, y, 0);
-      sprite.scale.set(0.5, 0.5, 0.5);
+      let sprite = new THREE.Sprite(this.spriteMaterial);
+      sprite.center.set(0.5, 1)
+      sprite.position.set(x, y, 0.5);
+      sprite.scale.set(0.75, 0.75, 0.75);
       this.scene.add(sprite);
-    },
-    onWindowResize: function () {
-      //Camera aspect ratio
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-
-      renderer.setSize(window.innerWidth, window.innerHeight);
     },
   },
   components: {

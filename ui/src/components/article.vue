@@ -8,7 +8,8 @@
     <div class="articleBody">
       <div class="articleHeader">
         <nav class="articleAuthor">
-          <img src="https://fakeimg.pl/250x100/ff0000/" />
+          <!-- 前者是要丟給child(profile_picture) props的參數名稱 後者是在parent(article) data區域之參數名稱 -->
+           <proPic  :diameter="parentDiameter"></proPic>
           <p>{{ autherName }}</p>
         </nav>
         <nav class="articleTime"></nav>
@@ -65,17 +66,27 @@
   </div>
 </template>
 <script>
+import ProPic from './profile_picture.vue'
+
 export default {
   // name: "",
+
   data() {
     return {
       message: "",
       autherName: "Auther",
-      articleTexts: ""
+      articleTexts: "",
+      //parentDiameter是要丟給ProPic的直徑長度
+      parentDiameter:'2em'
     };
+  },
+  components:{
+    // 新增大頭照的components tag命名為proPic
+    proPic:ProPic
   },
   mounted() {
     this.articleImage(), this.articleText();
+
   },
   methods: {
     sendRespondMessage: function() {
@@ -228,7 +239,7 @@ header {
       flex-direction: row;
       justify-content: flex-start;
 
-      img {
+      proPic {
         display: inline-block;
         width: 2em;
         height: 2em;
