@@ -181,7 +181,7 @@ export default class Geolocator {
         };
 
         //If nearly static, set speed to 0.
-        let staticThreshold = 0.05;
+        let staticThreshold = 0.8;
         if (
           this.speedFromGPS.x * this.speedFromGPS.x +
             this.speedFromGPS.y * this.speedFromGPS.y <=
