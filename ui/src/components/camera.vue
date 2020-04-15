@@ -1,10 +1,9 @@
 <template>
   <div
     class="content"
-    v-bind:style="{ width: canvasWidth, height: canvasHeight }"
+    v-bind:style="{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }"
     ref="content"
   >
-  <!--Issue: 2px heigther than content?-->
     <video autoplay ref="capture"></video>
     <canvas ref="canvas"></canvas>
   </div>
@@ -108,7 +107,7 @@ export default {
             video: {
               //Get the video that at least have SD quality
               //Height  of video actually is width of video
-              height: { min: 720 },
+              height: { ideal: 720 },
               facingMode: { exact: this.facingMode }
             }
           })
