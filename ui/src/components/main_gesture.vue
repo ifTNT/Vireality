@@ -37,43 +37,14 @@ export default {
             this.swiped = !this.swiped;
             console.log("swip up");
         }).bind(this));
-<<<<<<< HEAD
         manager.on('swiperight', (function(event){
             this.swiped = !this.swiped;
-=======
-        //
-        //左右滑動跳出時間軸
-        // var pan = new Hammer.Pan({
-        //     direction: Hammer.DIRECTION_ALL
-        // });
-        // manager.add(pan);
-        // manager.on('panleft panright', (function(event){
-        //     this.panned = !this.panned;
-        // }).bind(this));
-        var panLeft = new Hammer.Pan({
-            direction: Hammer.DIRECTION_LEFT
-        });
-        manager.add(panLeft);
-        manager.on('panleft', (function(event){
-            this.panned = !this.panned;
-            console.log("left");
->>>>>>> fc24bbf94e122c19bf6ff11176557d91a527dd4b
         }).bind(this));
         //
 
-<<<<<<< HEAD
         //上滑發文
         manager.on('swipeup', (function(event){
             this.swipedUp = !this.swipedUp;
-=======
-        var panRight = new Hammer.Pan({
-            direction: Hammer.DIRECTION_RIGHT
-        });
-        manager.add(panRight);
-        manager.on('panright', (function(event){
-            this.panned = !this.panned;
-            console.log("right");
->>>>>>> fc24bbf94e122c19bf6ff11176557d91a527dd4b
         }).bind(this));
         //
 
