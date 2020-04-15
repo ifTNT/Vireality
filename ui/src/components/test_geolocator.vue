@@ -21,7 +21,7 @@
       Measured: ({{ measurePos.x.toFixed(5) }}, {{ measurePos.y.toFixed(5) }})
       Filtered: ({{ rawX.toFixed(5) }}, {{ rawY.toFixed(5) }})
       Speed: {{ speed.norm }} m/s, Heading: {{ speed.heading }}
-      Timestamp: {{ timestamp() }}
+      Delta Time: {{ deltaTime }}
       History Count: {{ cnt }}
       </pre>
       <!-- <ul>
@@ -57,9 +57,9 @@ export default {
     lastCenterY: 0,
     history: [],
     gridSize: 10, // pixels
-    scale: 10, //1m = 10px
+    scale: 10, // 1m = 10px
     activeScale: 10,
-    centerX: 0, //The center coordinate of canvas
+    centerX: 0, // The center coordinate of canvas
     centerY: 0,
     lockLast: true,
     isZooming: false,
@@ -76,14 +76,25 @@ export default {
           heading: NaN
         };
       }
+      let lastP = this.history[this.cnt - 1];
+      let last2P = this.history[this.cnt - 2];
       let speed = {
-        x: this.history[this.cnt - 1].x - this.history[this.cnt - 2].x,
-        y: this.history[this.cnt - 1].y - this.history[this.cnt - 2].y
+        x: (lastP.x - last2P.x) / this.deltaTime,
+        y: (lastP.y - last2P.y) / this.deltaTime
       };
       return {
         norm: Math.sqrt(speed.x * speed.x + speed.y * speed.y).toFixed(5),
         heading: ((180 / Math.PI) * Math.atan(-speed.y / speed.x)).toFixed(5)
       };
+    },
+    deltaTime: function() {
+      if (this.cnt < 2) {
+        return NaN;
+      } else {
+        let lastP = this.history[this.cnt - 1];
+        let last2P = this.history[this.cnt - 2];
+        return (lastP.t - last2P.t) / 1000;
+      }
     }
   },
   mounted() {
@@ -101,7 +112,6 @@ export default {
     gesture.on("pinchmove pinchend", this.onCanvasZoom.bind(this));
   },
   methods: {
-    timestamp: () => +Date.now(),
     onGeolocationRead: function(pos) {
       this.estimatePos = pos.estimatePos;
       this.measurePos = pos.measurePos;
@@ -111,7 +121,11 @@ export default {
       this.accuracy = pos.accuracy;
 
       // Push new point and draw
-      this.history.push({ x: pos.x, y: pos.y });
+      this.history.push({
+        x: pos.x,
+        y: pos.y,
+        t: pos.timestamp
+      });
 
       //Move center to last point in lock mode
       if (this.lockLast) {
