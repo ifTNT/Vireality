@@ -153,7 +153,7 @@ export default class Geolocator {
           estimate_var + diff_time * diff_time * estimate_sd * estimate_sd <=
           untrustThreshold
         ) {
-          estimate_var += diff_time * diff_time * estimate_sd * estimate_sd;
+          estimate_var += estimate_sd * estimate_sd;
         } else {
           // Switch to use constant speed estimation
           estimate_var += diff_time * estimateSpeed * estimateSpeed;
