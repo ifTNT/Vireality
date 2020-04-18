@@ -8,10 +8,10 @@
             <!-- 兩個link 到個人頁/到聊天室 -->
             <div class="links">
                 <!-- 連結待修改 -->
-                <a href="/#/first_face_detection">
+                <a href="/#/">
                     <img class="userProfileLink" src="/static/media/profile.png">
                 </a>
-                <a href="/#/first_face_detection">
+                <a href="/#/">
                     <img class="userChatroomLink" src="/static/media/chatroom.png">
                 </a>
             </div>
@@ -51,12 +51,12 @@ export default {
         width: auto;
         border:0;/* 有些網頁會顯示邊框 手機裝置不知道 所以還是先寫著 */
         margin-right: 1vh;
-        background-color: red;
+        /* background-color: red; */
     }
     /* .link沒設定高的話 在.components設定margin-right跑版 */
     .links{
         height: 4vh;
-        background-color: slateblue;
+        /* background-color: slateblue; */
     }
     /* 以下為響應式的設定 
        主要調整APP名稱字體大小就好(px)*/

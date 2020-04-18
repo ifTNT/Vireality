@@ -35,16 +35,18 @@ export default {
         manager.add(swipe);
         manager.on('swipeleft', (function(event){
             this.swiped = !this.swiped;
-            console.log("swip up");
+            console.log("swipleft");
         }).bind(this));
         manager.on('swiperight', (function(event){
             this.swiped = !this.swiped;
+            console.log("swipright");
         }).bind(this));
         //
 
         //上滑發文
         manager.on('swipeup', (function(event){
             this.swipedUp = !this.swipedUp;
+             console.log("swipup");
         }).bind(this));
         //
 
@@ -54,12 +56,14 @@ export default {
         });
         manager.add(pinch)
         manager.on('pinchin', (function(event){
+            console.log("pinchin");
+
 
         }));
         //
         //放大手勢散開文章
         manager.on('pinchout', (function(event){
-
+            console.log("pinchout");
         }));
         //
     },
@@ -68,12 +72,14 @@ export default {
 
 <style scoped>
 .testElement{
-    width: 50%;
-    height: 70%;
-    position: fixed;
+    width: 100vw;
+    height: 100vh;
+  /*  width: 50%;
+    height: 70%;*/
+   /* position: fixed;
     left:25vw;
-    top:25vh;
-    background-color:black;
+    top:25vh;*/
+    background-color:deepskyblue;
     transition: transform 300ms ease-out;
 }
 .expand{

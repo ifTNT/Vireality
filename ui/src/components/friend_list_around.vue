@@ -1,52 +1,35 @@
 <template>
-  <div class="wrap">
-    <li v-for="item in listShowFriend" v-bind:key="item.friendId" :style="{left:item.friendDir}">
-      <!-- {{item.friendId}} -->
-      <nav class="eacItem">
-        <!-- click it go to the personal page -->
-        <proPic :diameter="parentDiameter" :Id="item.friendId"></proPic>
-      </nav>
-    </li>
-  </div>
+  <div class="wrap"></div>
 </template>
 <script>
-import axios from "axios";
-import ProPic from "./profile_picture.vue";
 export default {
   name: "friendListAround",
   data() {
     return {
       friendRad: [],
-      listShowFriend: [],
-      parentDiameter: "2em"
+      listShowFriend: []
     };
   },
-  components: {
-    // 新增大頭照的components tag命名為proPic
-    proPic: ProPic
-  },
   mounted() {
-    this.getFriends(), this.sensorStarter();
+    this.test();
   },
   methods: {
     sensorStarter() {
-      this.decideAxis([0, 1, 0.1, 0.1]);
-      // const options = { frequency: 60, referenceFrame: "device" };
-      // const sensor = new AbsoluteOrientationSensor(options);
+      const options = { frequency: 60, referenceFrame: "device" };
+      const sensor = new AbsoluteOrientationSensor(options);
 
-      // sensor.addEventListener("reading", () => {
-      //   // model is a Three.js object instantiated elsewhere.
-      //   // model.quaternion.fromArray(sensor.quaternion).inverse();
-      //   this.decideAxis(sensor.quaternion);
-      // });
-      // sensor.addEventListener("error", error => {
-      //   if (event.error.name == "NotReadableError") {
-      //     console.log("Sensor is not available.");
-      //   }
-      // });
-      // sensor.start();
-      // console.log(sensor);
-      // console.log("test");
+      sensor.addEventListener("reading", () => {
+        // model is a Three.js object instantiated elsewhere.
+        model.quaternion.fromArray(sensor.quaternion).inverse();
+      });
+      sensor.addEventListener("error", error => {
+        if (event.error.name == "NotReadableError") {
+          console.log("Sensor is not available.");
+        }
+      });
+      sensor.start();
+      console.log(sensor);
+      console.log("test");
     },
     decideAxis(quaternion) {
       const dy = [0, 0, 1, 0];
@@ -138,16 +121,13 @@ export default {
 
       // (0,0,y,z)為投影在大地yz平面上，取abs(z/y)值較小者為所要的軸
       // 當z軸為所取之軸時要將得到值加上負號，-z
+
       var axisY = Math.abs(outputY[2] / outputY[3]);
       var axisZ = Math.abs(outputZ[2] / outputZ[3]);
-      
-      
       if (axisY <= axisZ) {
         this.xy(outputY[1], outputY[2]);
-        console.log("axisY"+axisY)
       } else {
         this.xy(outputZ[1], -outputZ[3]);
-        console.log("axisZ"+axisZ)
       }
     },
     xy(xNumber, yNumber) {
@@ -157,12 +137,10 @@ export default {
           Math.acos(
             xNumber / Math.sqrt(Math.pow(xNumber, 2) + Math.pow(yNumber, 2))
           ) + Math.PI;
-        console.log("<")
       } else {
         radXY = Math.acos(
           xNumber / Math.sqrt(Math.pow(xNumber, 2) + Math.pow(yNumber, 2))
         );
-        console.log("else")
       }
       this.appendOnScreen(radXY);
     },
@@ -205,85 +183,26 @@ export default {
       //     console.log(response);
       //     // getFriends()
       //   });
+
     },
     appendOnScreen(radXY) {
-      // test
-      this.friendRad = [
-        {
-          friendId: "a123",
-          friendDir: Math.PI / 6
-        },
-        {
-          friendId: "b1234",
-          friendDir: (Math.PI / 6) * 1.2
-        },
-        {
-          friendId: "c12345",
-          friendDir: (Math.PI / 6) * 1.4
-        },
-        {
-          friendId: "d123456",
-          friendDir: (Math.PI / 6) * 1.6
-        },
-        {
-          friendId: "e1234567",
-          friendDir: (Math.PI / 6) * 1.8
-        }
-      ];
-      // end test
       var listToShow = [];
+      var radDevice = []; //has two num, first is deviceDeg + π/6, second is deviceDeg - π/6
+      radDevice.push(radXY + Math.PI / 6);
+      if (radXY < Math.PI / 6) {
+        radDevice.push((Math.PI * 11) / 6 + radXY); //2*Math.PI-Math.PI/6+radXY
+      } else {
+        radDevice.push(radXY - Math.PI / 6);
+      }
       this.friendRad.forEach(element => {
-        console.log(radXY);
-        console.log(element.friendDir)
-        if (
-          element.friendDir <= radXY + Math.PI / 6 &&
-          element.friendDir >= radXY - Math.PI / 6
-        ) {
-          listToShow.push({
-            friendId: element.friendId,
-            friendDir: Math.cos(radXY - element.friendDir)
-          });
-          console.log("in 1");
-        } else if (radXY < Math.PI / 6) {
-          if (element.friendDir > (Math.PI * 11) / 6 + radXY) {
-            listToShow.push({
-              friendId: element.friendId,
-              friendDir: Math.cos(
-                element.friendDir - (Math.PI * 11) / 6 + radXY
-              )
-            });
-            console.log("in 2");
-          }
-          console.log("in 2 failed");
-        } else if (radXY > (Math.PI * 11) / 6) {
-          if (element.friendDir < 2 * Math.PI - radXY) {
-            listToShow.push({
-              friendId: element.friendId,
-              friendDir: Math.cos(element.friendDir + 2 * Math.PI - radXY)
-            });
-            console.log("in 3");
-          }
-          console.log("in 3 failed");
-        } else {
-          console.log("all failes");
+        if (element["dir"] <= radDevice[0] && element["dir"] >= radDevice[1]) {
+          listToShow.push([element["id"], Math.cos(element["dir"])]);
         }
-        console.log(listToShow);
       });
-      this.listShowFriend = listToShow;
-      console.log(listToShow[2]);
+      listShowFriend = listToShow;
     }
   }
 };
 </script>
 
-<style scoped lang="stylus">
-.wrap {
-  width: 100%;
-  position: relative;
-
-  li {
-    display: inline-block;
-    position: absolute;
-  }
-}
-</style>
+<style scoped lang="stylus"></style>
