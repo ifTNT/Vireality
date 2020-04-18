@@ -41,7 +41,7 @@ export default {
         `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
       );
     },
-    initAR: function () {
+    initAR: function() {
       this.started = true;
 
       //===============Camera and Control================
@@ -144,7 +144,7 @@ export default {
       );
       this.spriteMaterial = new THREE.SpriteMaterial({
         map: spriteMap,
-        color: 0xffffff,
+        color: 0xffffff
       });
 
       this.renderer = new THREE.WebGLRenderer({
@@ -160,7 +160,7 @@ export default {
 
       this.animate();
     },
-    animate: function () {
+    animate: function() {
       window.requestAnimationFrame(this.animate.bind(this));
       this.controls.update();
 
@@ -187,47 +187,39 @@ export default {
     },
   },
   components: {
-    camera: Camera,
-  },
+    camera: Camera
+  }
 };
 </script>
 
 <style scoped lang="stylus">
-#overlay
-  width 100vw
-  height 100vh
-  display flex
-  justify-content center
-  align-items center
-  position fixed
+#overlay {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+}
 
-.btn
-  padding 1em
-  box-sizing border-box
-  border solid black 1px
-  border-radius 1em
-  background-color rgba(255, 255, 255, 0.5)
+.btn {
+  padding: 1em;
+  box-sizing: border-box;
+  border: solid black 1px;
+  border-radius: 1em;
+  background-color: rgba(255, 255, 255, 0.5);
+}
 
-.fullScreen
-  position absolute
-  top 0
-  bottom 0
-  width 100vw
-  height 100vh
-  overflow hidden
+.fullScreen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 
-//canvas
-  /* Make video to at least 100% wide and tall */
-  //min-width 100%
-  //min-height 100%
-
-  /* Setting width & height to auto prevents the browser from stretching or squishing the video */
-  //width 100vw
-  //height 100vh
-
-  /* Center the video */
-  //position absolute
-  //top 50%
-  //left 50%
-  //transform translate(-50%, -50%)
+/* Make video to at least 100% wide and tall */
+/* Setting width & height to auto prevents the browser from stretching or squishing the video */
+/* Center the video */
 </style>
