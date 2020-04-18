@@ -87,12 +87,16 @@ let router = new Router({
       path: '/test_geolocator',
       name: 'Test Geolocator',
       component: TestGeolocator
+    },{
+      path: '/test_friend_list',
+      name: 'friendlist',
+      component: FriendListAround
     },
     {
       path: '/test_abs_speed_sensor',
       name: 'Test Absolte Speed Sensor',
       component: TestAbsSpeed
-    },
+    }
     //=======end test===============
   ]
 })
