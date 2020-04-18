@@ -37,7 +37,8 @@ export default {
     cameraHeight: 1.4, //Distance between camera and ground(m)
     started: false,
     videoWidth: 0,
-    videoHeight: 0
+    videoHeight: 0,
+    articles: []
   }),
   methods: {
     onCameraReady(videoWidth, videoHeight) {
@@ -130,7 +131,7 @@ export default {
         this.vground.add(grid);
         grid.position.set(0, 0, 0);
       }
-      this.scene.add(this.vground);
+      //this.scene.add(this.vground);
       //=========End Virtual Ground Object============
 
       //An axes helper
@@ -181,6 +182,7 @@ export default {
       sprite.center.set(0.5, 1);
       sprite.position.set(x, y, 0.5);
       sprite.scale.set(0.75, 0.75, 0.75);
+      this.articles.push(sprite);
       this.scene.add(sprite);
     }
   },
