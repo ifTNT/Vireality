@@ -3,12 +3,17 @@
     <camera class="fullScreen" v-on:camera-ready="onCameraReady" />
     <canvas class="fullScreen" ref="arCanvas"></canvas>
     <div id="overlay">
-      <div class="btn" ref="start" v-on:click="initAR" v-if="!started">
+      <font-awesome-icon icon="play-circle" size="5x" inverse ref="start" v-on:click="initAR" v-if="!started" />
+      <!--<div class="btn" ref="start" v-on:click="initAR" v-if="!started">
         Start
-      </div>
-      <div class="btn" ref="add" v-on:click="addArticle" v-if="started">
+      </div>-->
+      <font-awesome-layers class="fa-lg" ref="add" v-on:click="addArticle" v-if="started">
+        <font-awesome-icon icon="map-marker-alt" size="4x" transform="right-3" inverse />
+        <font-awesome-icon icon="plus" size="lg" transform="down-5" inverse />
+      </font-awesome-layers>
+      <!--<div class="btn" ref="add" v-on:click="addArticle" v-if="started">
         Add GeoArticle
-      </div>
+      </div>-->
     </div>
   </div>
 </template>
