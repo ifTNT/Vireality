@@ -16,7 +16,10 @@ export default class MovingAverage2D {
     }
   }
   getAvg() {
-    if (this.queue.length === 0) throw "Lenght of queue is zero";
+    if (this.queue.length === 0) {
+      console.log("Lenght of queue is zero");
+      return NaN;
+    }
     var n = this.queue.length;
     return this.queue.reduce(
       function(acc, p) {
@@ -28,7 +31,10 @@ export default class MovingAverage2D {
     );
   }
   getVar() {
-    if (this.queue.length === 0) throw "Lenght of queue is zero";
+    if (this.queue.length === 0) {
+      console.log("Lenght of queue is zero");
+      return NaN;
+    }
     let n = this.queue.length;
     let x_square = this.queue.reduce((acc, p) => {
       return acc + p.x * p.x;
@@ -37,13 +43,16 @@ export default class MovingAverage2D {
     return x_square / n - avg.x * avg.x;
   }
   getLast() {
-    if (this.queue.length === 0) throw "Lenght of queue is zero";
+    if (this.queue.length === 0) {
+      console.log("Lenght of queue is zero");
+      return NaN;
+    }
     return this.queue[this.queue.length - 1];
   }
   len() {
     return this.queue.length;
   }
-  flush(){
+  flush() {
     this.queue = [];
   }
   _norm(p) {

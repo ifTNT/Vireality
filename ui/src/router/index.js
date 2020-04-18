@@ -11,6 +11,11 @@ import Gesture from '@/components/main_gesture'
 import Toolbar from '@/components/toolbar'
 import ProfilePicture from '@/components/profile_picture'
 import TimeLine from '@/components/timeline'
+import TestGeolocator from '@/components/test_geolocator'
+import FriendListAround from '@/components/friend_list_around'
+import Main from '@/components/main'
+import TestAbsSpeed from '@/components/friend_list_around'
+import FetchArticle from '@/components/article_fetch'
 
 Vue.use(Router)
 
@@ -66,15 +71,35 @@ let router = new Router({
     {
       path:'/profile_picture',
       name:'Propic',
-      component:ProfilePicture 
+      component:ProfilePicture
+    },
+    {
+      path:'/main',
+      name:'Main',
+      component:Main 
     },
     //==========test================
     {
       path: '/timeline',
       name: 'feef',
       component: TimeLine
-    }
+    },
+    {
+      path: '/test_geolocator',
+      name: 'Test Geolocator',
+      component: TestGeolocator
+    },
+    {
+      path: '/test_abs_speed_sensor',
+      name: 'Test Absolte Speed Sensor',
+      component: TestAbsSpeed
+    },
     //=======end test===============
+    {
+      path: '/article_fetch',
+      name: 'Article Fetch',
+      component: FetchArticle
+    }
   ]
 })
 

@@ -33,8 +33,8 @@ module.exports = {
     cacheBusting: true,
 
     cssSourceMap: true,
-    
-    httpsServer: false,
+
+    httpsServer: true,
 
     serviceWorker: false
   },

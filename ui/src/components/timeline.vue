@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="wrap">
     <div class="month">
       <transition-group name="list-complete" tag="p" class="monthList">
         <span v-for="item in items" v-bind:key="item" class="list-complete-item">{{ item }}</span>
@@ -7,11 +7,11 @@
     </div>
     <div class="line"></div>
     <div class="date">
-      <transition name= "date-move" mode="out-in">
-        <p v-bind:key="isEditing">
+      <transition name="date-move" mode="out-in">
+        <p>
           ▲
           <br />
-          {{ isEditing ? date : date }}
+          {{dateD}}
         </p>
       </transition>
     </div>
@@ -26,25 +26,52 @@ export default {
   name: "timeline",
   data() {
     return {
-      date: "",
+      dateD: "",
+      dateNum: 0,
       items: [],
       isEditing: true
     };
   },
+  props: {
+    date: {
+      type: Number,
+      default: Math.floor(
+        new Date(
+          "".concat(
+            new Date().getFullYear(),
+            ",",
+            new Date().getMonth() + 1,
+            ",",
+            new Date().getDate()
+          )
+        ) / 1000
+      )
+    }
+  },
   mounted() {
     this.getNowDate();
   },
-  computed: {},
+  computed: {
+    function() {
+      if (this.date > this.dateNum) {
+        this.dateNum = this.date;
+        return this.addChangDate();
+      } else {
+        this.dateNum = this.date;
+        return this.minusChangDate();
+      }
+    }
+  },
   methods: {
-    minusChangDate: function() {
+    minusChangDate() {
       this.isEditing = !this.isEditing;
-      if (this.date != 1) {
-        this.date = this.date - 1;
+      if (this.dateD != 1) {
+        this.dateD = this.dateD - 1;
       } else {
         var whichMonth = String(this.items[0]).split(" ");
         switch (parseInt(whichMonth[whichMonth.length - 1])) {
           case 1:
-            this.date = 31;
+            this.dateD = 31;
             break;
           case 2:
             var year;
@@ -55,59 +82,60 @@ export default {
               year = parseInt(whichMonth[0]);
             }
             if (year % 4 == 0 && year % 100 != 0) {
-              this.date = 29;
+              this.dateD = 29;
             } else if (year % 400 == 0) {
-              this.date = 29;
+              this.dateD = 29;
             } else {
-              this.date = 28;
+              this.dateD = 28;
             }
             break;
           case 3:
-            this.date = 31;
+            this.dateD = 31;
             break;
           case 4:
-            this.date = 30;
+            this.dateD = 30;
             break;
           case 5:
-            this.date = 31;
+            this.dateD = 31;
             break;
           case 6:
-            this.date = 30;
+            this.dateD = 30;
             break;
           case 7:
-            this.date = 31;
+            this.dateD = 31;
             break;
           case 8:
-            this.date = 31;
+            this.dateD = 31;
             break;
           case 9:
-            this.date = 30;
+            this.dateD = 30;
             break;
           case 10:
-            this.date = 31;
+            this.dateD = 31;
             break;
           case 11:
-            this.date = 30;
+            this.dateD = 30;
             break;
           case 12:
-            this.date = 31;
+            this.dateD = 31;
         }
         this.addLeft();
       }
+      return this.dateD;
     },
-    addChangDate: function() {
+    addChangDate() {
       this.isEditing = !this.isEditing;
-      if (this.date < 28) {
-        this.date = this.date + 1;
+      if (this.dateD < 28) {
+        this.dateD = this.dateD + 1;
       } else {
         var whichMonth = String(this.items[1]).split(" ");
         switch (parseInt(whichMonth[whichMonth.length - 1])) {
           case 1:
-            if (this.date === 31) {
-              this.date = 1;
+            if (this.dateD === 31) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 2:
@@ -119,108 +147,109 @@ export default {
               year = parseInt(whichMonth[0]);
             }
             if (year % 4 == 0 && year % 100 != 0) {
-              if (this.date === 29) {
-                this.date = 1;
+              if (this.dateD === 29) {
+                this.dateD = 1;
                 this.addRight();
               } else {
-                this.date = this.date + 1;
+                this.dateD = this.dateD + 1;
               }
             } else if (year % 400 == 0) {
-              if (this.date === 29) {
-                this.date = 1;
+              if (this.dateD === 29) {
+                this.dateD = 1;
                 this.addRight();
               } else {
-                this.date = this.date + 1;
+                this.dateD = this.dateD + 1;
               }
             } else {
-              if (this.date === 28) {
-                this.date = 1;
+              if (this.dateD === 28) {
+                this.dateD = 1;
                 this.addRight();
               } else {
-                this.date = this.date + 1;
+                this.dateD = this.dateD + 1;
               }
             }
             break;
           case 3:
-            if (this.date === 31) {
-              this.date = 1;
+            if (this.dateD === 31) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 4:
-            if (this.date === 30) {
-              this.date = 1;
+            if (this.dateD === 30) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 5:
-            if (this.date === 31) {
-              this.date = 1;
+            if (this.dateD === 31) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 6:
-            if (this.date === 30) {
-              this.date = 1;
+            if (this.dateD === 30) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 7:
-            if (this.date === 31) {
-              this.date = 1;
+            if (this.dateD === 31) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 8:
-            if (this.date === 31) {
-              this.date = 1;
+            if (this.dateD === 31) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 9:
-            if (this.date === 30) {
-              this.date = 1;
+            if (this.dateD === 30) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 10:
-            if (this.date === 31) {
-              this.date = 1;
+            if (this.dateD === 31) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 11:
-            if (this.date === 30) {
-              this.date = 1;
+            if (this.dateD === 30) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
             break;
           case 12:
-            if (this.date === 31) {
-              this.date = 1;
+            if (this.dateD === 31) {
+              this.dateD = 1;
               this.addRight();
             } else {
-              this.date = this.date + 1;
+              this.dateD = this.dateD + 1;
             }
         }
+        return this.dateD;
       }
     },
     addLeft() {
@@ -260,11 +289,12 @@ export default {
       );
     },
     dateChange() {
-      this.date;
+      this.dateD;
     },
     getNowDate() {
-      var d = new Date();
-      this.date = d.getDate();
+      var d = new Date(this.date * 1000);
+      this.dateNum = this.date;
+      this.dateD = d.getDate();
       var m = d.getMonth() + 1;
       this.items.splice(
         0,
@@ -283,6 +313,10 @@ export default {
 </script>
 
 <style scoped lang="stylus">
+.wrap {
+  z-index: 100;
+}
+
 .line {
   box-sizing: border-box;
   border-bottom: solid 2px;

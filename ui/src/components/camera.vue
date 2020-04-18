@@ -1,10 +1,9 @@
 <template>
   <div
     class="content"
-    v-bind:style="{ width: canvasWidth, height: canvasHeight }"
+    v-bind:style="{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }"
     ref="content"
   >
-  <!--Issue: 2px heigther than content?-->
     <video autoplay ref="capture"></video>
     <canvas ref="canvas"></canvas>
   </div>
@@ -69,7 +68,6 @@ export default {
           let width = this.$refs.capture.videoWidth;
           let height = this.$refs.capture.videoHeight;
           this.cameraReady = true;
-          this.$emit("cameraReady", width, height);
           console.log(
             `[Face Detection] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
           );
@@ -93,7 +91,10 @@ export default {
             width: width * scale,
             height: height * scale
           };
+          console.log(`[Face Detection] Scaled Video Width: ${width*scale} Height: ${height*scale}`)
           //=============================================
+          
+          this.$emit("camera-ready", width*scale, height*scale);
           this.updatePico();
         },
         false
@@ -106,7 +107,7 @@ export default {
             video: {
               //Get the video that at least have SD quality
               //Height  of video actually is width of video
-              height: { min: 720 },
+              height: { ideal: 720 },
               facingMode: { exact: this.facingMode }
             }
           })

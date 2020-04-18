@@ -9,20 +9,23 @@ export default class Absolute2DSpeedSensor {
     });
 
     this.windowSize = 32; //How many samples in one window
-    this.offsetWindowSize = 256; //How many samples in one offset window
+    this.offsetWindowSize = 10 * this.windowSize; //How many samples in one offset window
     this.laSensor.addEventListener("reading", this.onReading.bind(this));
     this.oriSensor.addEventListener("reading", this.onOriReading.bind(this));
     this.ori = [0, 0, 0, 0];
 
-    this.speed = new MovingAverage2D(this.windowSize);
-    this.pos = new MovingAverage2D(this.windowSize);
-    this.lastAccel = {x:0,y:0};
+    //this.speed = new MovingAverage2D(this.windowSize);
+    //this.pos = new MovingAverage2D(this.windowSize);
+    this.speed = { x: 0, y: 0 };
+    this.lastSpeed = { x: 0, y: 0 };
+    this.pos = { x: 0, y: 0 };
+    this.lastPos = { x: 0, y: 0 };
+    this.lastAccel = { x: 0, y: 0 };
     this.accelOffset = new MovingAverage2D(this.offsetWindowSize);
     this.accel = new MovingAverage2D(this.windowSize);
-    this.speed.push({ x: 0, y: 0 }); //Start from zero speed
-    this.pos.push({ x: 0, y: 0 }); //Start from (0,0)
 
     this.lastSensorTimeStamp = -1;
+    this.totalTime = 0; //Duration between last reset
     this.laSensor.start();
     this.oriSensor.start();
   }
@@ -37,37 +40,30 @@ export default class Absolute2DSpeedSensor {
 
     if (this.lastSensorTimeStamp === -1) {
       this.lastSensorTimeStamp = this.laSensor.timestamp;
-      this.accel.push(newAccel);
-      this.accelOffset.push(newAccel);
-    } else {
-      let dt = (this.laSensor.timestamp - this.lastSensorTimeStamp) / 1000;
-      this.accel.push(newAccel);
-      this.accelOffset.push(newAccel);
-      if(this.accel.len() === this.windowSize){
-        newAccel = this.accel.getAvg();
-        let offset = this.accelOffset.getAvg();
-        newAccel.x -= offset.x;
-        newAccel.y -= offset.y;
+      this.lastAccel = newAccel;
+    }
+    let dt = (this.laSensor.timestamp - this.lastSensorTimeStamp) / 1000;
+    this.totalTime += dt;
+    this.accel.push(newAccel);
+    this.accelOffset.push(newAccel);
+    if (this.accel.len() === this.windowSize) {
+      newAccel = this.accel.getAvg(); //Low-pass filter
+      let offset = this.accelOffset.getAvg(); //Get the DC offset
+      newAccel.x -= offset.x;
+      newAccel.y -= offset.y;
 
-        //Integrate speed
-        let newSpeed = integral(
-          this.speed.getLast(),
-          this.lastAccel,
-          newAccel,
-          dt
-        );
-        this.speed.push(newSpeed);
+      //Integrate speed
+      this.lastSpeed = this.speed;
+      this.speed = integral(this.lastSpeed, this.lastAccel, newAccel, dt);
+      //this.speed.push(newSpeed);
 
-        //Integrate position
-        let newPos = integral(
-          this.pos.getLast(),
-          this.speed.getLast(),
-          newSpeed,
-          dt
-        );
-        this.pos.push(newPos);
-        this.lastAccel = newAccel;
-      }
+      //Integrate position
+      this.lastPos = this.pos;
+      this.pos = integral(this.lastPos, this.lastSpeed, this.speed, dt);
+      //this.pos.push(newPos);
+
+      //Update the state
+      this.lastAccel = newAccel;
       this.lastSensorTimeStamp = this.laSensor.timestamp;
     }
 
@@ -110,8 +106,8 @@ export default class Absolute2DSpeedSensor {
     this.ori = this.oriSensor.quaternion;
   }
   readSpeed() {
-    let { x, y } = this.speed.getAvg();
-    let accuracy = Math.sqrt(this.speed.getVar());
+    let { x, y } = this.speed;
+    let accuracy = Math.sqrt(this.totalTime * this.accel.getVar());
     return {
       x,
       y,
@@ -127,14 +123,16 @@ export default class Absolute2DSpeedSensor {
     // alert(this.accel.getCov());
     let accuracy = Math.sqrt(this.accel.getVar());
     return {
-      x: x-offset.x,
-      y: y-offset.y,
+      x: x - offset.x,
+      y: y - offset.y,
       accuracy
     };
   }
   readPosition() {
-    let { x, y } = this.pos.getAvg();
-    let accuracy = Math.sqrt(this.pos.getVar());
+    let { x, y } = this.pos;
+    let accuracy = Math.sqrt(
+      this.totalTime * this.totalTime * this.accel.getVar()
+    );
     return {
       x,
       y,
@@ -142,11 +140,11 @@ export default class Absolute2DSpeedSensor {
     };
   }
   reset(_speed) {
-    this.speed.flush();
-    this.speed.push(_speed);
-    this.pos.flush();
-    this.pos.push({ x: 0, y: 0 });
-    this.accuracy = 0;
+    this.speed = _speed;
+    this.lastSpeed = _speed;
+    this.pos = { x: 0, y: 0 };
+    this.lastPos = { x: 0, y: 0 };
+    this.totalTime = 0;
   }
 
   // Correct acceleration to absolute coordinate
