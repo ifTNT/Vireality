@@ -126,7 +126,7 @@ export default class Geolocator {
     let K = NaN;
 
     if (this.ready === false) {
-      // If object is unitialised,initialise with current values
+      // If object is unitialized,initialize with current values
       timestamp = pos.timestamp;
       latitude = pos.coords.latitude;
       longitude = pos.coords.longitude;
@@ -150,10 +150,10 @@ export default class Geolocator {
         // time has moved on, so the uncertainty in the current position increases
         let estimate_sd = relativePosEstimation.accuracy;
         if (
-          estimate_var + diff_time * estimate_sd * estimate_sd <=
+          estimate_var + diff_time * diff_time * estimate_sd * estimate_sd <=
           untrustThreshold
         ) {
-          estimate_var += diff_time * estimate_sd * estimate_sd;
+          estimate_var += estimate_sd * estimate_sd;
         } else {
           // Switch to use constant speed estimation
           estimate_var += diff_time * estimateSpeed * estimateSpeed;
@@ -179,6 +179,17 @@ export default class Geolocator {
               (Math.PI * 5) / 2 - this.radians(pos.coords.heading) - Math.PI / 2
             )
         };
+
+        //If nearly static, set speed to 0.
+        let staticThreshold = 0.8;
+        if (
+          this.speedFromGPS.x * this.speedFromGPS.x +
+            this.speedFromGPS.y * this.speedFromGPS.y <=
+          staticThreshold * staticThreshold
+        ) {
+          this.speedFromGPS.x = 0;
+          this.speedFromGPS.y = 0;
+        }
       }
       this.speedSensor.reset(this.speedFromGPS);
 
@@ -203,9 +214,17 @@ export default class Geolocator {
 
     let accuracy = Math.sqrt(variance);
     if (!this.debug) {
-      this.posUpdateCB({ x, y, accuracy });
+      this.posUpdateCB({ x, y, accuracy, timestamp });
     } else {
-      this.posUpdateCB({ x, y, accuracy, estimatePos, measurePos, K });
+      this.posUpdateCB({
+        x,
+        y,
+        accuracy,
+        timestamp,
+        estimatePos,
+        measurePos,
+        K
+      });
     }
   }
 

@@ -14,6 +14,7 @@ import TimeLine from '@/components/timeline'
 import TestGeolocator from '@/components/test_geolocator'
 import FriendListAround from '@/components/friend_list_around'
 import Main from '@/components/main'
+import TestAbsSpeed from '@/components/test_absolute_speed_sensor'
 
 Vue.use(Router)
 
@@ -90,6 +91,11 @@ let router = new Router({
       path: '/test_friend_list',
       name: 'friendlist',
       component: FriendListAround
+    },
+    {
+      path: '/test_abs_speed_sensor',
+      name: 'Test Absolte Speed Sensor',
+      component: TestAbsSpeed
     }
     //=======end test===============
   ]
