@@ -44,7 +44,7 @@ export default {
             ",",
             new Date().getDate()
           )
-        ) / 1000
+        )
       )
     }
   },
@@ -292,7 +292,7 @@ export default {
       this.dateD;
     },
     getNowDate() {
-      var d = new Date(this.date * 1000);
+      var d = new Date(this.date);
       this.dateNum = this.date;
       this.dateD = d.getDate();
       var m = d.getMonth() + 1;

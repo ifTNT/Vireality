@@ -193,8 +193,8 @@ export default {
       // axios
       //   .get("/user/friend_direction")
       //   .then(response => {
-      //     if (response["ok"] === "true") {
-      //       this.friendRad = response["result"];
+      //     if (response.data.ok === "true") {
+      //       this.friendRad = response.data.result;
       //     } else {
       //       console.log("can't get friend place without ok");
       //       getFriends();
