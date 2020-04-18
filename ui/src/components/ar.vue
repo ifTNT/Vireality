@@ -3,17 +3,18 @@
     <camera class="fullScreen" v-on:camera-ready="onCameraReady" />
     <canvas class="fullScreen" ref="arCanvas"></canvas>
     <div id="overlay">
-      <font-awesome-icon icon="play-circle" size="5x" inverse ref="start" v-on:click="initAR" v-if="!started" />
-      <!--<div class="btn" ref="start" v-on:click="initAR" v-if="!started">
-        Start
-      </div>-->
+      <font-awesome-icon
+        icon="play-circle"
+        size="5x"
+        inverse
+        ref="start"
+        v-on:click="initAR"
+        v-if="!started"
+      />
       <font-awesome-layers class="fa-lg" ref="add" v-on:click="addArticle" v-if="started">
         <font-awesome-icon icon="map-marker-alt" size="4x" transform="right-3" inverse />
         <font-awesome-icon icon="plus" size="lg" transform="down-5" inverse />
       </font-awesome-layers>
-      <!--<div class="btn" ref="add" v-on:click="addArticle" v-if="started">
-        Add GeoArticle
-      </div>-->
     </div>
   </div>
 </template>
@@ -25,18 +26,18 @@ import Camera from "@/components/camera";
 export default {
   name: "AR_view",
   data: () => ({
-      camera: null,
-      scene: null,
-      axesHelper: null,
-      vground: null,
-      renderer: null,
-      controls: null,
-      spriteMaterial: null,
-      geolocator: null,
-      cameraHeight: 1.4, //Distance between camera and ground(m)
-      started: false,
-      videoWidth: 0,
-      videoHeight: 0,
+    camera: null,
+    scene: null,
+    axesHelper: null,
+    vground: null,
+    renderer: null,
+    controls: null,
+    spriteMaterial: null,
+    geolocator: null,
+    cameraHeight: 1.4, //Distance between camera and ground(m)
+    started: false,
+    videoWidth: 0,
+    videoHeight: 0
   }),
   methods: {
     onCameraReady(videoWidth, videoHeight) {
@@ -46,7 +47,7 @@ export default {
         `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
       );
     },
-    initAR: function () {
+    initAR: function() {
       this.started = true;
 
       //===============Camera and Control================
@@ -76,12 +77,9 @@ export default {
       //The unit of the result is degree.
       let cameraFoV =
         (180 / Math.PI) *
-        2 * Math.atan(
-          ((refCCDSize / 2) * scale) / refFocalLength
-        );
-      console.log(
-        `[AR] FoV of Virtual Camera: ${this.cameraFoV}`
-      );
+        2 *
+        Math.atan(((refCCDSize / 2) * scale) / refFocalLength);
+      console.log(`[AR] FoV of Virtual Camera: ${this.cameraFoV}`);
 
       //Make a camera that have equivlent FoV of device's camera
       this.camera = new THREE.PerspectiveCamera(
@@ -114,25 +112,23 @@ export default {
       );
       var groundMaterial = new THREE.MeshBasicMaterial({
         color: 0xaaaaaa, // The color of mesh.
-        wireframe: true, // Use wireframe for debugging.
+        wireframe: true // Use wireframe for debugging.
       });
-      this.vground = new THREE.Mesh(
-        groundGeometry, groundMaterial
-      );
+      this.vground = new THREE.Mesh(groundGeometry, groundMaterial);
       this.vground.position.set(0, 0, 0);
 
       // Generate grids of the ground
       // The grid size is one meter.
-      for(let i=1; i<groundRange; i++){
+      for (let i = 1; i < groundRange; i++) {
         let gridGeometry = new THREE.CircleBufferGeometry(
           i, //Raduis of circle.
           groundSegments //How much triangles in circle.
         );
         let grid = new THREE.Mesh(gridGeometry, groundMaterial);
-        
-        // Append the grid object to the ground object. 
+
+        // Append the grid object to the ground object.
         this.vground.add(grid);
-        grid.position.set(0,0,0);
+        grid.position.set(0, 0, 0);
       }
       this.scene.add(this.vground);
       //=========End Virtual Ground Object============
@@ -149,32 +145,29 @@ export default {
       );
       this.spriteMaterial = new THREE.SpriteMaterial({
         map: spriteMap,
-        color: 0xffffff,
+        color: 0xffffff
       });
 
       this.renderer = new THREE.WebGLRenderer({
-          canvas: this.$refs.arCanvas,
-          antialias: true,
-          alpha: true
+        canvas: this.$refs.arCanvas,
+        antialias: true,
+        alpha: true
       });
       this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-      );
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
 
       this.animate();
     },
-    animate: function () {
+    animate: function() {
       window.requestAnimationFrame(this.animate.bind(this));
       this.controls.update();
 
       // Stick axes helper in front of camera
-      var vec = new THREE.Vector3( 0, 0, -1 );
-      vec.applyQuaternion( this.camera.quaternion );
+      var vec = new THREE.Vector3(0, 0, -1);
+      vec.applyQuaternion(this.camera.quaternion);
       vec.add(this.camera.position);
-      this.axesHelper.position.copy( vec );
-      
+      this.axesHelper.position.copy(vec);
+
       if (this.vground !== null) {
         //Fix the position of vground relative to camera
         this.vground.position.x = this.camera.position.x;
@@ -182,57 +175,49 @@ export default {
       }
       this.renderer.render(this.scene, this.camera);
     },
-    addArticle: function () {
+    addArticle: function() {
       let { x, y } = this.camera.position;
       let sprite = new THREE.Sprite(this.spriteMaterial);
-      sprite.center.set(0.5, 1)
+      sprite.center.set(0.5, 1);
       sprite.position.set(x, y, 0.5);
       sprite.scale.set(0.75, 0.75, 0.75);
       this.scene.add(sprite);
-    },
+    }
   },
   components: {
-    camera: Camera,
-  },
+    camera: Camera
+  }
 };
 </script>
 
 <style scoped lang="stylus">
-#overlay
-  width 100vw
-  height 100vh
-  display flex
-  justify-content center
-  align-items center
-  position fixed
+#overlay {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+}
 
-.btn
-  padding 1em
-  box-sizing border-box
-  border solid black 1px
-  border-radius 1em
-  background-color rgba(255, 255, 255, 0.5)
+.btn {
+  padding: 1em;
+  box-sizing: border-box;
+  border: solid black 1px;
+  border-radius: 1em;
+  background-color: rgba(255, 255, 255, 0.5);
+}
 
-.fullScreen
-  position absolute
-  top 0
-  bottom 0
-  width 100vw
-  height 100vh
-  overflow hidden
+.fullScreen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 
-//canvas
-  /* Make video to at least 100% wide and tall */
-  //min-width 100%
-  //min-height 100%
-
-  /* Setting width & height to auto prevents the browser from stretching or squishing the video */
-  //width 100vw
-  //height 100vh
-
-  /* Center the video */
-  //position absolute
-  //top 50%
-  //left 50%
-  //transform translate(-50%, -50%)
+/* Make video to at least 100% wide and tall */
+/* Setting width & height to auto prevents the browser from stretching or squishing the video */
+/* Center the video */
 </style>

@@ -11,8 +11,14 @@ export default class GeolocationARControls {
       this.handleSensorReading.bind(this)
     );
     this.sensor.addEventListener("error", this.handleSensorError.bind(this));
-    //Place to store quaternion
-    this.quaternion = new THREE.Quaternion();
+    // Place to store quaternion
+    // Default value is rotate 90degree along x-axis.
+    this.quaternion = new THREE.Quaternion(
+      1 * Math.sin(Math.PI / 2 / 2),
+      0,
+      0,
+      Math.cos(Math.PI / 2 / 2)
+    );
     this.sensor.start();
 
     //Use geolocator to relocate camera

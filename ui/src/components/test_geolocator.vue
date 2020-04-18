@@ -5,12 +5,8 @@
       <h1>
         <div v-on:click="showInfo = !showInfo">Debugger:</div>
         <div class="btn" v-on:click="clearHistory">Clear History</div>
-        <div class="btn" v-if="lockLast" v-on:click="lockLast = !lockLast">
-          Panning mode
-        </div>
-        <div class="btn" v-if="!lockLast" v-on:click="lockLast = !lockLast">
-          Lock last point
-        </div>
+        <div class="btn" v-if="lockLast" v-on:click="lockLast = !lockLast">Panning mode</div>
+        <div class="btn" v-if="!lockLast" v-on:click="lockLast = !lockLast">Lock last point</div>
       </h1>
       <pre v-if="showInfo">
       1 grid = {{ (gridSize / activeScale).toFixed(2) }} m
@@ -231,36 +227,45 @@ export default {
 </script>
 
 <style scoped lang="stylus">
-.debug
-  position fixed
-  bottom 0px
-  left 0px
-  font-size 12px
-  line-height 1.5em
-  padding 1em
-  box-sizing border-box
-  width 100vw
-  font-family monospace
-  h1
-    display flex
-    justify-content space-between
-  pre
-    max-height 20em
-    overflow-x scroll
-.btn
-  padding 0.2em 0.5em 0.2em 0.5em
-  border: solid black 1px
-  display: inline-block
-  border-radius 1em;
-  background-color rgba(230,230,210,0.5)
-.compass
-  display flex
-  flex-direction column
-  align-items center
-  position fixed
-  top 1em
-  right 1em
-  texe-align center
-  font-family monospace
-  line-height 1.5em
+.debug {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  font-size: 12px;
+  line-height: 1.5em;
+  padding: 1em;
+  box-sizing: border-box;
+  width: 100vw;
+  font-family: monospace;
+
+  h1 {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  pre {
+    max-height: 20em;
+    overflow-x: scroll;
+  }
+}
+
+.btn {
+  padding: 0.2em 0.5em 0.2em 0.5em;
+  border: solid black 1px;
+  display: inline-block;
+  border-radius: 1em;
+  background-color: rgba(230, 230, 210, 0.5);
+}
+
+.compass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  top: 1em;
+  right: 1em;
+  texe-align: center;
+  font-family: monospace;
+  line-height: 1.5em;
+}
 </style>
