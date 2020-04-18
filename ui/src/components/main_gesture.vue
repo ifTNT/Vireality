@@ -1,5 +1,5 @@
 <template>
-    <div ref="testElement" :class="{'testElement':true, 'expand': tapped, 'post':swiped, 'timeLine':panned}"></div>
+    <div ref="testElement" :class="{'testElement':true, 'expand': tapped, 'post':swipedUp, 'timeLine':swiped}"></div>
 </template>
 
 <script>
@@ -8,7 +8,7 @@ export default {
     data(){
         return{
             tapped: false,
-            panned: false,
+            swipedUp: false,
             swiped: false
         };
     },
@@ -18,45 +18,36 @@ export default {
         var manager = new Hammer.Manager(testElement);
         //點擊展開文章
         var tap = new Hammer.Tap({
+        
             taps:1
         });
         manager.add(tap);
         manager.on('tap', (function(event){
             this.tapped = !this.tapped;
+            console.log("click");
         }).bind(this));
         //
-        //上滑發文
-        var swipeUp = new Hammer.Swipe({
-            direction: Hammer.DIRECTION_UP
+
+        //左右滑動跳出時間軸
+        var swipe = new Hammer.Swipe({
+            direction: Hammer.DIRECTION_ALL
         });
-        manager.add(swipeUp);
-        manager.on('swipeup', (function(event){
+        manager.add(swipe);
+        manager.on('swipeleft', (function(event){
+            this.swiped = !this.swiped;
+            console.log("swip up");
+        }).bind(this));
+        manager.on('swiperight', (function(event){
             this.swiped = !this.swiped;
         }).bind(this));
         //
-        //左右滑動跳出時間軸
-        // var pan = new Hammer.Pan({
-        //     direction: Hammer.DIRECTION_ALL
-        // });
-        // manager.add(pan);
-        // manager.on('panleft panright', (function(event){
-        //     this.panned = !this.panned;
-        // }).bind(this));
-        var panLeft = new Hammer.Pan({
-            direction: Hammer.DIRECTION_LEFT
-        });
-        manager.add(panLeft);
-        manager.on('panleft', (function(event){
-            this.panned = !this.panned;
-        }).bind(this));
 
-        var panRight = new Hammer.Pan({
-            direction: Hammer.DIRECTION_RIGHT
-        });
-        manager.add(panRight);
-        manager.on('panright', (function(event){
-            this.panned = !this.panned;
+        //上滑發文
+        manager.on('swipeup', (function(event){
+            this.swipedUp = !this.swipedUp;
         }).bind(this));
+        //
+
         //縮小手勢將文章聚合
         var pinch = new Hammer.Pinch({
             direction: Hammer.DIRECTION_ALL
@@ -78,10 +69,10 @@ export default {
 <style scoped>
 .testElement{
     width: 50%;
-    height: 30%;
+    height: 70%;
     position: fixed;
     left:25vw;
-    top:35vh;
+    top:25vh;
     background-color:black;
     transition: transform 300ms ease-out;
 }
