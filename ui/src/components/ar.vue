@@ -178,12 +178,19 @@ export default {
     },
     addArticle: function() {
       let { x, y } = this.camera.position;
-      let sprite = new THREE.Sprite(this.spriteMaterial);
-      sprite.center.set(0.5, 1);
-      sprite.position.set(x, y, 0.5);
-      sprite.scale.set(0.75, 0.75, 0.75);
-      this.articles.push(sprite);
-      this.scene.add(sprite);
+      let newArticle = new THREE.Sprite(this.spriteMaterial);
+      newArticle.center.set(0.5, 1);
+      newArticle.scale.set(0.75, 0.75, 0.75);
+      
+      // Place new article in front of camera
+      var vec = new THREE.Vector3(0, 0, -2);
+      vec.applyQuaternion(this.camera.quaternion);
+      vec.add(this.camera.position);
+      newArticle.position.copy(vec);
+      newArticle.position.z = 0.5;
+
+      this.articles.push(newArticle);
+      this.scene.add(newArticle);
     }
   },
   components: {
