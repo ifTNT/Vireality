@@ -40,6 +40,15 @@ export default {
     videoHeight: 0,
     articles: []
   }),
+  mounted() {
+    this.renderer = new THREE.WebGLRenderer({
+      canvas: this.$refs.arCanvas,
+      antialias: true,
+      alpha: true
+    });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  },
   methods: {
     onCameraReady(videoWidth, videoHeight) {
       this.videoWidth = videoWidth;
@@ -149,14 +158,6 @@ export default {
         color: 0xffffff
       });
 
-      this.renderer = new THREE.WebGLRenderer({
-        canvas: this.$refs.arCanvas,
-        antialias: true,
-        alpha: true
-      });
-      this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-
       this.animate();
     },
     animate: function() {
@@ -179,15 +180,15 @@ export default {
     addArticle: function() {
       let { x, y } = this.camera.position;
       let newArticle = new THREE.Sprite(this.spriteMaterial);
-      newArticle.center.set(0.5, 1);
-      newArticle.scale.set(0.75, 0.75, 0.75);
-      
+      newArticle.center.set(0.5, 0); //Center Bottom
+      newArticle.scale.set(1, 1, 1);
+
       // Place new article in front of camera
       var vec = new THREE.Vector3(0, 0, -2);
       vec.applyQuaternion(this.camera.quaternion);
       vec.add(this.camera.position);
       newArticle.position.copy(vec);
-      newArticle.position.z = 0.5;
+      newArticle.position.z = 0.0;
 
       this.articles.push(newArticle);
       this.scene.add(newArticle);
