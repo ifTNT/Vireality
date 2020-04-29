@@ -50,13 +50,13 @@ import Geolocator from "../lib/geolocator";
 // var y = 0;
 // var accuracy = 0;
 // var articleId = 'a123';
-var date = Date.now();
+// var date = Date.now();
 export default {
     data(){
               
         return{
             articleSrc: null,
-            date
+            // date
         };
     },
     mounted(){
@@ -76,13 +76,13 @@ export default {
            this.currentPosition.x = position.coords.latitude;
            this.currentPosition.y = position.coords.longitude;
            console.log(this.currentPosition);
-           console.log(date);
+        //    console.log(date);
            axios.get(server.apiUrl('/geolocation?lon='+this.currentPosition.y+'&lat='+this.currentPosition.x+'&'+Date.now()))
             .then(function (response){
                 this.articleSrc = response.data.articles
             }.bind(this))
             .catch(function (error){
-                console.log(error)
+                console.log(error);
              });
 
        }.bind(this));
