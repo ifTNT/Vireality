@@ -15,7 +15,6 @@ import TestGeolocator from '@/components/test_geolocator'
 import FriendListAround from '@/components/friend_list_around'
 import Main from '@/components/main'
 import TestAbsSpeed from '@/components/friend_list_around'
-import FetchArticle from '@/components/article_fetch'
 
 Vue.use(Router)
 
@@ -95,11 +94,6 @@ let router = new Router({
       component: TestAbsSpeed
     },
     //=======end test===============
-    {
-      path: '/article_fetch',
-      name: 'Article Fetch',
-      component: FetchArticle
-    }
   ]
 })
 
