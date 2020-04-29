@@ -15,7 +15,7 @@ import Gesture from './main_gesture.vue'
 import FriendList from './friend_list_around.vue'
 import TimeLine from './timeline.vue'
 import * as Hammer from 'hammerjs';
-//  var Count = 10;
+// var Content = "none";
 export default {
     name:"main",
     data(){
@@ -25,7 +25,7 @@ export default {
             // tapped: false,
             // swipedUp: false,
             // swiped: false,
-            //  count:Count
+            // testContent:Content
         };
     },
     components:{
@@ -42,7 +42,8 @@ export default {
         var Test = document.getElementsByClassName("arGesture")[0];
         // var count = 0
         var tap = new Hammer.Tap({
-            taps:1
+            taps:1,
+            pointers: 1
         });
         //點擊展開文章
         manager.add(tap);
@@ -58,12 +59,13 @@ export default {
 
         //上滑發文
         var swipe = new Hammer.Swipe({
-            direction: Hammer.DIRECTION_ALL
- 
+            direction: Hammer.DIRECTION_ALL,
+            pointers: 1
         });
         manager.add(swipe);
         manager.on('swipeup', (function(event){
             // this.swipedUp = !this.swipedUp;
+            // console.log(this);
              console.log("swipeup");
              if(this.isShowTimeLine)
                 this.isShowTimeLine = !this.isShowTimeLine;
@@ -73,11 +75,13 @@ export default {
 
         //左右滑動跳出時間軸
         var pan = new Hammer.Pan({
-            direction: Hammer.DIRECTION_ALL
+            direction: Hammer.DIRECTION_ALL,
+            pointers: 1
         });
         manager.add(pan);
 
         manager.on('panleft', (function(event){
+            
             // this.swiped = !this.swiped;
             // event.enable = true;
             console.log("panleft");
@@ -93,32 +97,62 @@ export default {
             Test.style.backgroundColor = "yellow";
         }).bind(this));
         //
-        
+
         //Due to swipe and pan are asynchronous
         swipe.recognizeWith(pan);
 
+        //Due to pinch and pan are synchronous
+        // pinch.requireFailure(pan);
+        //pan.requireFailure(pinch);
+
+
+
         //縮小手勢將文章聚合
         var pinch = new Hammer.Pinch({
-            direction: Hammer.DIRECTION_ALL
+            direction: Hammer.DIRECTION_ALL,
+            pointers: 2
         });
         manager.add(pinch)
-        manager.on('pinchin', (function(event){
-            console.log("pinchin");
+        manager.on('pinchend',(function(event){
+            console.log(this.$el);
+            console.log(this);
             if(this.isShowTimeLine)
-                this.isShowTimeLine = !this.isShowTimeLine;
-            Test.style.backgroundColor = "black";
+                this.isShowTimeLine = false;
+            if(event.scale > 1){
+                
+                
+                console.log("pinchout");
+            }  
+            else{
+                console.log("pinchin");
 
+            
+            } 
+           
 
         }));
-        //
-        //放大手勢散開文章
-        manager.on('pinchout', (function(event){
-            console.log("pinchout");
-            if(this.isShowTimeLine)
-                this.isShowTimeLine = !this.isShowTimeLine;
-            Test.style.backgroundColor  = "purple";
-        }));
-        //
+
+        
+    //     manager.on('pinchin', (function(event){
+    //         console.log("pinchin");
+    //         if(this.isShowTimeLine)
+    //             this.isShowTimeLine = !this.isShowTimeLine;
+    //         Test.style.backgroundColor = "black";
+
+
+    //     }));
+        
+    //    //放大手勢散開文章
+    //     manager.on('pinchout', (function(event){
+    //         console.log("pinchout");
+    //         if(this.isShowTimeLine)
+    //             this.isShowTimeLine = !this.isShowTimeLine;
+    //         Test.style.backgroundColor  = "purple";
+    //     }));
+        
+    },
+    methods: {
+
     }
 };
 </script>
