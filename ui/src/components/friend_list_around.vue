@@ -145,21 +145,45 @@ export default {
       this.appendOnScreen(radXY);
     },
     getFriends() {
-      axios
-        .get("/user/friend_direction")
-        .then(response => {
-          if (response["ok"] === "true") {
-            this.friendRad = response["result"];
-          } else {
-            console.log("can't get friend place without ok");
-            getFriends();
-          }
-        })
-        .catch(response => {
-          console.log("can't get friends place");
-          console.log(response);
-          // getFriends()
-        });
+      this.friendRad = [
+        {
+          friendId: "a123",
+          friendDir: Math.PI / 6
+        },
+        {
+          friendId: "b1234",
+          friendDir: (Math.PI / 6) * 1.2
+        },
+        {
+          friendId: "c12345",
+          friendDir: (Math.PI / 6) * 1.4
+        },
+        {
+          friendId: "d123456",
+          friendDir: (Math.PI / 6) * 1.6
+        },
+        {
+          friendId: "e1234567",
+          friendDir: (Math.PI / 6) * 1.8
+        }
+      ];
+      console.log(this.friendRad[1].friendDir);
+      // axios
+      //   .get("/user/friend_direction")
+      //   .then(response => {
+      //     if (response.data.ok === "true") {
+      //       this.friendRad = response.data.result;
+      //     } else {
+      //       console.log("can't get friend place without ok");
+      //       getFriends();
+      //     }
+      //   })
+      //   .catch(response => {
+      //     console.log("can't get friends place");
+      //     console.log(response);
+      //     // getFriends()
+      //   });
+
     },
     appendOnScreen(radXY) {
       var listToShow = [];
