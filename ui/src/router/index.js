@@ -15,6 +15,7 @@ import TestGeolocator from '@/components/test_geolocator'
 import FriendListAround from '@/components/friend_list_around'
 import Main from '@/components/main'
 import TestAbsSpeed from '@/components/friend_list_around'
+import TestTimeLine from '@/components/test_timeline'
 
 Vue.use(Router)
 
@@ -82,6 +83,11 @@ let router = new Router({
       path: '/timeline',
       name: 'feef',
       component: TimeLine
+    },
+    {
+      path: '/test_timeline',
+      name: 'Test timeline',
+      component: TestTimeLine
     },
     {
       path: '/test_geolocator',
