@@ -3,7 +3,7 @@
         <toolbar></toolbar>   
         <ar class="ar"></ar>
         <friendList v-if="isShowFriendList"></friendList>
-        <timeLine v-if="isShowTimeLine"></timeLine> 
+        <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine> 
     </div>
 </template>
 
@@ -15,6 +15,8 @@ import Gesture from './main_gesture.vue'
 import FriendList from './friend_list_around.vue'
 import TimeLine from './timeline.vue'
 import * as Hammer from 'hammerjs';
+
+const oneDay = 86400000; //Timestamp coresponding to one day.
 // var Content = "none";
 export default {
     name:"main",
@@ -22,7 +24,8 @@ export default {
         return{
             isShowFriendList:true,
             isShowTimeLine:false,
-            canDoPan : true //防止pinch之後會偵測到pan
+            canDoPan : true, //防止pinch之後會偵測到pan
+            timestamp: +Date.now() //時間軸的時間 預設為現在
             // tapped: false,
             // swipedUp: false,
             // swiped: false,
@@ -156,12 +159,14 @@ export default {
             if(this.canDoPan){
                 console.log("panleft");
                 this.isShowTimeLine=true;
+                this.timestamp += oneDay;
             }
         },
         panRight(event){
             if(this.canDoPan){
                 console.log("panright");
                 this.isShowTimeLine=true;
+                this.timestamp -= oneDay;
             }
         },
         pinch(event){
