@@ -16,8 +16,8 @@
       </transition>
     </div>
     <!-- for test -->
-    <button v-on:click="minusChangDate">AddLeft</button>
-    <button v-on:click="addChangDate">AddRight</button>
+    <!-- <button v-on:click="minusChangDate">AddLeft</button>
+    <button v-on:click="addChangDate">AddRight</button>-->
     <!-- end for test -->
   </div>
 </template>
@@ -27,7 +27,6 @@ export default {
   data() {
     return {
       dateD: "",
-      dateNum: 0,
       items: [],
       isEditing: true
     };
@@ -51,14 +50,12 @@ export default {
   mounted() {
     this.getNowDate();
   },
-  computed: {
-    function() {
-      if (this.date > this.dateNum) {
-        this.dateNum = this.date;
-        return this.addChangDate();
+  watch: {
+    date: function(newDate, oldDate) {
+      if (newDate > oldDate) {
+        this.addChangDate();
       } else {
-        this.dateNum = this.date;
-        return this.minusChangDate();
+        this.minusChangDate();
       }
     }
   },
@@ -293,7 +290,6 @@ export default {
     },
     getNowDate() {
       var d = new Date(this.date);
-      this.dateNum = this.date;
       this.dateD = d.getDate();
       var m = d.getMonth() + 1;
       this.items.splice(
