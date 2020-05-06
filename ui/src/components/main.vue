@@ -156,36 +156,44 @@ export default {
                 this.isShowTimeLine = !this.isShowTimeLine;
         },
         panLeft(event){
-            console.log("panleft");
-            this.isShowTimeLine=true;
-            this.timestamp += oneDay;
+            if(this.canDoPan){
+                console.log("panleft");
+                this.isShowTimeLine=true;
+                this.timestamp += oneDay;
+            }
         },
         panRight(event){
-            console.log("panright");
-            this.isShowTimeLine=true;
-            this.timestamp -= oneDay;
+            if(this.canDoPan){
+                console.log("panright");
+                this.isShowTimeLine=true;
+                this.timestamp -= oneDay;
+            }
         },
         pinch(event){
-            //this.setNotDoPan();
-            //this.timer = setTimeout(this.setDoPan, 3000);
-            // console.log(this);
-            if(this.isShowTimeLine)
-                this.isShowTimeLine = false;
-            if(event.scale > 1){
-                console.log("pinchout");
-            }  
-            else{
-                console.log("pinchin");
+            this.setNotDoPan();
+            if(!this.canDoPan){
+                this.timer = setTimeout(this.setDoPan.bind(this), 1000);
+                // console.log(this);
+                if(this.isShowTimeLine)
+                    this.isShowTimeLine = false;
+                if(event.scale > 1){
+                    console.log("pinchout");
+                }
+                else{
+                    console.log("pinchin");
+                }
             }
         },
 
         setDoPan() {
-            console.log("setDoPan");
-            canDoPan = true;
+            //console.log("setDoPan");
+            this.canDoPan = true;
+            
         },
         setNotDoPan() {
-            console.log("setNotDoPan");
-            canDoPan = false;
+            //console.log("setNotDoPan");
+            this.canDoPan = false;
+            
         }
     }
 };
