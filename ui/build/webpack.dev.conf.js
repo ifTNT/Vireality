@@ -57,11 +57,19 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     },
     https: config.dev.httpsServer,
     disableHostCheck: true, //For ngrok
+
+    //CORS support
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "X-Requested-With, content-type, Authorization"
+    }
   },
   plugins: [
     new webpack.DefinePlugin({
       "process.env": require("../config/dev.env"),
-      "server": require("../config/server")
+      server: require("../config/server")
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
@@ -79,12 +87,15 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         to: config.dev.assetsSubDirectory,
         ignore: [".*"]
       }
-    ]),
-  ].concat(config.dev.serviceWorker?[
-    new GenerateSW({
-      importScripts: ["./static/workbox_debug.js"]
-    })
-    ]:[]
+    ])
+  ].concat(
+    config.dev.serviceWorker
+      ? [
+          new GenerateSW({
+            importScripts: ["./static/workbox_debug.js"]
+          })
+        ]
+      : []
   )
 });
 

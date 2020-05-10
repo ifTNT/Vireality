@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import ARView from '@/components/ar'
 import ListRoute from '@/components/list_route'
 import Camera from '@/components/camera'
-import Post from '@/components/article'
+import Post from '@/components/post_article'
 import FirstFaceDetection from '@/components/first_face_detection'
 import Article from '@/components/article'
 import Profile from '@/components/profile'
@@ -14,6 +14,7 @@ import TimeLine from '@/components/timeline'
 import TestGeolocator from '@/components/test_geolocator'
 import FriendListAround from '@/components/friend_list_around'
 import Main from '@/components/main'
+import PostLocation from '@/components/post_article_location'
 import TestAbsSpeed from '@/components/friend_list_around'
 import TestTimeLine from '@/components/test_timeline'
 
@@ -77,6 +78,11 @@ let router = new Router({
       path:'/main',
       name:'Main',
       component:Main 
+    },
+    {
+      path:'/post_article_location',
+      name:'Post Choose location',
+      component:PostLocation
     },
     //==========test================
     {
