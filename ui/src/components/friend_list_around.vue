@@ -2,25 +2,31 @@
   <div class="wrap"></div>
 </template>
 <script>
+import axios from "axios";
 export default {
   name: "friendListAround",
   data() {
     return {
       friendRad: [],
-      listShowFriend: []
+      listShowFriend: [],
+      getFrientFlag: false
     };
   },
   mounted() {
-    this.test();
+    this.getFriends()
   },
   methods: {
+    // test() {
+    //   this.sensorStarter();
+    // },
     sensorStarter() {
       const options = { frequency: 60, referenceFrame: "device" };
       const sensor = new AbsoluteOrientationSensor(options);
 
       sensor.addEventListener("reading", () => {
         // model is a Three.js object instantiated elsewhere.
-        model.quaternion.fromArray(sensor.quaternion).inverse();
+        // model.quaternion.fromArray(sensor.quaternion).inverse();
+        this.decideAxis(sensor.quaternion);
       });
       sensor.addEventListener("error", error => {
         if (event.error.name == "NotReadableError") {
@@ -31,99 +37,67 @@ export default {
       console.log(sensor);
       console.log("test");
     },
-    decideAxis(quaternion) {
-      const dy = [0, 0, 1, 0];
-      const dz = [0, 0, 0, 1];
+    caculateMatrix(quaternion,dm){
       var path = [];
-      var outputY = [];
-      var outputZ = [];
+      var output = [];
+      let qx = quaternion[0];
+      let qy = quaternion[1];
+      let qz = quaternion[2];
+      let qw = quaternion[3];
       path[0] =
-        quaternion[0] * dy[0] -
-        quaternion[1] * dy[1] -
-        quaternion[2] * dy[2] -
-        quaternion[3] * dy[3];
+        quaternion[0] * dm[0] -
+        quaternion[1] * dm[1] -
+        quaternion[2] * dm[2] -
+        quaternion[3] * dm[3];
       path[1] =
-        quaternion[1] * dy[0] +
-        quaternion[0] * dy[1] +
-        quaternion[3] * dy[2] -
-        quaternion[2] * dy[3];
+        quaternion[1] * dm[0] +
+        quaternion[0] * dm[1] +
+        quaternion[3] * dm[2] -
+        quaternion[2] * dm[3];
       path[2] =
-        quaternion[2] * dy[0] +
-        quaternion[0] * dy[2] +
-        quaternion[3] * dy[1] -
-        quaternion[1] * dy[3];
+        quaternion[2] * dm[0] +
+        quaternion[0] * dm[2] +
+        quaternion[3] * dm[1] -
+        quaternion[1] * dm[3];
       path[3] =
-        quaternion[3] * dy[0] -
-        quaternion[0] * dy[3] +
-        quaternion[1] * dy[2] -
-        quaternion[3] * dy[1];
-      outputY[0] =
+        quaternion[3] * dm[0] -
+        quaternion[0] * dm[3] +
+        quaternion[1] * dm[2] -
+        quaternion[3] * dm[1];
+      output[0] =
         path[0] * quaternion[0] -
         path[1] * -quaternion[1] -
         path[2] * -quaternion[2] -
         path[3] * -quaternion[3];
-      outputY[1] =
+      output[1] =
         path[1] * quaternion[0] +
         path[0] * -quaternion[1] +
         path[3] * -quaternion[2] -
         path[2] * -quaternion[3];
-      outputY[2] =
+      output[2] =
         path[2] * quaternion[0] +
         path[0] * -quaternion[2] +
         path[3] * -quaternion[1] -
         path[1] * -quaternion[3];
-      outputY[3] =
+      output[3] =
         path[3] * quaternion[0] -
         path[0] * -quaternion[3] +
         path[1] * -quaternion[2] -
         path[3] * -quaternion[1];
-
-      path[0] =
-        quaternion[0] * dz[0] -
-        quaternion[1] * dz[1] -
-        quaternion[2] * dz[2] -
-        quaternion[3] * dz[3];
-      path[1] =
-        quaternion[1] * dz[0] +
-        quaternion[0] * dz[1] +
-        quaternion[3] * dz[2] -
-        quaternion[2] * dz[3];
-      path[2] =
-        quaternion[2] * dz[0] +
-        quaternion[0] * dz[2] +
-        quaternion[3] * dz[1] -
-        quaternion[1] * dz[3];
-      path[3] =
-        quaternion[3] * dz[0] -
-        quaternion[0] * dz[3] +
-        quaternion[1] * dz[2] -
-        quaternion[3] * dz[1];
-      outputZ[0] =
-        path[0] * quaternion[0] -
-        path[1] * -quaternion[1] -
-        path[2] * -quaternion[2] -
-        path[3] * -quaternion[3];
-      outputZ[1] =
-        path[1] * quaternion[0] +
-        path[0] * -quaternion[1] +
-        path[3] * -quaternion[2] -
-        path[2] * -quaternion[3];
-      outputZ[2] =
-        path[2] * quaternion[0] +
-        path[0] * -quaternion[2] +
-        path[3] * -quaternion[1] -
-        path[1] * -quaternion[3];
-      outputZ[3] =
-        path[3] * quaternion[0] -
-        path[0] * -quaternion[3] +
-        path[1] * -quaternion[2] -
-        path[3] * -quaternion[1];
-
+      return output;
+    },
+    decideAxis(quaternion) {
+      const dy = [0, 1, 0, 0]; //x,y,z,w
+      const dz = [0, 0, 1, 0];
+      var outputY = this.caculateMatrix(quaternion,dy);
+      var outputZ = this.caculateMatrix(quaternion,dz);
       // (0,0,y,z)為投影在大地yz平面上，取abs(z/y)值較小者為所要的軸
       // 當z軸為所取之軸時要將得到值加上負號，-z
 
-      var axisY = Math.abs(outputY[2] / outputY[3]);
-      var axisZ = Math.abs(outputZ[2] / outputZ[3]);
+      var axisY = Math.abs(outputY[1] / outputY[2]);
+      var axisZ = Math.abs(outputZ[1] / outputZ[2]);
+      console.log(outputY+"  "+outputZ)
+
       if (axisY <= axisZ) {
         this.xy(outputY[1], outputY[2]);
       } else {
@@ -132,6 +106,7 @@ export default {
     },
     xy(xNumber, yNumber) {
       var radXY;
+      // console.log(xNumber+"  "+yNumber)
       if (yNumber < 0) {
         radXY =
           Math.acos(
@@ -145,45 +120,26 @@ export default {
       this.appendOnScreen(radXY);
     },
     getFriends() {
-      this.friendRad = [
-        {
-          friendId: "a123",
-          friendDir: Math.PI / 6
-        },
-        {
-          friendId: "b1234",
-          friendDir: (Math.PI / 6) * 1.2
-        },
-        {
-          friendId: "c12345",
-          friendDir: (Math.PI / 6) * 1.4
-        },
-        {
-          friendId: "d123456",
-          friendDir: (Math.PI / 6) * 1.6
-        },
-        {
-          friendId: "e1234567",
-          friendDir: (Math.PI / 6) * 1.8
-        }
-      ];
-      console.log(this.friendRad[1].friendDir);
-      // axios
-      //   .get("/user/friend_direction")
-      //   .then(response => {
-      //     if (response.data.ok === "true") {
-      //       this.friendRad = response.data.result;
-      //     } else {
-      //       console.log("can't get friend place without ok");
-      //       getFriends();
-      //     }
-      //   })
-      //   .catch(response => {
-      //     console.log("can't get friends place");
-      //     console.log(response);
-      //     // getFriends()
-      //   });
-
+      axios
+        .get(server.apiUrl("/user/friend_direction"))
+        .then(response => {
+          if (response.data.ok === "true") {
+            this.friendRad = response.data.result;
+            console.log(this.friendRad);
+            this.getFrientFlag = true;
+          } else {
+            console.log("can't get friend place without ok");
+            getFriends();
+          }
+        })
+        .catch(response => {
+          console.log("can't get friends place");
+          console.log(response);
+          // getFriends()
+        })
+        .then(() => {
+          this.sensorStarter();
+        });
     },
     appendOnScreen(radXY) {
       var listToShow = [];
@@ -199,7 +155,8 @@ export default {
           listToShow.push([element["id"], Math.cos(element["dir"])]);
         }
       });
-      listShowFriend = listToShow;
+      this.listShowFriend = listToShow;
+      // console.log(this.listShowFriend);
     }
   }
 };

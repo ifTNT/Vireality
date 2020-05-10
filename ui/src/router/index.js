@@ -22,8 +22,7 @@ Vue.use(Router)
 const AppName = 'Vireality'
 
 let router = new Router({
-  routes: [
-    {
+  routes: [{
       path: '/',
       name: 'Developing Index',
       component: ListRoute
@@ -64,24 +63,24 @@ let router = new Router({
       component: Gesture
     },
     {
-      path:'/toolbar',
-      name:'Toolbar',
-      component:Toolbar
+      path: '/toolbar',
+      name: 'Toolbar',
+      component: Toolbar
     },
     {
-      path:'/profile_picture',
-      name:'Propic',
-      component:ProfilePicture
+      path: '/profile_picture',
+      name: 'Propic',
+      component: ProfilePicture
     },
     {
-      path:'/main',
-      name:'Main',
-      component:Main 
+      path: '/main',
+      name: 'Main',
+      component: Main
     },
     //==========test================
     {
       path: '/timeline',
-      name: 'feef',
+      name: 'Test Timeline',
       component: TimeLine
     },
     {
@@ -93,6 +92,11 @@ let router = new Router({
       path: '/test_abs_speed_sensor',
       name: 'Test Absolte Speed Sensor',
       component: TestAbsSpeed
+    },
+    {
+      path: '/friend_list_around',
+      name: 'Test Friend List Around',
+      component: FriendListAround
     },
     //=======end test===============
     {
