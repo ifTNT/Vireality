@@ -25,6 +25,11 @@ import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import Camera from "@/components/camera";
 export default {
   name: "AR_view",
+  props: {
+    tapCoordinate: {
+      type: Object
+    }
+  },
   data: () => ({
     camera: null,
     scene: null,
@@ -32,13 +37,43 @@ export default {
     vground: null,
     renderer: null,
     controls: null,
-    spriteMaterial: null,
+    articleMaterial: null,
     geolocator: null,
     cameraHeight: 1.4, //Distance between camera and ground(m)
     started: false,
     videoWidth: 0,
-    videoHeight: 0
+    videoHeight: 0,
+    articles: []
   }),
+  mounted() {
+    this.renderer = new THREE.WebGLRenderer({
+      canvas: this.$refs.arCanvas,
+      antialias: true,
+      alpha: true
+    });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  },
+  watch: {
+    tapCoordinate: function(newCoord, oldCoord) {
+      //Normalize the coordinate to (-1, 1)
+      let { x, y } = newCoord;
+      x = (x / window.innerWidth) * 2 - 1;
+      y = -(y / window.innerHeight) * 2 + 1;
+
+      let tapCoord = new THREE.Vector2(x, y);
+      let ray = new THREE.Raycaster();
+      ray.setFromCamera(tapCoord, this.camera);
+      let intersects = ray.intersectObjects(this.scene.children);
+      //alert(`Intersects: ${intersects.length}`);
+      //if there are at least one object intersected with the ray
+      if (intersects.length > 0) {
+        //Open the cloest article
+        this.$router.push(intersects[0].object.userData.link);
+        //alert(`Open Link: ${intersects[0].object.userData.link}`);
+      }
+    }
+  },
   methods: {
     onCameraReady(videoWidth, videoHeight) {
       this.videoWidth = videoWidth;
@@ -130,31 +165,28 @@ export default {
         this.vground.add(grid);
         grid.position.set(0, 0, 0);
       }
-      this.scene.add(this.vground);
+      //this.scene.add(this.vground);
       //=========End Virtual Ground Object============
 
       //An axes helper
       this.axesHelper = new THREE.AxesHelper(0.1);
       this.axesHelper.position.set(0, 0, 0);
-      this.scene.add(this.axesHelper);
+      //this.scene.add(this.axesHelper);
 
-      //Add markers to the scene
-      const spriteMap = new THREE.TextureLoader().load(
-        //"/static/media/placeholder.png"
+      //Load the article meterial
+      //[TODO] Dynamic load different article meterial
+      const texture = new THREE.TextureLoader().load(
         "/static/media/test_article.png"
       );
-      this.spriteMaterial = new THREE.SpriteMaterial({
-        map: spriteMap,
-        color: 0xffffff
-      });
-
-      this.renderer = new THREE.WebGLRenderer({
-        canvas: this.$refs.arCanvas,
-        antialias: true,
-        alpha: true
-      });
-      this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.articleMaterial = new THREE.MeshBasicMaterial({ map: texture });
+      //const spriteMap = new THREE.TextureLoader().load(
+      //"/static/media/placeholder.png"
+      //  "/static/media/test_article.png"
+      //);
+      //this.spriteMaterial = new THREE.SpriteMaterial({
+      //  map: spriteMap,
+      //  color: 0xffffff
+      //});
 
       this.animate();
     },
@@ -177,11 +209,38 @@ export default {
     },
     addArticle: function() {
       let { x, y } = this.camera.position;
-      let sprite = new THREE.Sprite(this.spriteMaterial);
-      sprite.center.set(0.5, 1);
-      sprite.position.set(x, y, 0.5);
-      sprite.scale.set(0.75, 0.75, 0.75);
-      this.scene.add(sprite);
+      const geometry = new THREE.BoxGeometry(0.01, 1, 1); // Article cube
+      let newArticle = new THREE.Mesh(geometry, this.articleMaterial);
+      //let newArticle = new THREE.Sprite(this.spriteMaterial);
+      //newArticle.center.set(0.5, 0); //Center Bottom
+      //newArticle.scale.set(1, 1, 1);
+
+      // Place new article in front of camera
+      var vec = new THREE.Vector3(0, 0, -2);
+      vec.applyQuaternion(this.camera.quaternion);
+      vec.add(this.camera.position);
+      newArticle.position.copy(vec);
+      newArticle.position.z = 0.0;
+      newArticle.rotation.x = Math.PI / 2;
+
+      //[TODO] Dynamic load article id
+      //Set the custom data
+      newArticle.userData = {
+        link: `/article`
+      };
+
+      //Let the article facing to camera
+      let faceOnCamera = function() {
+        newArticle.rotation.y = Math.atan2(
+          newArticle.position.y - this.camera.position.y,
+          newArticle.position.x - this.camera.position.x
+        );
+        requestAnimationFrame(faceOnCamera);
+      }.bind(this);
+      faceOnCamera();
+
+      this.articles.push(newArticle);
+      this.scene.add(newArticle);
     }
   },
   components: {

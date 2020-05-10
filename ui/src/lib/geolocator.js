@@ -214,7 +214,7 @@ export default class Geolocator {
 
     let accuracy = Math.sqrt(variance);
     if (!this.debug) {
-      this.posUpdateCB({ x, y, accuracy, timestamp });
+      this.posUpdateCB({ x, y, latitude, longitude, accuracy, timestamp });
     } else {
       this.posUpdateCB({
         x,

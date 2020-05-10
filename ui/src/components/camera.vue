@@ -91,10 +91,13 @@ export default {
             width: width * scale,
             height: height * scale
           };
-          console.log(`[Face Detection] Scaled Video Width: ${width*scale} Height: ${height*scale}`)
+          console.log(
+            `[Face Detection] Scaled Video Width: ${width *
+              scale} Height: ${height * scale}`
+          );
           //=============================================
-          
-          this.$emit("camera-ready", width*scale, height*scale);
+
+          this.$emit("camera-ready", width * scale, height * scale);
           this.updatePico();
         },
         false
@@ -205,18 +208,21 @@ export default {
 </script>
 
 <style scoped lang="stylus">
-.content
-    overflow hidden
+.content {
+  overflow: hidden;
 
-    /* hide the original video*/
-    video
-      display none
-    canvas
-       /* Make video to at least 100% wide and tall */
-       min-width 100%
-       min-height 100%
+  /* hide the original video */
+  video {
+    display: none;
+  }
 
-       /* Setting width & height to auto prevents the browser from stretching or squishing the video */
-       width auto
-       height auto
+  canvas {
+    /* Make video to at least 100% wide and tall */
+    min-width: 100%;
+    min-height: 100%;
+    /* Setting width & height to auto prevents the browser from stretching or squishing the video */
+    width: auto;
+    height: auto;
+  }
+}
 </style>

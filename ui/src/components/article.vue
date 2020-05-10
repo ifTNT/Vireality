@@ -115,7 +115,7 @@ export default {
               }
             } else {
               console.log("not ok");
-              windows.location.herf = window.history;
+              window.location.herf = window.history;
             }
           }.bind(this)
         )
@@ -124,7 +124,7 @@ export default {
         })
         .catch(error => {
           console.log(error);
-          windows.location.herf = window.history;
+          window.location.herf = window.history;
         });
     },
     sendRespondMessage: function() {

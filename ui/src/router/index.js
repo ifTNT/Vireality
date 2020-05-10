@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import ARView from '@/components/ar'
 import ListRoute from '@/components/list_route'
 import Camera from '@/components/camera'
-import Post from '@/components/article'
+import Post from '@/components/post_article'
 import FirstFaceDetection from '@/components/first_face_detection'
 import Article from '@/components/article'
 import Profile from '@/components/profile'
@@ -14,8 +14,9 @@ import TimeLine from '@/components/timeline'
 import TestGeolocator from '@/components/test_geolocator'
 import FriendListAround from '@/components/friend_list_around'
 import Main from '@/components/main'
+import PostLocation from '@/components/post_article_location'
 import TestAbsSpeed from '@/components/friend_list_around'
-import FetchArticle from '@/components/article_fetch'
+import TestTimeLine from '@/components/test_timeline'
 
 Vue.use(Router)
 
@@ -77,11 +78,21 @@ let router = new Router({
       name: 'Main',
       component: Main
     },
+    {
+      path:'/post_article_location',
+      name:'Post Choose location',
+      component:PostLocation
+    },
     //==========test================
     {
       path: '/timeline',
       name: 'Test Timeline',
       component: TimeLine
+    },
+    {
+      path: '/test_timeline',
+      name: 'Test timeline',
+      component: TestTimeLine
     },
     {
       path: '/test_geolocator',
@@ -99,11 +110,6 @@ let router = new Router({
       component: FriendListAround
     },
     //=======end test===============
-    {
-      path: '/article_fetch',
-      name: 'Article Fetch',
-      component: FetchArticle
-    }
   ]
 })
 
