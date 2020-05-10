@@ -1,5 +1,5 @@
  <template>
-  <!-- todo: 發布功能 高度修改(畫面 地圖大小) 地圖 下一步浮出選單-->
+  <!--這頁廢掉了XDD todo: -->
   <div class="chooseLocation">
     <header>
       <nav>

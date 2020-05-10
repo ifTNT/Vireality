@@ -1,13 +1,16 @@
  <template>
- <!-- todo: 圖片高度修改 畫面高度修改 驗證機制(是否有圖片)  -->
+  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片) 驗證機制(是否有圖片) POST的API 地圖 隱私等等設定清單 -->
   <div class="post">
     <header>
-      <nav class="backAndNextButton">
-        <img src="static/media/back.svg" @click.prevent="handleBack(fromRoute)"/>
+      <nav class="backAndNextButton" v-if="choosePicAndContent" >
+        <img src="static/media/back.svg" @click.prevent="handleBack(fromRoute)" />
         <div class="nextButton" @click="nextPage">{{nextButtonName}}</div>
       </nav>
+      <nav v-if="chooseLocation">
+        <div class="postButton"  @click="post">{{postButtonName}}</div>
+      </nav>
     </header>
-    <div class="postArticleBody">
+    <div class="postArticleBody" v-if="choosePicAndContent">
       <div class="picture">
         <label class="uploadPicButton">
           {{upLoadPicName}}
@@ -26,6 +29,9 @@
         <textarea placeholder="輸入文章內容" class="inputContent"></textarea>
       </div>
     </div>
+
+    <div class="map" v-if="chooseLocation"></div>
+    <div class="remind" v-if="chooseLocation">{{remindContent}}</div>
   </div>
 </template>
 <script>
@@ -34,17 +40,21 @@ export default {
     return {
       nextButtonName: "下一步",
       upLoadPicName: "上傳照片",
+      postButtonName:"發佈",
       hasUploadPic: false,
       img: null,
-      fromRoute: null//上一頁的參數
+      fromRoute: null, //上一頁的參數
+      choosePicAndContent: true,
+      chooseLocation: false,
+      remindContent: "請在地圖中選擇您所在的位置"
     };
   },
-  
-  beforeRouteEnter (to, from, next) {
-      next(vm => {
-        vm.fromRoute = from;//放上一頁參數
-      })
-    },
+
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.fromRoute = from; //放上一頁參數
+    });
+  },
 
   mounted() {},
   methods: {
@@ -58,17 +68,22 @@ export default {
       this.img = event.target.result;
       this.hasUploadPic = true;
     },
-    
-    handleBack (fallback) {//處理點下上一頁按鈕的動作
+
+    handleBack(fallback) {
+      //處理點下上一頁按鈕的動作
       if (!this.fromRoute.name) {
         this.$router.push(fallback);
       } else {
         this.$router.back();
       }
     },
-    nextPage(){
-      document.location.href="/#/post_article_location";
-      // this.$router.push('');
+    nextPage() {
+      // document.location.href="/#/post_article_location";
+      this.choosePicAndContent = false;
+      this.chooseLocation = true;
+    },
+    post(){
+      document.location.href="/#/main";
     }
   }
 };
@@ -107,6 +122,22 @@ header {
     .nextButton:active {
       background-color: white; // 可更改
     }
+  }
+  nav{
+    padding: 1vh 1vw;
+      display: flex;
+      justify-content: flex-end;
+    //MAP
+      .postButton {
+        width: 12vw;
+        height: 1.5em;
+        text-align: center;
+        border: 0;
+        border-radius: 10px;
+        background-color: pink;
+        font-size: 25px;
+        line-height: 1.5em;
+      }
   }
 }
 
@@ -166,6 +197,33 @@ header {
   }
 }
 
+//MAP
+.map {
+  background-color: rgb(255, 255, 255, );
+  height: 70vh;
+  margin-top: 3vh;
+  animation-name: slideUp;
+  animation-duration: 1s;
+}
+//MAP
+.remind {
+  font-size: 5vw;
+  text-align: center;
+  margin-top: 2vh;
+  animation-name: slideUp;
+  animation-duration: 1s;
+}
+//MAP
+@keyframes slideUp{
+    from{
+        margin-top: 100vh;
+    }
+    to{
+        margin-top: 3vh;
+    }
+}
+
+
 @media screen and (min-width: 500px) and (max-width: 900px) {
   .postArticleBody {
     .picture {
@@ -183,6 +241,13 @@ header {
       .nextButton {
         width: 14vw;
         font-size: 13px;
+      }
+    }
+    //MAP
+    nav {
+      .postButton {
+          font-size: 13px;
+          width: 14vw;
       }
     }
   }
