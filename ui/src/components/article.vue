@@ -2,7 +2,7 @@
   <div class="app">
     <header>
       <nav class="goBackBtn">
-        <img src="static/media/back.svg" />
+        <img src="static/media/back.svg" @click.prevent="handleBack(fromRoute)"/>
       </nav>
     </header>
     <div class="articleBody">
@@ -53,6 +53,7 @@ export default {
 
   data() {
     return {
+      fromRoute: null, //上一頁的參數
       message: "",
       autherName: "Auther",
       articleTexts: "",
@@ -66,6 +67,11 @@ export default {
       showIndex: 0,
       nowSelect: 0
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.fromRoute = from; //放上一頁參數
+    });
   },
   components: {
     // 新增大頭照的components tag命名為proPic
@@ -165,6 +171,14 @@ export default {
         this.show(++this.showIndex);
       } else if (leftSlide < -30 && this.showIndex > 0) {
         this.show(--this.showIndex);
+      }
+    },
+    handleBack(fallback) {
+      //處理點下上一頁按鈕的動作
+      if (!this.fromRoute.name) {
+        this.$router.push(fallback);
+      } else {
+        this.$router.back();
       }
     }
   }
