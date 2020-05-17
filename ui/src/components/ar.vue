@@ -1,6 +1,6 @@
 <template>
   <div>
-    <camera class="fullScreen" v-on:camera-ready="onCameraReady" />
+    <camera class="fullScreen" v-on:camera-ready="onCameraReady" v-bind:tap-coordinate="this.tapCoordinate" />
     <canvas class="fullScreen" ref="arCanvas"></canvas>
     <div id="overlay">
       <font-awesome-icon
@@ -65,12 +65,11 @@ export default {
       let ray = new THREE.Raycaster();
       ray.setFromCamera(tapCoord, this.camera);
       let intersects = ray.intersectObjects(this.scene.children);
-      //alert(`Intersects: ${intersects.length}`);
+      
       //if there are at least one object intersected with the ray
       if (intersects.length > 0) {
         //Open the cloest article
         this.$router.push(intersects[0].object.userData.link);
-        //alert(`Open Link: ${intersects[0].object.userData.link}`);
       }
     }
   },
