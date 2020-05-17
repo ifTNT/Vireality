@@ -21,13 +21,15 @@
     "@fortawesome/free-solid-svg-icons": "^5.13.0",
     "@fortawesome/vue-fontawesome": "^0.1.9",
     "axios": "^0.19.2",
+    "mapbox-gl": "^1.10.1",
     "picojs": "^1.0.0",
     "svg-progress-bar": "^0.1.17",
     "three": "^0.114.0",
     "vue": "^2.5.2",
     "vue-progress-path": "0.0.2",
     "vue-resource": "^1.5.1",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "vue2-google-maps": "^0.10.7"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
