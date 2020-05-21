@@ -20,6 +20,34 @@ export default {
       validator: (
         value // The value must match one of two strings
       ) => ["environment", "user"].indexOf(value) !== -1
+    },
+    tapCoordinate: {
+      type: Object
+    }
+  },
+  watch: {
+    tapCoordinate: function(newCoord, oldCoord) {
+      for (let face of this.dets) {
+        if (face[3] > 50.0) {
+          let width = face[2] / 2;
+          let x = face[1] - width / 2;
+          let y = face[0] - width / 2;
+
+          // The box of detected face
+          const aspect_ratio = 1;
+          let height = width * aspect_ratio;
+          y -= height * 1.8; //Calculate offset. Negative is ok.
+          if (
+            Math.abs(newCoord.y - y) < width &&
+            Math.abs(newCoord.x - x) < width
+          ) {
+            // Tap in region of detection
+            // [TODO] Lookup table to translate faces to link.
+            this.$router.push("/profile");
+            break;
+          }
+        }
+      }
     }
   },
   data: () => ({
@@ -38,7 +66,10 @@ export default {
       y: 0,
       width: 0,
       height: 0
-    }
+    },
+
+    // Place to store detected faces
+    dets: []
   }),
   mounted() {
     this.initCamera();
@@ -188,6 +219,10 @@ export default {
       // (the constant 50.0 is empirical: other cascades might require a different one)
       ctx.strokeStyle = "white";
       //ctx.font = "20px Ubuntu";
+
+      // Store detected faces
+      this.dets = dets;
+
       for (let face of dets) {
         if (face[3] > 50.0) {
           ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
