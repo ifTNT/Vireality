@@ -10,7 +10,7 @@
         <nav class="articleAuthor">
           <!-- 前者是要丟給child(profile_picture) props的參數名稱 後者是在parent(article) data區域之參數名稱 -->
           <proPic :diameter="parentDiameter" :Id="author"></proPic>
-          <p>{{ autherName }}</p>
+          <p>{{ authorName }}</p>
         </nav>
         <nav class="articleTime">{{postTime}}</nav>
       </div>
@@ -55,7 +55,7 @@ export default {
     return {
       fromRoute: null, //上一頁的參數
       message: "",
-      autherName: "Auther",
+      authorName: "Author",
       articleTexts: "",
       //parentDiameter是要丟給ProPic的直徑長度
       parentDiameter: "2em",
@@ -92,7 +92,7 @@ export default {
             if (response.data.ok === "true") {
               this.articlPicture = response.data.thumbnail;
               this.articleTexts = response.data.text;
-              this.autherName = response.data.author;
+              this.authorName = response.data.author;
               this.isStory = response.data.isStory;
               if (Date.now() - parseInt(response.data.postTime) < 86400000) {
                 const pathTime =

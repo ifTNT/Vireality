@@ -1,6 +1,6 @@
 <template>
   <div id="wrap">
-    <nav v-for="(src,index) in listShowFriend" :key="index" :style="styleList[index]">
+    <nav v-for="(src,index) in listShowFriend" :key="index" :style="{left: styleList[index], color: red}">
       <proPic :diameter="parentDiameter" :Id="src[0]"></proPic>
     </nav>
   </div>
@@ -13,7 +13,24 @@ export default {
   data() {
     return {
       friendRad: [],
-      listShowFriend: [],
+      listShowFriend: [
+        {
+          id: "12355",
+          dir: 0
+        },
+        {
+          id: "123",
+          dir: 0.5418
+        },
+        {
+          id: "12345",
+          dir: Math.PI / 6
+        },
+        {
+          id: "123456",
+          dir: -(Math.PI / 6)
+        }
+      ],
       getFrientFlag: false,
       parentDiameter: "2em",
       styleList: []
@@ -24,7 +41,8 @@ export default {
     proPic: ProPic
   },
   mounted() {
-    this.getFriends();
+    // this.getFriends();
+    this.show()
   },
   methods: {
     // test() {
@@ -33,27 +51,28 @@ export default {
     show() {
       this.styleList.length = 0;
       this.listShowFriend.forEach(index => {
-        this.styleList.push(`left: ${(100 * (1 - index)) / 2}%`);
+        this.styleList.push(`${(100 * (Math.sin(index.dir-Math.PI / 6)+0.5))}%`);
+        console.log(index.dir,index.dir-Math.PI / 6,Math.sin(index.dir-Math.PI / 6))
       });
     },
-    sensorStarter() {
-      const options = { frequency: 60, referenceFrame: "device" };
-      const sensor = new AbsoluteOrientationSensor(options);
+    // sensorStarter() {
+    //   const options = { frequency: 60, referenceFrame: "device" };
+    //   const sensor = new AbsoluteOrientationSensor(options);
 
-      sensor.addEventListener("reading", () => {
-        // model is a Three.js object instantiated elsewhere.
-        // model.quaternion.fromArray(sensor.quaternion).inverse();
-        this.decideAxis(sensor.quaternion);
-      });
-      sensor.addEventListener("error", error => {
-        if (event.error.name == "NotReadableError") {
-          console.log("Sensor is not available.");
-        }
-      });
-      sensor.start();
-      console.log(sensor);
-      console.log("test");
-    },
+    //   sensor.addEventListener("reading", () => {
+    //     // model is a Three.js object instantiated elsewhere.
+    //     // model.quaternion.fromArray(sensor.quaternion).inverse();
+    //     this.decideAxis(sensor.quaternion);
+    //   });
+    //   sensor.addEventListener("error", error => {
+    //     if (event.error.name == "NotReadableError") {
+    //       console.log("Sensor is not available.");
+    //     }
+    //   });
+    //   sensor.start();
+    //   console.log(sensor);
+    //   console.log("test");
+    // },
     caculateMatrix(quaternion, dm) {
       var path = [];
       var output = [];
@@ -147,7 +166,10 @@ export default {
               element["dir"] <= radDevice[0] &&
               element["dir"] >= radDevice[1]
             ) {
-              listToShow.push([element["id"], Math.cos(element["dir"])]);
+              listToShow.push({
+                id: element["id"],
+                dir: Math.cos(element["dir"]-radDevice[1])
+              });
             }
           });
           this.listShowFriend = listToShow;
@@ -161,13 +183,16 @@ export default {
 </script>
 
 <style scoped lang="stylus">
-.wrap {
+#wrap {
   position: relative;
   width: 100%;
   padding: 0% 2% 0% 2%;
 
   nav {
     position: absolute;
+    display inline-block;
+    // width 4em
+    // height 4em
   }
 }
 </style>
