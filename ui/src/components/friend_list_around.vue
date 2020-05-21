@@ -1,6 +1,10 @@
 <template>
   <div id="wrap">
-    <nav v-for="(src,index) in listShowFriend" :key="index" :style="{left: styleList[index], color: red}">
+    <nav
+      v-for="(src,index) in listShowFriend"
+      :key="index"
+      :style="{left: styleList[index], color: red}"
+    >
       <proPic :diameter="parentDiameter" :Id="src[0]"></proPic>
     </nav>
   </div>
@@ -24,11 +28,11 @@ export default {
         },
         {
           id: "12345",
-          dir: Math.PI / 6
+          dir: Math.PI / 3
         },
         {
           id: "123456",
-          dir: -(Math.PI / 6)
+          dir: Math.PI / 6
         }
       ],
       getFrientFlag: false,
@@ -42,7 +46,7 @@ export default {
   },
   mounted() {
     // this.getFriends();
-    this.show()
+    this.show();
   },
   methods: {
     // test() {
@@ -51,8 +55,9 @@ export default {
     show() {
       this.styleList.length = 0;
       this.listShowFriend.forEach(index => {
-        this.styleList.push(`${(100 * (Math.sin(index.dir-Math.PI / 6)+0.5))}%`);
-        console.log(index.dir,index.dir-Math.PI / 6,Math.sin(index.dir-Math.PI / 6))
+        this.styleList.push(
+          `${100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2)}%`
+        );
       });
     },
     // sensorStarter() {
@@ -168,7 +173,7 @@ export default {
             ) {
               listToShow.push({
                 id: element["id"],
-                dir: Math.cos(element["dir"]-radDevice[1])
+                dir: Math.cos(element["dir"] - radDevice[1])
               });
             }
           });
@@ -186,13 +191,13 @@ export default {
 #wrap {
   position: relative;
   width: 100%;
-  padding: 0% 2% 0% 2%;
+  height 2em
+  overflow hidden
 
   nav {
     position: absolute;
-    display inline-block;
-    // width 4em
-    // height 4em
+    display: inline-block;
+    margin-left: -1em;
   }
 }
 </style>
