@@ -4,7 +4,7 @@
 
 module.exports = {
   apiUrl: function(path) {
-    let serverLocation = "http://localhost:3000";
+    let serverLocation = `https://${window.location.hostname}:3000`;
     if (path.substring(0, 1) === "/") {
       //Endpoints must begin with '/'
       return serverLocation + path;
