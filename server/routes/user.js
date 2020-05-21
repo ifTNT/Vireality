@@ -43,15 +43,15 @@ router.get("/friend_direction", function(req, res, next) {
       },
       {
         id:"1234",
-        dir:0.3218
+        dir:3.3218
       },
       {
         id:"12345",
-        dir:0.3318
+        dir:1.3318
       },
       {
         id:"123456",
-        dir:0.3518
+        dir:2.3518
       }
     ]
   });
