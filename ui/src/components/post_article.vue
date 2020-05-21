@@ -1,5 +1,5 @@
  <template>
-  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片) 驗證機制(是否有圖片) POST的API 地圖 隱私等等設定清單 -->
+  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片) 驗證機制(是否有圖片) POST的API 地圖(MARKER修正 目前抓的到位置) 隱私等等設定清單 -->
   <div class="post">
     <header>
       <nav class="backAndNextButton" v-if="choosePicAndContent" >
