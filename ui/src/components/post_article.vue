@@ -1,15 +1,22 @@
  <template>
-  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片) 驗證機制(是否有圖片) POST的API 地圖(MARKER修正 目前抓的到位置) 隱私等等設定清單 -->
+  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片) 驗證機制(是否有圖片) POST的API(有問題 目前可以抓到全部需要放到DB的資料) -->
+  <!-- 地圖(目前可用 但需修改為直觀式~) --> 
   <div class="post">
     <header>
-      <nav class="backAndNextButton" v-if="choosePicAndContent" >
+      <nav class="backAndNextButton" v-if="choosePicAndContent">
         <img src="static/media/back.svg" @click.prevent="handleBack(fromRoute)" />
-        <div class="nextButton" @click="nextPage">{{nextButtonName}}</div>
+        <div class="nextButton" @click="nextSetPage">{{nextButtonName}}</div>
       </nav>
-      <nav v-if="chooseLocation">
-        <div class="postButton"  @click="post">{{postButtonName}}</div>
+      <nav>
+        <div class="postButton" @click="post" v-if="chooseLocation">{{postButtonName}}</div>
+        <div
+          class="postButton"
+          @click="nextSetLocationPage"
+          v-if="choseTypeAndPrivacy"
+        >{{nextButtonName}}</div>
       </nav>
     </header>
+
     <div class="postArticleBody" v-if="choosePicAndContent">
       <div class="picture">
         <label class="uploadPicButton">
@@ -26,10 +33,33 @@
         <img class="pic" v-if="hasUploadPic" :src="img" />
       </div>
       <div class="textArea">
-        <textarea placeholder="輸入文章內容" class="inputContent"></textarea>
+        <textarea placeholder="輸入文章內容" class="inputContent" v-model="content"></textarea>
       </div>
     </div>
-    <mapbox class="map" mapWidth="100vw" mapHeight="70vh" v-if="chooseLocation"></mapbox>
+
+    <div class="TypeAndPrivacy" v-if="choseTypeAndPrivacy">
+      <h2>誰可以看到您的文章</h2>
+      <div class="privacy">
+        <span>所有人</span>
+        <switches v-model="allOrFriend" theme="bootstrap" color="info"></switches>
+        <span>好友</span>
+      </div>
+
+      <h2>挑選您的文章類型</h2>
+      <div class="type">
+        <span>地點文章</span>
+        <switches v-model="placeOrPersonal" theme="bootstrap" color="info"></switches>
+        <span>個人</span>
+      </div>
+    </div>
+
+    <mapbox
+      v-on:childByValue="childByValue"
+      class="map"
+      mapWidth="100vw"
+      mapHeight="70vh"
+      v-if="chooseLocation"
+    ></mapbox>
     <!-- <div class="map" id="googleMap" v-if="chooseLocation" ></div> -->
     <div class="remind" v-if="chooseLocation">{{remindContent}}</div>
   </div>
@@ -38,22 +68,28 @@
 <script>
 // import google from 'vue2-google-maps'
 import Mapbox from "./mapbox.vue";
+import Switches from "vue-switches";
+import axios from "axios";
 
 export default {
   data() {
     return {
       nextButtonName: "下一步",
       upLoadPicName: "上傳照片",
-      postButtonName:"發佈",
+      postButtonName: "發佈",
       hasUploadPic: false,
       img: null,
       fromRoute: null, //上一頁的參數
+      content: "",
       choosePicAndContent: true,
       chooseLocation: false,
       remindContent: "請在地圖中選擇您所在的位置",
+      choseTypeAndPrivacy: false,
+      allOrFriend: false,
+      placeOrPersonal: false,
       // map: null,
-      // lat: 25.0325917,
-      // lng: 121.5624999
+      longitude: 0,
+      latitude: 0
     };
   },
 
@@ -62,44 +98,18 @@ export default {
       vm.fromRoute = from; //放上一頁參數
     });
   },
-   components: {
+  components: {
     // 新增大頭照的components tag命名為proPic
-    mapbox: Mapbox
+    mapbox: Mapbox,
+    Switches
   },
-  mounted() {
-    // this.initMap();
-    // this.setMarker();
-    // console.log(this.map);
-  },
+  mounted() {},
   methods: {
-    // 建立地圖
-    
-    // initMap() {
-    //    const google = window.google
-    //   // 透過 Map 物件建構子建立新地圖 map 物件實例，並將地圖呈現在 id 為 map 的元素中
-    //   this.map = new google.maps.Map(document.getElementsByClassName(".map"), {
-    //     // 設定地圖的中心點經緯度位置
-    //     center: { lat: this.lat, lng: this.lng },
-    //     // 設定地圖縮放比例 0-20
-    //     zoom: 15,
-    //     // 限制使用者能縮放地圖的最大比例
-    //     maxZoom: 20,
-    //     // 限制使用者能縮放地圖的最小比例
-    //     minZoom: 3,
-    //     // 設定是否呈現右下角街景小人
-    //     streetViewControl: false,
-    //     // 設定是否讓使用者可以切換地圖樣式：一般、衛星圖等
-    //     mapTypeControl: false
-    //   });
-    // },setMarker() {
-    //   // 建立一個新地標
-    //   const marker = new google.maps.Marker({
-    //     // 設定地標的座標
-    //     position: { lat: this.lat, lng: this.lng },
-    //     // 設定地標要放在哪一個地圖
-    //     map: this.map
-    //   });
-    // },
+    childByValue: function(lng, lat) {
+      // childValue就是子组件传过来的值
+      this.latitude = lat;
+      this.longitude = lng;
+    },
     changeImage(e) {
       const file = event.target.files.item(0); //取得File物件
       const reader = new FileReader(); //建立FileReader 監聽 Load 事件
@@ -119,13 +129,37 @@ export default {
         this.$router.back();
       }
     },
-    nextPage() {
+    nextSetPage() {
       // document.location.href="/#/post_article_location";
       this.choosePicAndContent = false;
+      this.choseTypeAndPrivacy = true;
+      console.log(this.content);
+    },
+    nextSetLocationPage() {
+      this.choseTypeAndPrivacy = false;
       this.chooseLocation = true;
     },
-    post(){
-      document.location.href="/#/main";
+    post() {
+      axios
+        .get(
+          server.apiUrl(
+            "/article/post?" +
+              this.content +
+              "=loren%2085fdsb&lon=" +
+              this.longitude +
+              "&lat=" +
+              this.latitude
+          )
+        )
+        .then(
+          function(response) {
+            console.log(response);
+          }.bind(this)
+        )
+        .catch(error => {
+          console.log(error);
+        });
+      document.location.href = "/#/main";
     }
   }
 };
@@ -156,7 +190,7 @@ header {
       text-align: center;
       border: 0;
       border-radius: 10px;
-      background-color: pink;
+      background-color: white;
       font-size: 25px;
       line-height: 1.5em;
     }
@@ -165,21 +199,22 @@ header {
       background-color: white; // 可更改
     }
   }
-  nav{
+
+  nav {
     padding: 1vh 1vw;
-      display: flex;
-      justify-content: flex-end;
-    //MAP
-      .postButton {
-        width: 12vw;
-        height: 1.5em;
-        text-align: center;
-        border: 0;
-        border-radius: 10px;
-        background-color: pink;
-        font-size: 25px;
-        line-height: 1.5em;
-      }
+    display: flex;
+    justify-content: flex-end;
+
+    .postButton {
+      width: 12vw;
+      height: 1.5em;
+      text-align: center;
+      border: 0;
+      border-radius: 10px;
+      background-color: white;
+      font-size: 25px;
+      line-height: 1.5em;
+    }
   }
 }
 
@@ -200,7 +235,7 @@ header {
       text-align: center;
       border: 0;
       border-radius: 10px;
-      background-color: pink;
+      background-color: white;
       font-size: 30px;
       position: fixed;
       top: 50vh;
@@ -232,23 +267,24 @@ header {
       width: 87 vw;
       padding: 1vh;
       background: white;
-      min-height: 20vh;
+      min-height: 10em;
       font-size: 3vw;
       resize: none;
     }
   }
 }
 
-//MAP
+// MAP
 .map {
-  //background-color: rgb(255, 255, 255, );
+  // background-color: rgb(255, 255, 255, );
   height: 70vh;
   width: 100vw;
   margin-top: 3vh;
   animation-name: slideUp;
   animation-duration: 1s;
 }
-//MAP
+
+// MAP
 .remind {
   font-size: 5vw;
   text-align: center;
@@ -256,16 +292,31 @@ header {
   animation-name: slideUp;
   animation-duration: 1s;
 }
-//MAP
-@keyframes slideUp{
-    from{
-        margin-top: 100vh;
-    }
-    to{
-        margin-top: 3vh;
-    }
+
+// MAP
+@keyframes slideUp {
+  from {
+    margin-top: 100vh;
+  }
+
+  to {
+    margin-top: 3vh;
+  }
 }
 
+// chose type
+.TypeAndPrivacy {
+  text-align: center;
+  margin-top: 25vh;
+
+  h2 {
+    font-weight: bold;
+  }
+
+  .privacy, .type {
+    margin: 3vh 0;
+  }
+}
 
 @media screen and (min-width: 500px) and (max-width: 900px) {
   .postArticleBody {
@@ -286,11 +337,12 @@ header {
         font-size: 13px;
       }
     }
-    //MAP
+
+    // MAP
     nav {
       .postButton {
-          font-size: 13px;
-          width: 14vw;
+        font-size: 13px;
+        width: 14vw;
       }
     }
   }
@@ -309,7 +361,7 @@ header {
   .postArticleBody {
     .textArea {
       .inputContent {
-        min-height: 37vh;
+        min-height: 10em;
         font-size: 3vw;
       }
     }
@@ -319,7 +371,7 @@ header {
     .postArticleBody {
       .textArea {
         .inputContent {
-          min-height: 44vh;
+          min-height: 10em;
           font-size: 3vw;
         }
       }

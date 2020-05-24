@@ -13,7 +13,11 @@ export default {
     }
   },
   data() {
-    return {};
+    return {
+      longitude: 0,
+      latitude: 0,
+      marker: Object,
+    };
   },
   mounted() {
     this.init();
@@ -27,7 +31,7 @@ export default {
         container: this.$refs.basicMapbox,
         style: "mapbox://styles/mapbox/streets-v11",
         center: [120.276694, 22.732917], //設定地圖中心在高大資工
-        zoom: 15 // 地圖比例
+        zoom: 13 // 地圖比例
       });
       //console.log(map);
 
@@ -38,31 +42,19 @@ export default {
         trackUserLocation: true
         //showUserLocation: true,
       });
-
-      // 一開起來就會追蹤位置
       map.addControl(geolocate);
+      // 一開起來就會追蹤位置
       map.on("load", function() {
         geolocate.trigger();
       });
-      console.log(geolocate);
 
-      var marker = new mapboxgl.Marker({
+      this.marker = new mapboxgl.Marker({
         draggable: true
       })
         .setLngLat([120.276694, 22.732917])
         .addTo(map);
-
-      function onDragEnd() {
-        var lngLat = marker.getLngLat();
-        var lng = lngLat.lng;
-        var lat = lngLat.lat;
-        console.log(lng);
-        console.log(lat);
-      }
-
-      marker.on("dragend", onDragEnd);
-
-     
+      this.emitInitLngLat();
+      this.marker.on("dragend", this.onDragEnd);
 
       var language = new MapboxLanguage();
       map.addControl(language);
@@ -76,6 +68,26 @@ export default {
       // var marker = new mapboxgl.Marker()
       //   .setLngLat([120.276694, 22.732917])
       //   .addTo(map);
+    },
+    onDragEnd() {
+      var lngLat = this.marker.getLngLat();
+      var lng = lngLat.lng;
+      var lat = lngLat.lat;
+      console.log(lng);
+      console.log(lat);
+      this.longitude = lng;
+      this.latitude = lat;
+      this.$emit('childByValue', this.longitude,this.latitude);
+    },
+    emitInitLngLat(){
+      var lngLat = this.marker.getLngLat();
+      var lng = lngLat.lng;
+      var lat = lngLat.lat;
+      console.log(lng);
+      console.log(lat);
+      this.longitude = lng;
+      this.latitude = lat;
+      this.$emit('childByValue', this.longitude,this.latitude);
     }
   },
   computed: {

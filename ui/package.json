@@ -29,6 +29,7 @@
     "vue-progress-path": "0.0.2",
     "vue-resource": "^1.5.1",
     "vue-router": "^3.0.1",
+    "vue-switches": "^2.0.1",
     "vue2-google-maps": "^0.10.7"
   },
   "devDependencies": {
