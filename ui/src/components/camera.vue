@@ -146,6 +146,7 @@ export default {
             }
           })
           .then(stream => {
+            console.log("Setting stream");
             this.$refs.capture.srcObject = stream;
           })
           .catch(error => {

@@ -220,7 +220,7 @@ toolbar {
   position: absolute;
   left: 0px;
   top: 0vh !important;
-  background-color: deepskyblue;
+  background-color: black;
   transition: transform 300ms ease-out;
   z-index: -99999999;
 }
