@@ -7,6 +7,7 @@
     >
       <!-- <proPic :diameter="parentDiameter" :Id="src[0]"></proPic> -->
       <img src="https://i.imgur.com/07XbOpL.png" alt style="width:2em" />
+      <!-- <p>{{this.listShowFriend[0].dir}}</p> -->
     </nav>
   </div>
 </template>
@@ -39,12 +40,14 @@ export default {
     show() {
       this.styleList.length = 0;
       this.listShowFriend.forEach(index => {
-        console.log(index);
+        // console.log(index);
+        // if(index.dir - Math.PI / 6)
         this.styleList.push(
           `${100 -
             (100 * (Math.sin(index.dir - Math.PI / 6) + 0.5)).toFixed(2)}%`
         );
-        // console.log(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2))
+        console.log(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2))
+        console.log((index.dir/Math.PI).toFixed(2))
       });
     },
     sensorStarter() {
@@ -93,7 +96,6 @@ export default {
       var axisY = Math.abs(outputY[0] / outputY[1]);
       var axisZ = Math.abs(outputZ[0] / outputZ[2]);
       // console.log(outputY + "  " + outputZ);
-
       if (axisY <= axisZ) {
         this.xy(outputY[0], outputY[1]);
       } else {
@@ -162,17 +164,19 @@ export default {
     appendOnScreen(radXY) {
       var listToShow = [];
       var radDevice = []; //has two num, first is deviceDeg + π/6, second is deviceDeg - π/6
-      // radDevice.push(radXY + Math.PI / 6); //大於零的部分
-      if (radXY > (Math.PI * 11) / 6) {
-        radDevice.push(radXY - (Math.PI * 11) / 6); //2*Math.PI-Math.PI/6+radXY
-      } else {
-        radDevice.push(radXY + Math.PI / 6); //大於零的部分
-      }
-      if (radXY < Math.PI / 6) {
-        radDevice.push((Math.PI * 11) / 6 + radXY); //2*Math.PI-Math.PI/6+radXY
-      } else {
-        radDevice.push(radXY - Math.PI / 6);
-      }
+      // 上下限，超過2PI或小於零的部分在後面算差距時就會被導正，這裡可以先不管
+      radDevice.push(radXY + Math.PI / 6);
+      radDevice.push(radXY - Math.PI / 6);
+      // if (radXY > (Math.PI * 11) / 6) {
+      //   radDevice.push(radXY - (Math.PI * 11) / 6); //2*Math.PI-Math.PI/6+radXY
+      // } else {
+      //   radDevice.push(radXY + Math.PI / 6); //大於零的部分
+      // }
+      // if (radXY < Math.PI / 6) {
+      //   radDevice.push((Math.PI * 11) / 6 + radXY); //2*Math.PI-Math.PI/6+radXY
+      // } else {
+      //   radDevice.push(radXY - Math.PI / 6);
+      // }
 
       // console.log(radDevice);
       while (true) {
@@ -184,7 +188,7 @@ export default {
             ) {
               listToShow.push({
                 id: element["id"],
-                dir: Math.cos(element["dir"] - radDevice[1])
+                dir: Math.cos(element["dir"] - radDevice[1] + Math.PI / 6)
               });
             }
           });
@@ -193,12 +197,12 @@ export default {
           break;
         }
       }
-      console.log(this.listShowFriend.length);
-      if (this.listShowFriend.length) {
-        this.listShowFriend.forEach(element => {
-          console.log(element.dir);
-        });
-      }
+      // console.log(this.listShowFriend.length);
+      // if (this.listShowFriend.length) {
+      //   this.listShowFriend.forEach(element => {
+      //     console.log(element.dir);
+      //   });
+      // }
       // console.log(listToShow);
     }
   }
