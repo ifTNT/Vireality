@@ -5,7 +5,9 @@
       :key="index"
       :style="{left: styleList[index], color: red}"
     >
-      <proPic :diameter="parentDiameter" :Id="src[0]"></proPic>
+      <!-- <proPic :diameter="parentDiameter" :Id="src[0]"></proPic> -->
+      <img src="https://i.imgur.com/07XbOpL.png" alt style="width:2em" />
+      <!-- <p>{{this.listShowFriend[0].dir}}</p> -->
     </nav>
   </div>
 </template>
@@ -17,24 +19,7 @@ export default {
   data() {
     return {
       friendRad: [],
-      listShowFriend: [
-        {
-          id: "12355",
-          dir: 0
-        },
-        {
-          id: "123",
-          dir: 0.5418
-        },
-        {
-          id: "12345",
-          dir: Math.PI / 3
-        },
-        {
-          id: "123456",
-          dir: Math.PI / 6
-        }
-      ],
+      listShowFriend: [],
       getFrientFlag: false,
       parentDiameter: "2em",
       styleList: []
@@ -45,8 +30,8 @@ export default {
     proPic: ProPic
   },
   mounted() {
-    // this.getFriends();
-    this.show();
+    this.getFriends();
+    // this.show();
   },
   methods: {
     // test() {
@@ -55,29 +40,34 @@ export default {
     show() {
       this.styleList.length = 0;
       this.listShowFriend.forEach(index => {
+        // console.log(index);
+        // if(index.dir - Math.PI / 6)
         this.styleList.push(
-          `${100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2)}%`
+          `${100 -
+            (100 * (Math.sin(index.dir - Math.PI / 6) + 0.5)).toFixed(2)}%`
         );
+        console.log(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2))
+        console.log((index.dir/Math.PI).toFixed(2))
       });
     },
-    // sensorStarter() {
-    //   const options = { frequency: 60, referenceFrame: "device" };
-    //   const sensor = new AbsoluteOrientationSensor(options);
+    sensorStarter() {
+      const options = { frequency: 60, referenceFrame: "device" };
+      const sensor = new AbsoluteOrientationSensor(options);
 
-    //   sensor.addEventListener("reading", () => {
-    //     // model is a Three.js object instantiated elsewhere.
-    //     // model.quaternion.fromArray(sensor.quaternion).inverse();
-    //     this.decideAxis(sensor.quaternion);
-    //   });
-    //   sensor.addEventListener("error", error => {
-    //     if (event.error.name == "NotReadableError") {
-    //       console.log("Sensor is not available.");
-    //     }
-    //   });
-    //   sensor.start();
-    //   console.log(sensor);
-    //   console.log("test");
-    // },
+      sensor.addEventListener("reading", () => {
+        // model is a Three.js object instantiated elsewhere.
+        // model.quaternion.fromArray(sensor.quaternion).inverse();
+        this.decideAxis(sensor.quaternion);
+      });
+      sensor.addEventListener("error", error => {
+        if (event.error.name == "NotReadableError") {
+          console.log("Sensor is not available.");
+        }
+      });
+      sensor.start();
+      console.log(sensor);
+      console.log("test");
+    },
     caculateMatrix(quaternion, dm) {
       var path = [];
       var output = [];
@@ -106,7 +96,6 @@ export default {
       var axisY = Math.abs(outputY[0] / outputY[1]);
       var axisZ = Math.abs(outputZ[0] / outputZ[2]);
       // console.log(outputY + "  " + outputZ);
-
       if (axisY <= axisZ) {
         this.xy(outputY[0], outputY[1]);
       } else {
@@ -121,66 +110,99 @@ export default {
           Math.acos(
             xNumber / Math.sqrt(Math.pow(xNumber, 2) + Math.pow(yNumber, 2))
           ) + Math.PI;
-        console.log("AAAAA");
+        // console.log("AAAAA");
       } else {
         radXY = Math.acos(
           xNumber / Math.sqrt(Math.pow(xNumber, 2) + Math.pow(yNumber, 2))
         );
-        console.log("BBBBB");
+        // console.log("BBBBB");
       }
       this.appendOnScreen(radXY);
     },
     getFriends() {
-      axios
-        .get(server.apiUrl("/user/friend_direction"))
-        .then(response => {
-          if (response.data.ok === "true") {
-            this.friendRad = response.data.result;
-            console.log(this.friendRad);
-            this.getFrientFlag = true;
-          } else {
-            console.log("can't get friend place without ok");
-            getFriends();
-          }
-        })
-        .catch(response => {
-          console.log("can't get friends place");
-          console.log(response);
-          // getFriends();
-        })
-        .then(() => {
-          this.sensorStarter();
-        });
+      this.friendRad = [
+        {
+          id: "123",
+          dir: 0.3418
+        },
+        {
+          id: "1234",
+          dir: 3.3218
+        },
+        {
+          id: "12345",
+          dir: 1.3318
+        },
+        {
+          id: "123456",
+          dir: 2.3518
+        }
+      ];
+      this.getFrientFlag = true;
+      this.sensorStarter();
+      // axios
+      //   .get(server.apiUrl("/user/friend_direction"))
+      //   .then(response => {
+      //     if (response.data.ok === "true") {
+      //       this.friendRad = response.data.result;
+      //       console.log(this.friendRad);
+      //       this.getFrientFlag = true;
+      //     } else {
+      //       console.log("can't get friend place without ok");
+      //       getFriends();
+      //     }
+      //   })
+      //   .catch(response => {
+      //     console.log("can't get friends place");
+      //     console.log(response);
+      //     // getFriends();
+      //   })
+      //   .then(() => {
+      //     this.sensorStarter();
+      //   });
     },
     appendOnScreen(radXY) {
       var listToShow = [];
       var radDevice = []; //has two num, first is deviceDeg + π/6, second is deviceDeg - π/6
-      radDevice.push(radXY + Math.PI / 6); //大於零的部分
-      if (radXY < Math.PI / 6) {
-        radDevice.push((Math.PI * 11) / 6 + radXY); //2*Math.PI-Math.PI/6+radXY
-      } else {
-        radDevice.push(radXY - Math.PI / 6);
-      }
+      // 上下限，超過2PI或小於零的部分在後面算差距時就會被導正，這裡可以先不管
+      radDevice.push(radXY + Math.PI / 6);
+      radDevice.push(radXY - Math.PI / 6);
+      // if (radXY > (Math.PI * 11) / 6) {
+      //   radDevice.push(radXY - (Math.PI * 11) / 6); //2*Math.PI-Math.PI/6+radXY
+      // } else {
+      //   radDevice.push(radXY + Math.PI / 6); //大於零的部分
+      // }
+      // if (radXY < Math.PI / 6) {
+      //   radDevice.push((Math.PI * 11) / 6 + radXY); //2*Math.PI-Math.PI/6+radXY
+      // } else {
+      //   radDevice.push(radXY - Math.PI / 6);
+      // }
 
-      console.log(radDevice);
+      // console.log(radDevice);
       while (true) {
         if (this.getFrientFlag === true) {
           this.friendRad.forEach(element => {
-            console.log(element);
             if (
               element["dir"] <= radDevice[0] &&
               element["dir"] >= radDevice[1]
             ) {
               listToShow.push({
                 id: element["id"],
-                dir: Math.cos(element["dir"] - radDevice[1])
+                dir: Math.cos(element["dir"] - radDevice[1] + Math.PI / 6)
               });
             }
           });
           this.listShowFriend = listToShow;
+          this.show();
           break;
         }
       }
+      // console.log(this.listShowFriend.length);
+      // if (this.listShowFriend.length) {
+      //   this.listShowFriend.forEach(element => {
+      //     console.log(element.dir);
+      //   });
+      // }
       // console.log(listToShow);
     }
   }
@@ -191,8 +213,8 @@ export default {
 #wrap {
   position: relative;
   width: 100%;
-  height 2em
-  overflow hidden
+  height: 2em;
+  overflow: hidden;
 
   nav {
     position: absolute;
