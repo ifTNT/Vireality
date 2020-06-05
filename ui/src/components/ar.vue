@@ -1,6 +1,6 @@
 <template>
   <div>
-    <camera class="fullScreen" v-on:camera-ready="onCameraReady" v-bind:tap-coordinate="this.tapCoordinate" />
+    <camera class="fullScreen" v-on:camera-ready="onCameraReady" v-on:open="openUrl" v-bind:tap-coordinate="this.tapCoordinate" />
     <canvas class="fullScreen" ref="arCanvas"></canvas>
     <div id="overlay">
       <font-awesome-icon
@@ -11,10 +11,10 @@
         v-on:click="initAR"
         v-if="!started"
       />
-      <font-awesome-layers class="fa-lg" ref="add" v-on:click="addArticle" v-if="started">
+      <!-- <font-awesome-layers class="fa-lg" ref="add" v-on:click="addArticle" v-if="started">
         <font-awesome-icon icon="map-marker-alt" size="4x" transform="right-3" inverse />
         <font-awesome-icon icon="plus" size="lg" transform="down-5" inverse />
-      </font-awesome-layers>
+      </font-awesome-layers> -->
     </div>
   </div>
 </template>
@@ -69,7 +69,7 @@ export default {
       //if there are at least one object intersected with the ray
       if (intersects.length > 0) {
         //Open the cloest article
-        this.$router.push(intersects[0].object.userData.link);
+        this.openUrl(intersects[0].object.userData.link);
       }
     }
   },
@@ -80,6 +80,10 @@ export default {
       console.log(
         `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
       );
+    },
+    openUrl(url){
+      // Open url in router view of upper components 
+      this.$emit("open", url);
     },
     initAR: function() {
       this.started = true;
@@ -174,6 +178,7 @@ export default {
 
       //Load the article meterial
       //[TODO] Dynamic load different article meterial
+      //[TODO] Dynamic article loader
       const texture = new THREE.TextureLoader().load(
         "/static/media/test_article.png"
       );
@@ -206,8 +211,8 @@ export default {
       }
       this.renderer.render(this.scene, this.camera);
     },
-    addArticle: function() {
-      let { x, y } = this.camera.position;
+    addArticle: function(x, y) {
+      //let { x, y } = this.camera.position;
       const geometry = new THREE.BoxGeometry(0.01, 1, 1); // Article cube
       let newArticle = new THREE.Mesh(geometry, this.articleMaterial);
       //let newArticle = new THREE.Sprite(this.spriteMaterial);
@@ -215,17 +220,18 @@ export default {
       //newArticle.scale.set(1, 1, 1);
 
       // Place new article in front of camera
-      var vec = new THREE.Vector3(0, 0, -2);
-      vec.applyQuaternion(this.camera.quaternion);
-      vec.add(this.camera.position);
+      var vec = new THREE.Vector3(x, y, 0);
+      //var vec = new THREE.Vector3(0, 0, -2);
+      //vec.applyQuaternion(this.camera.quaternion);
+      //vec.add(this.camera.position);
       newArticle.position.copy(vec);
-      newArticle.position.z = 0.0;
+      //newArticle.position.z = 0.0;
       newArticle.rotation.x = Math.PI / 2;
 
       //[TODO] Dynamic load article id
       //Set the custom data
       newArticle.userData = {
-        link: `/article`
+        link: `/main/article`
       };
 
       //Let the article facing to camera

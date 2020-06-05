@@ -1,7 +1,11 @@
 <template>
   <div ref="arGesture" :class="{'arGesture':true}">
     <toolbar></toolbar>
-    <ar class="ar" v-bind:tap-coordinate="this.tapCoordinate"></ar>
+    <div class="lightbox">
+      <div class="blackbg"></div>
+      <router-view name="lightBox" />
+    </div>
+    <ar class="ar" v-bind:tap-coordinate="this.tapCoordinate" v-on:open="openUrl"></ar>
     <friendList v-if="isShowFriendList"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
   </div>
@@ -141,26 +145,34 @@ export default {
     //     }));
   },
   methods: {
+    openUrl(url) {
+      this.$router.push(url);
+    },
     click(event) {
-      let {x,y} = event.center; //Get the tapping point
+      let { x, y } = event.center; //Get the tapping point
       this.tapCoordinate = { x, y };
       if (this.isShowTimeLine) this.isShowTimeLine = !this.isShowTimeLine;
     },
     swipeUp(event) {
       console.log("swipeup");
       if (this.isShowTimeLine) this.isShowTimeLine = !this.isShowTimeLine;
+      this.openUrl("/main/post");
     },
     panLeft(event) {
       if (this.canDoPan) {
         console.log("panleft");
-        this.isShowTimeLine = true;
+        if (this.$route.name == "Main") {
+          this.isShowTimeLine = true;
+        }
         this.timestamp += oneDay;
       }
     },
     panRight(event) {
       if (this.canDoPan) {
         console.log("panright");
-        this.isShowTimeLine = true;
+        if (this.$route.name == "Main") {
+          this.isShowTimeLine = true;
+        }
         this.timestamp -= oneDay;
       }
     },

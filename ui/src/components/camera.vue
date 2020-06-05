@@ -43,7 +43,7 @@ export default {
           ) {
             // Tap in region of detection
             // [TODO] Lookup table to translate faces to link.
-            this.$router.push("/profile");
+            this.$emit("open", "/main/profile");
             break;
           }
         }
