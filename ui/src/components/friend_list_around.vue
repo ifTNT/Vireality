@@ -6,7 +6,7 @@
       :style="{left: styleList[index], color: red}"
     >
       <!-- <proPic :diameter="parentDiameter" :Id="src[0]"></proPic> -->
-      <img src="https://i.imgur.com/07XbOpL.png" alt="" style="width:2em">
+      <img src="https://i.imgur.com/07XbOpL.png" alt style="width:2em" />
     </nav>
   </div>
 </template>
@@ -39,9 +39,10 @@ export default {
     show() {
       this.styleList.length = 0;
       this.listShowFriend.forEach(index => {
-        console.log(index)
+        console.log(index);
         this.styleList.push(
-          `${100-(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5)).toFixed(2)}%`
+          `${100 -
+            (100 * (Math.sin(index.dir - Math.PI / 6) + 0.5)).toFixed(2)}%`
         );
         // console.log(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2))
       });
@@ -161,7 +162,12 @@ export default {
     appendOnScreen(radXY) {
       var listToShow = [];
       var radDevice = []; //has two num, first is deviceDeg + π/6, second is deviceDeg - π/6
-      radDevice.push(radXY + Math.PI / 6); //大於零的部分
+      // radDevice.push(radXY + Math.PI / 6); //大於零的部分
+      if (radXY > (Math.PI * 11) / 6) {
+        radDevice.push(radXY - (Math.PI * 11) / 6); //2*Math.PI-Math.PI/6+radXY
+      } else {
+        radDevice.push(radXY + Math.PI / 6); //大於零的部分
+      }
       if (radXY < Math.PI / 6) {
         radDevice.push((Math.PI * 11) / 6 + radXY); //2*Math.PI-Math.PI/6+radXY
       } else {
@@ -188,9 +194,9 @@ export default {
         }
       }
       console.log(this.listShowFriend.length);
-      if(this.listShowFriend.length){
+      if (this.listShowFriend.length) {
         this.listShowFriend.forEach(element => {
-          console.log(element.dir)
+          console.log(element.dir);
         });
       }
       // console.log(listToShow);
