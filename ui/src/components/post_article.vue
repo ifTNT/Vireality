@@ -1,6 +1,6 @@
  <template>
-  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片) 驗證機制(是否有圖片) POST的API(有問題 目前可以抓到全部需要放到DB的資料) -->
-  <!-- 地圖(目前可用 但需修改為直觀式~) --> 
+  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片)  POST的API(有問題 目前可以抓到全部需要放到DB的資料) -->
+  <!-- 驗證機制是否有圖片(目前會擋住 不過後續還沒處理)  地圖(經緯度有問題) -->
   <div class="post">
     <header>
       <nav class="backAndNextButton" v-if="choosePicAndContent">
@@ -8,11 +8,15 @@
         <div class="nextButton" @click="nextSetPage">{{nextButtonName}}</div>
       </nav>
       <nav>
-        <div class="postButton" @click="post" v-if="chooseLocation">{{postButtonName}}</div>
+        <div
+          class="postButton"
+          @click="post"
+          v-if="chooseLocation||placeOrPersonal"
+        >{{postButtonName}}</div>
         <div
           class="postButton"
           @click="nextSetLocationPage"
-          v-if="choseTypeAndPrivacy"
+          v-if="choseTypeAndPrivacy && !placeOrPersonal"
         >{{nextButtonName}}</div>
       </nav>
     </header>
@@ -140,26 +144,28 @@ export default {
       this.chooseLocation = true;
     },
     post() {
-      axios
-        .get(
-          server.apiUrl(
-            "/article/post?" +
-              this.content +
-              "=loren%2085fdsb&lon=" +
-              this.longitude +
-              "&lat=" +
-              this.latitude
+      if (this.img != null) {
+        axios
+          .get(
+            server.apiUrl(
+              "/article/post?" +
+                this.content +
+                "=loren%2085fdsb&lon=" +
+                this.longitude +
+                "&lat=" +
+                this.latitude
+            )
           )
-        )
-        .then(
-          function(response) {
-            console.log(response);
-          }.bind(this)
-        )
-        .catch(error => {
-          console.log(error);
-        });
-      document.location.href = "/#/main";
+          .then(
+            function(response) {
+              console.log(response);
+            }.bind(this)
+          )
+          .catch(error => {
+            console.log(error);
+          });
+        document.location.href = "/#/main";
+      }
     }
   }
 };
