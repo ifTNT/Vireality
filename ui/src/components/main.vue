@@ -6,7 +6,7 @@
       <router-view name="lightBox" />
     </div>
     <ar class="ar" v-bind:tap-coordinate="this.tapCoordinate" v-on:open="openUrl"></ar>
-    <friendList v-if="isShowFriendList"></friendList>
+    <friendList v-if="isShowFriendList" v-on:open="openUrl"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
   </div>
 </template>

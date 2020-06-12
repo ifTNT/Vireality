@@ -1,13 +1,22 @@
 <template>
   <div id="wrap">
     <nav
-      v-for="(src,index) in listShowFriend"
+      v-for="(user,index) in listShowFriend"
       :key="index"
       :style="{left: styleList[index], color: red}"
     >
       <!-- <proPic :diameter="parentDiameter" :Id="src[0]"></proPic> -->
+<<<<<<< HEAD
       <profilePicture :diameter="parentDiameter" :Id="user"></profilePicture>
       <!-- <img src="https://i.imgur.com/07XbOpL.png" alt style="width:2em" /> -->
+=======
+      <img
+        src="https://i.imgur.com/07XbOpL.png"
+        alt
+        style="width:2em"
+        v-on:click="openProfile(user.id)"
+      />
+>>>>>>> 90b8a8a807a451ef3775dd444ad717b267379bdf
       <!-- <p>{{this.listShowFriend[0].dir}}</p> -->
     </nav>
   </div>
@@ -34,6 +43,9 @@ export default {
     // this.show();
   },
   methods: {
+    openProfile(id) {
+      this.$emit("open", "/main/profile");
+    },
     // test() {
     //   this.sensorStarter();
     // },
@@ -46,8 +58,8 @@ export default {
           `${100 -
             (100 * (Math.sin(index.dir - Math.PI / 6) + 0.5)).toFixed(2)}%`
         );
-        console.log(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2))
-        console.log((index.dir/Math.PI).toFixed(2))
+        console.log(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2));
+        console.log((index.dir / Math.PI).toFixed(2));
       });
     },
     sensorStarter() {
