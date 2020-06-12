@@ -1,20 +1,27 @@
  <template>
-  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片) 驗證機制(是否有圖片) POST的API(有問題 目前可以抓到全部需要放到DB的資料) -->
-  <!-- 地圖(目前可用 但需修改為直觀式~) --> 
+  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片)  POST的API(有問題 目前可以抓到全部需要放到DB的資料) -->
+  <!-- 個人文章還沒抓到個人定位 -->
   <div class="post">
     <header>
-      <nav class="backAndNextButton" v-if="choosePicAndContent">
+      <nav class="backAndNextButton">
         <img src="static/media/back.svg" @click.prevent="handleBack(fromRoute)" />
-        <div class="nextButton" @click="nextSetPage">{{nextButtonName}}</div>
-      </nav>
-      <nav>
-        <div class="postButton" @click="post" v-if="chooseLocation">{{postButtonName}}</div>
+        <div
+          class="nextButton"
+          v-if="choosePicAndContent && this.img != null"
+          @click="nextSetPage"
+        >{{nextButtonName}}</div>
         <div
           class="postButton"
+          @click="post"
+          v-if="chooseLocation||placeOrPersonal"
+        >{{postButtonName}}</div>
+        <div
+          class="nextButton"
           @click="nextSetLocationPage"
-          v-if="choseTypeAndPrivacy"
+          v-if="choseTypeAndPrivacy && !placeOrPersonal"
         >{{nextButtonName}}</div>
       </nav>
+      <nav></nav>
     </header>
 
     <div class="postArticleBody" v-if="choosePicAndContent">

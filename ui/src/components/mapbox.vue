@@ -17,59 +17,78 @@ export default {
       longitude: 0,
       latitude: 0,
       marker: Object,
+      map: Object
     };
   },
   mounted() {
-    this.init();
+    this.setCurrentPosition();
   },
   methods: {
+    setCurrentPosition() {
+      var lng = 0.0;
+      var lat = 0.0;
+      // 找到現在的位置
+      var getPosition = function(options) {
+        return new Promise(function(resolve, reject) {
+          navigator.geolocation.getCurrentPosition(resolve, reject, options);
+        });
+      };
+      getPosition()
+        .then(position => {
+          console.log(position);
+          console.log(position.coords.latitude, position.coords.longitude);
+          lng = position.coords.longitude;
+          lat = position.coords.latitude;
+          this.init(lng, lat);
+        })
+        .catch(err => {
+          console.error(err.message);
+        });
+    },
     // 初始化
-    init() {
+    init(lng, lat) {
       mapboxgl.accessToken =
         "pk.eyJ1IjoibG92ZTEyNDM1NiIsImEiOiJja2FiY2l0OXMwMG9kMnJxZ3N6d2Z3cTNvIn0.bYm9ygwRCG_cRVRU3695bA";
       const map = new mapboxgl.Map({
         container: this.$refs.basicMapbox,
         style: "mapbox://styles/mapbox/streets-v11",
-        center: [120.276694, 22.732917], //設定地圖中心在高大資工
-        zoom: 13 // 地圖比例
+        center: [lng, lat], //設定地圖中心在地位點
+        zoom: 18, // 地圖比例
+        scrollZoom: false,
+        doubleClickZoom: false,
+        touchZoomRotate: false
       });
-      //console.log(map);
+      this.map = map;
 
-      var geolocate = new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        trackUserLocation: true
-        //showUserLocation: true,
-      });
-      map.addControl(geolocate);
-      // 一開起來就會追蹤位置
-      map.on("load", function() {
-        geolocate.trigger();
-      });
+      // var geolocate = new mapboxgl.GeolocateControl({
+      //   positionOptions: {
+      //     enableHighAccuracy: true
+      //   },
+      //   trackUserLocation: true
+      //   //showUserLocation: true,
+      // });
+      // map.addControl(geolocate);
 
       this.marker = new mapboxgl.Marker({
-        draggable: true
+        //draggable: true
+        color: "#000000"
       })
-        .setLngLat([120.276694, 22.732917])
+        .setLngLat([lng, lat])
         .addTo(map);
       this.emitInitLngLat();
-      this.marker.on("dragend", this.onDragEnd);
 
-      var language = new MapboxLanguage();
-      map.addControl(language);
-      //navigator.geolocation.getCurrentPosition()
-      //console.log(geolocate["_lastKnownPosition"]);
-      // console.log(typeof(geolocate));
-      // for(let i in geolocate){
-      //   console.log(i);
-      // }
-      // //加marker
-      // var marker = new mapboxgl.Marker()
-      //   .setLngLat([120.276694, 22.732917])
-      //   .addTo(map);
+      map.on("move", () => {
+        let lng = this.map.getCenter().lng;
+        let lat = this.map.getCenter().lat;
+        this.marker.setLngLat([lng, lat]);
+        console.log(lng);
+        console.log(lat);
+        this.longitude = lng;
+        this.latitude = lat;
+        this.$emit("childByValue", this.longitude, this.latitude);
+      });
     },
-    onDragEnd() {
+    emitInitLngLat() {
       var lngLat = this.marker.getLngLat();
       var lng = lngLat.lng;
       var lat = lngLat.lat;
@@ -77,17 +96,7 @@ export default {
       console.log(lat);
       this.longitude = lng;
       this.latitude = lat;
-      this.$emit('childByValue', this.longitude,this.latitude);
-    },
-    emitInitLngLat(){
-      var lngLat = this.marker.getLngLat();
-      var lng = lngLat.lng;
-      var lat = lngLat.lat;
-      console.log(lng);
-      console.log(lat);
-      this.longitude = lng;
-      this.latitude = lat;
-      this.$emit('childByValue', this.longitude,this.latitude);
+      this.$emit("childByValue", this.longitude, this.latitude);
     }
   },
   computed: {
