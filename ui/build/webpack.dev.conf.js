@@ -10,6 +10,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { GenerateSW } = require("workbox-webpack-plugin");
 const FriendlyErrorsPlugin = require("friendly-errors-webpack-plugin");
 const portfinder = require("portfinder");
+const fs = require("fs");
 
 const HOST = process.env.HOST;
 const PORT = process.env.PORT && Number(process.env.PORT);
@@ -56,6 +57,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       poll: config.dev.poll
     },
     https: config.dev.httpsServer,
+    key: fs.readFileSync('../certification_for_test/key.pem'),
+    cert: fs.readFileSync('../certification_for_test/cert.pem'),
     disableHostCheck: true, //For ngrok
 
     //CORS support
