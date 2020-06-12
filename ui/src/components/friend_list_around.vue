@@ -6,17 +6,8 @@
       :style="{left: styleList[index], color: red}"
     >
       <!-- <proPic :diameter="parentDiameter" :Id="src[0]"></proPic> -->
-<<<<<<< HEAD
-      <profilePicture :diameter="parentDiameter" :Id="user"></profilePicture>
+      <profilePicture :diameter="parentDiameter" :Id="user" v-on:click="openProfile(user.id)"></profilePicture>
       <!-- <img src="https://i.imgur.com/07XbOpL.png" alt style="width:2em" /> -->
-=======
-      <img
-        src="https://i.imgur.com/07XbOpL.png"
-        alt
-        style="width:2em"
-        v-on:click="openProfile(user.id)"
-      />
->>>>>>> 90b8a8a807a451ef3775dd444ad717b267379bdf
       <!-- <p>{{this.listShowFriend[0].dir}}</p> -->
     </nav>
   </div>
