@@ -19,14 +19,14 @@ export default {
       default: "environment",
       validator: (
         value // The value must match one of two strings
-      ) => ["environment", "user"].indexOf(value) !== -1
+      ) => ["environment", "user"].indexOf(value) !== -1,
     },
     tapCoordinate: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   watch: {
-    tapCoordinate: function(newCoord, oldCoord) {
+    tapCoordinate: function (newCoord, oldCoord) {
       for (let face of this.dets) {
         if (face[3] > 50.0) {
           let width = face[2] / 2;
@@ -48,7 +48,7 @@ export default {
           }
         }
       }
-    }
+    },
   },
   data: () => ({
     cameraReady: false,
@@ -65,11 +65,12 @@ export default {
       x: 0,
       y: 0,
       width: 0,
-      height: 0
+      height: 0,
     },
 
     // Place to store detected faces
-    dets: []
+    dets: [],
+    confiTable: [],
   }),
   mounted() {
     this.initCamera();
@@ -79,7 +80,7 @@ export default {
     this.$refs.canvas.height = this.canvasHeight;
   },
   methods: {
-    rgba_to_grayscale: function(rgba, nrows, ncols) {
+    rgba_to_grayscale: function (rgba, nrows, ncols) {
       var gray = new Uint8Array(nrows * ncols);
       for (var r = 0; r < nrows; ++r)
         for (var c = 0; c < ncols; ++c)
@@ -91,7 +92,7 @@ export default {
             10;
       return gray;
     },
-    initCamera: function() {
+    initCamera: function () {
       //Adjuest canvas size and start picojs after video is ready
       this.$refs.capture.addEventListener(
         "loadedmetadata",
@@ -120,11 +121,12 @@ export default {
             x: offsetX,
             y: offsetY,
             width: width * scale,
-            height: height * scale
+            height: height * scale,
           };
           console.log(
-            `[Face Detection] Scaled Video Width: ${width *
-              scale} Height: ${height * scale}`
+            `[Face Detection] Scaled Video Width: ${width * scale} Height: ${
+              height * scale
+            }`
           );
           //=============================================
 
@@ -142,23 +144,23 @@ export default {
               //Get the video that at least have SD quality
               //Height  of video actually is width of video
               height: { ideal: 720 },
-              facingMode: { exact: this.facingMode }
-            }
+              facingMode: { exact: this.facingMode },
+            },
           })
-          .then(stream => {
+          .then((stream) => {
             console.log("Setting stream");
             this.$refs.capture.srcObject = stream;
           })
-          .catch(error => {
+          .catch((error) => {
             console.log(`[Face Detection] Get webcam error`, error);
           });
       }
     },
-    initPico: function() {
+    initPico: function () {
       var cascadeurl = "/static/model/facefinder";
       fetch(cascadeurl)
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
+        .then((response) => response.arrayBuffer())
+        .then((buffer) => {
           let bytes = new Int8Array(buffer);
           this.facefinderClassifyRegion = pico.unpack_cascade(bytes);
           this.cascadeReady = true;
@@ -175,7 +177,131 @@ export default {
 
     /* Detection Queue of picojs */
     updateMemory: pico.instantiate_detection_memory(5),
-    updatePico: function() {
+
+    confidenceTable: function (ctx) {
+      var faceCounter = 0;
+      for (let face of this.dets) {
+        if (face[3] > 50.0) {
+          faceCounter++;
+        }
+      }
+      var wayLength = [];
+      for (let i = 0; i < faceCounter; i++) {
+        wayLength.push([-1, 10000000, 0, 0]);
+      }
+
+      var faceI = 0;
+
+      for (let face of this.dets) {
+        if (face[3] > 50.0) {
+          console.log(face);
+          wayLength[faceI][2] = face[1] - face[2] / 4;
+          wayLength[faceI][3] = face[0] - face[2] / 4;
+          if (this.confiTable[0] == undefined) {
+            faceI++;
+            continue;
+          }
+          for (var j = 0; j < this.confiTable.length; j++) {
+            const xDist =
+              face[1] - face[2] / 4 - this.confiTable[j].position[0];
+            const yDist =
+              face[0] - face[2] / 4 - this.confiTable[j].position[1];
+            var target = Math.pow(xDist, 2) + Math.pow(yDist, 2);
+            if (wayLength[faceI][1] > target && target < 1000) {
+              wayLength[faceI][0] = j;
+              wayLength[faceI][1] = target;
+            }
+          }
+          faceI++;
+        }
+      }
+      console.log(wayLength);
+      var confiThis = new Array(this.confiTable.length);
+      confiThis.fill(-1, 0, this.confiTable.length);
+      for (var j = 0; j < wayLength.length; j++) {
+        if (wayLength[j][0] != -1) {
+          if (confiThis[wayLength[j][0]] == -1) {
+            confiThis[wayLength[j][0]] == j;
+          } else {
+            if (wayLength[confiThis[wayLength[j][0]]][1] > wayLength[j][1]) {
+              confiThis[wayLength[j][0]] == j;
+              wayLength[confiThis[wayLength[j][0]]][0] = -1;
+              wayLength[confiThis[wayLength[j][0]]][1] = 10000000;
+            }
+          }
+        }
+      }
+      for (var j = 0; j < wayLength.length; j++) {
+        if (wayLength[j][0] == -1) {
+          // console.log("test: " + j);
+          this.confiTable.push({
+            faceDeviceID: j,
+            userID: NaN,
+            cinfidence: 11,
+            position: [wayLength[j][2], wayLength[j][3]],
+            times: 0,
+          });
+        } else {
+          // if (this.confiTable[j] == undefined) break;
+          this.confiTable[wayLength[j][0]].faceDeviceID =
+            this.confiTable[wayLength[j][0]].faceDeviceID.toString()[0] == "f"
+              ? this.confiTable[wayLength[j][0]].faceDeviceID
+              : "f" + this.confiTable[wayLength[j][0]].faceDeviceID;
+          this.confiTable[wayLength[j][0]].cinfidence = 15;
+          this.confiTable[wayLength[j][0]].position = [
+            wayLength[j][2],
+            wayLength[j][3],
+          ];
+          this.confiTable[wayLength[j][0]].times++;
+        }
+      }
+      for (var i = this.confiTable.length - 1; i >= 0; i--) {
+        if (this.confiTable[i] == undefined) continue;
+        else if (this.confiTable[i].cinfidence < 4) {
+          this.confiTable.splice(i, 1);
+        } else this.confiTable[i].cinfidence--;
+      }
+      // console.log("====== test start =====");
+      // console.log("wayLength: " + wayLength.length);
+      // console.log(wayLength);
+      // // wayLength.forEach((element) => {
+      // //   console.log(element[0]);
+      // // });
+      // console.log("dets:");
+      // console.log(this.dets);
+      // console.log("confiTablet" + this.confiTable.length);
+      // this.confiTable.forEach((element) => {
+      //   console.log(element);
+      // });
+      // console.log("====== test end ====\n");
+
+      this.confiTable.forEach((element) => {
+        ctx.beginPath();
+        ctx.lineWidth = "2";
+        if (element.times == 0) ctx.strokeStyle = "blue";
+        else {
+          ctx.strokeStyle = "orange";
+        }
+        // ctx.strokeStyle = "blue";
+        ctx.rect(element.position[0], element.position[1], 80, 80);
+        ctx.font = "30px Arial";
+        ctx.fillText(element.faceDeviceID, element.position[0], element.position[1]);
+        ctx.fillText(
+          element.times,
+          element.position[0],
+          element.position[1] + 30
+        );
+        ctx.stroke();
+
+        
+        // confiDelete++
+      });
+      // return this.confiTable.length;
+      ctx.font = "30px Arial";
+      ctx.fillText(this.confiTable.length, 200, 30);
+    },
+
+    updatePico: function () {
       requestAnimationFrame(this.updatePico);
       if (!this.markImgReady || !this.cascadeReady) return;
 
@@ -199,13 +325,13 @@ export default {
         pixels: this.rgba_to_grayscale(rgba, width, height),
         nrows: height,
         ncols: width,
-        ldim: width
+        ldim: width,
       };
       let params = {
         shiftfactor: 0.1, // move the detection window by 10% of its size
         minsize: 100, // minimum size of a face
         maxsize: 1000, // maximum size of a face
-        scalefactor: 1.1 // for multiscale processing: resize the detection window by 10% when moving to the higher scale
+        scalefactor: 1.1, // for multiscale processing: resize the detection window by 10% when moving to the higher scale
       };
       // run the cascade over the frame and cluster the obtained detections
       // dets is an array that contains (r, c, s, q) quadruplets
@@ -238,8 +364,9 @@ export default {
           ctx.drawImage(this.markImg, _x, _y, _width, _height);
         }
       }
-    }
-  }
+      this.confidenceTable(ctx);
+    },
+  },
 };
 </script>
 
