@@ -179,15 +179,11 @@ export default {
     updateMemory: pico.instantiate_detection_memory(5),
 
     confidenceTable: function (ctx) {
-      var faceCounter = 0;
+      var wayLength = [];
       for (let face of this.dets) {
         if (face[3] > 50.0) {
-          faceCounter++;
+          wayLength.push([-1, 10000000, 0, 0]);
         }
-      }
-      var wayLength = [];
-      for (let i = 0; i < faceCounter; i++) {
-        wayLength.push([-1, 10000000, 0, 0]);
       }
 
       var faceI = 0;
@@ -195,12 +191,14 @@ export default {
       for (let face of this.dets) {
         if (face[3] > 50.0) {
           console.log(face);
+          // add all face in wayLength
           wayLength[faceI][2] = face[1] - face[2] / 4;
           wayLength[faceI][3] = face[0] - face[2] / 4;
           if (this.confiTable[0] == undefined) {
             faceI++;
             continue;
           }
+          // find if there has same face
           for (var j = 0; j < this.confiTable.length; j++) {
             const xDist =
               face[1] - face[2] / 4 - this.confiTable[j].position[0];
@@ -215,7 +213,7 @@ export default {
           faceI++;
         }
       }
-      console.log(wayLength);
+      // console.log(wayLength);
       var confiThis = new Array(this.confiTable.length);
       confiThis.fill(-1, 0, this.confiTable.length);
       for (var j = 0; j < wayLength.length; j++) {
@@ -237,7 +235,7 @@ export default {
           this.confiTable.push({
             faceDeviceID: j,
             userID: NaN,
-            cinfidence: 11,
+            confidence: 11,
             position: [wayLength[j][2], wayLength[j][3]],
             times: 0,
           });
@@ -247,7 +245,7 @@ export default {
             this.confiTable[wayLength[j][0]].faceDeviceID.toString()[0] == "f"
               ? this.confiTable[wayLength[j][0]].faceDeviceID
               : "f" + this.confiTable[wayLength[j][0]].faceDeviceID;
-          this.confiTable[wayLength[j][0]].cinfidence = 15;
+          this.confiTable[wayLength[j][0]].confidence = 15;
           this.confiTable[wayLength[j][0]].position = [
             wayLength[j][2],
             wayLength[j][3],
@@ -255,11 +253,12 @@ export default {
           this.confiTable[wayLength[j][0]].times++;
         }
       }
+      // delete the face whitch confidence is too low, else confidence - 1
       for (var i = this.confiTable.length - 1; i >= 0; i--) {
         if (this.confiTable[i] == undefined) continue;
-        else if (this.confiTable[i].cinfidence < 4) {
+        else if (this.confiTable[i].confidence < 4) {
           this.confiTable.splice(i, 1);
-        } else this.confiTable[i].cinfidence--;
+        } else this.confiTable[i].confidence--;
       }
       // console.log("====== test start =====");
       // console.log("wayLength: " + wayLength.length);
