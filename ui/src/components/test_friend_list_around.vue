@@ -13,7 +13,6 @@
     <div class="slider-container">
       <label>Cur. Dir.</label>
       <span>{{(currentDir/Math.PI*180).toFixed(4)}}deg</span>
-      <!--<input type="range" class="slider" ref="currentDir" v-model="currentDir" />-->
     </div>
     <div class="slider-container">
       <label>Roll</label>
@@ -94,11 +93,7 @@ export default {
     this.threeObj.renderer.render(this.threeObj.scene, this.threeObj.camera);
 
     // Change the minimum and maximum value of the slider
-    [
-      this.$refs.roll,
-      this.$refs.yaw,
-      this.$refs.pitch
-    ].forEach(slider => {
+    [this.$refs.roll, this.$refs.yaw, this.$refs.pitch].forEach(slider => {
       slider.min = 0;
       slider.max = 2 * Math.PI;
       slider.step = 0.0001;
@@ -124,12 +119,11 @@ export default {
   methods: {
     // Display current direction and visiable lables by given device orientation
     updateDir() {
-      
       // Construct the new rotation from global frame to local frame
       let newRotation = new THREE.Euler(this.pitch, this.roll, this.yaw, "XYZ");
       let quaternion = new THREE.Quaternion();
       quaternion.setFromEuler(newRotation);
-      
+
       // Update 3D indicator
       this.threeObj.axesHelper.quaternion.copy(quaternion);
       this.threeObj.cellPhone.quaternion.copy(quaternion);
@@ -204,7 +198,7 @@ export default {
 
       // Decide which probe can discribe the current heading
       let selectedProbe = new THREE.Vector3();
-      const threshold = 1/Math.sqrt(2);
+      const threshold = 1 / Math.sqrt(2);
       if (primaryProbe.length() < threshold) {
         selectedProbe.copy(secondProbe);
       } else {
@@ -215,8 +209,8 @@ export default {
       let headingAngle = Math.atan2(selectedProbe.y, selectedProbe.x);
 
       // Convert the angle from [-pi, pi] to [0, 2pi]
-      if(headingAngle<0){
-        headingAngle += 2*Math.PI;
+      if (headingAngle < 0) {
+        headingAngle += 2 * Math.PI;
       }
 
       return headingAngle;
