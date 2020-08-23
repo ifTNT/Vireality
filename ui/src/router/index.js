@@ -15,8 +15,9 @@ import TestGeolocator from "@/components/test_geolocator";
 import FriendListAround from "@/components/friend_list_around";
 import Main from "@/components/main";
 import PostLocation from "@/components/post_article_location";
-import TestAbsSpeed from "@/components/friend_list_around";
+import TestAbsSpeed from "@/components/test_absolute_speed_sensor";
 import TestTimeLine from "@/components/test_timeline";
+import TestFriendListAround from "@/components/test_friend_list_around";
 
 Vue.use(Router);
 
@@ -133,8 +134,13 @@ let router = new Router({
     },
     {
       path: "/friend_list_around",
-      name: "Test Friend List Around",
+      name: "Friend List Around",
       component: FriendListAround
+    },
+    {
+      path: "/test_friend_list_around",
+      name: "Test Friend List Around",
+      component: TestFriendListAround
     }
     //=======end test===============
   ]
