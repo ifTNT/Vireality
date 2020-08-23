@@ -66,33 +66,35 @@ export default {
     this.$refs.indicator3d.width = indicatorWidth;
     this.$refs.indicator3d.height = indicatorHeight;
 
-    // Setup basic components of Three.js
+    // Setup camera of Three.js
     this.threeObj.camera = new THREE.PerspectiveCamera(
       60, //Calcualted FoV.
       indicatorWidth / indicatorHeight, //Aspect ratio
       0.5, //Near plate
       1100 //Far plate
     );
-
     this.threeObj.camera.position.set(0, 0, 1);
 
+    // The scene object will attach all of the visible object
     this.threeObj.scene = new THREE.Scene();
 
+    // Add an axes helper to scene
     this.threeObj.axesHelper = new THREE.AxesHelper(0.5);
     this.threeObj.axesHelper.position.set(0, 0, 0);
 
+    // Add a reference cell phone model to the scene
     this.threeObj.cellPhone = new THREE.Mesh(
       new THREE.CubeGeometry(0.2, 0.3, 0.05),
       new THREE.MeshNormalMaterial()
     );
 
+    // Post initialization of Three.js
     this.threeObj.scene.add(this.threeObj.axesHelper);
     this.threeObj.scene.add(this.threeObj.cellPhone);
     this.threeObj.renderer.render(this.threeObj.scene, this.threeObj.camera);
 
     // Change the minimum and maximum value of the slider
     [
-      //this.$refs.currentDir,
       this.$refs.roll,
       this.$refs.yaw,
       this.$refs.pitch
@@ -105,6 +107,8 @@ export default {
     // Display current direction and visiable lables
     this.updateDir();
   },
+
+  // Monitor the changes of sliders
   watch: {
     roll: function() {
       this.updateDir();
@@ -116,19 +120,22 @@ export default {
       this.updateDir();
     }
   },
+
   methods: {
-    // Display current direction and visiable lables
+    // Display current direction and visiable lables by given device orientation
     updateDir() {
-      // Update 3D indicator
+      
+      // Construct the new rotation from global frame to local frame
       let newRotation = new THREE.Euler(this.pitch, this.roll, this.yaw, "XYZ");
-      this.threeObj.axesHelper.rotation.copy(newRotation);
-      this.threeObj.cellPhone.rotation.copy(newRotation);
+      let quaternion = new THREE.Quaternion();
+      quaternion.setFromEuler(newRotation);
+      
+      // Update 3D indicator
+      this.threeObj.axesHelper.quaternion.copy(quaternion);
+      this.threeObj.cellPhone.quaternion.copy(quaternion);
       this.threeObj.renderer.render(this.threeObj.scene, this.threeObj.camera);
 
       // Calucalte new heading
-      let quaternion = new THREE.Quaternion();
-      // The rotation from global frame to local frame
-      quaternion.setFromEuler(newRotation);
       this.currentDir = this.calculateHeading(quaternion);
 
       // Clear the displayed lables
@@ -190,7 +197,6 @@ export default {
       // Calculate the probes direction in global frame
       primaryProbe.applyQuaternion(orientation);
       secondProbe.applyQuaternion(orientation);
-      console.log(primaryProbe, secondProbe);
 
       // Project the probes to the global XY-Plane
       primaryProbe = this.projVec2XY(primaryProbe);
