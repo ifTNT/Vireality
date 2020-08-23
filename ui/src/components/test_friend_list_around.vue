@@ -8,7 +8,7 @@
       >{{item.lable}}</li>
     </ul>
     <div class="center-mark"></div>
-    <div class="indicator" :style="{'transform': `rotate(-${currentDir}rad)`}"></div>
+    <div class="arrow" :style="{'transform': `rotate(-${currentDir}rad)`}"></div>
     <canvas ref="indicator3d" class="indicator3d"></canvas>
     <div class="slider-container">
       <label>Cur. Dir.</label>
@@ -36,13 +36,14 @@ export default {
     return {
       testDirStep: 50, // How many test point in a circle.
       display: [], // The elements that will be display.
-      currentDir: 0, // Radius.
+      currentDir: 0, // The calculated direction. (rad)
       FOV: Math.PI / 3, // The FoV that the friend will be displyed. (rad)
       widthDisplay: 300, // The range of projected direction. (px)
-      roll: 0,
-      yaw: 0,
-      pitch: 0,
+      roll: 0, // The Y component in euler angle. (rad)
+      yaw: 0, // The Z component in euler angle. (rad)
+      pitch: 0, // The X component in euler angle. (rad)
       threeObj: {
+        // Objects used in Three.js
         renderer: null,
         camera: null,
         scene: null,
@@ -260,7 +261,7 @@ export default {
   border-right: solid black 1px;
 }
 
-.indicator {
+.arrow {
   width: 5em;
   height: 1em;
   margin: 3em 0;
