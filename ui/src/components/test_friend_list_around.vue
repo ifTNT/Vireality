@@ -121,7 +121,7 @@ export default {
     // Display current direction and visiable lables by given device orientation
     updateDir() {
       // Construct the new rotation from global frame to local frame
-      let newRotation = new THREE.Euler(this.pitch, this.roll, this.yaw, "XYZ");
+      let newRotation = new THREE.Euler(this.pitch, this.roll, this.yaw, "ZXY");
       let quaternion = new THREE.Quaternion();
       quaternion.setFromEuler(newRotation);
 
