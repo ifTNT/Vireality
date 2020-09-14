@@ -1,12 +1,19 @@
 <template>
   <div id="wrap">
-    <nav
-      v-for="(user,index) in listShowFriend"
-      :key="index"
-      :style="{left: styleList[index], color: red}"
-    >
+    <nav>
       <!-- <proPic :diameter="parentDiameter" :Id="src[0]"></proPic> -->
-      <profilePicture :diameter="parentDiameter" :Id="user" v-on:click="openProfile(user.id)"></profilePicture>
+      <div
+        v-for="(user,index) in friendRad"
+        v-bind:key="index"
+        v-bind:style="{left: `${user.pos}px`, color: 'red'}"
+        v-show="user.visible"
+      >
+        <profilePicture
+          v-bind:diameter="parentDiameter"
+          v-bind:Id="user.id"
+          v-on:click="openProfile(user.id)"
+        ></profilePicture>
+      </div>
       <!-- <img src="https://i.imgur.com/07XbOpL.png" alt style="width:2em" /> -->
       <!-- <p>{{this.listShowFriend[0].dir}}</p> -->
     </nav>
@@ -15,15 +22,17 @@
 <script>
 import axios from "axios";
 import ProPic from "./profile_picture.vue";
+import * as THREE from "three";
 export default {
   name: "friendListAround",
   data() {
     return {
       friendRad: [],
-      listShowFriend: [],
       getFrientFlag: false,
       parentDiameter: "2em",
-      styleList: []
+      currentDir: 0, // The calculated direction. (rad)
+      FOV: Math.PI / 3, // The FoV that the friend will be displyed. (rad)
+      widthDisplay: 300 // The range of projected direction. (px)
     };
   },
   components: {
@@ -32,6 +41,9 @@ export default {
   mounted() {
     this.getFriends();
     // this.show();
+
+    // Set the width of friend list to the width of window.
+    this.widthDisplay = window.innerWidth;
   },
   methods: {
     openProfile(id) {
@@ -60,7 +72,7 @@ export default {
       sensor.addEventListener("reading", () => {
         // model is a Three.js object instantiated elsewhere.
         // model.quaternion.fromArray(sensor.quaternion).inverse();
-        this.decideAxis(sensor.quaternion);
+        this.updateDir(sensor.quaternion);
       });
       sensor.addEventListener("error", error => {
         if (event.error.name == "NotReadableError") {
@@ -124,45 +136,49 @@ export default {
     },
     getFriends() {
       this.friendRad = [
-        // {
-        //   id: "123",
-        //   dir: 0.3418
-        // },
-        // {
-        //   id: "1234",
-        //   dir: 3.3218
-        // },
-        // {
-        //   id: "12345",
-        //   dir: 1.3318
-        // },
-        // {
-        //   id: "123456",
-        //   dir: 2.3518
-        // }
+        {
+          id: "123",
+          dir: 0
+        },
+        {
+          id: "1234",
+          dir: 3.3218
+        },
+        {
+          id: "12345",
+          dir: 1.3318
+        },
+        {
+          id: "123456",
+          dir: 2.3518
+        }
       ];
+      this.friendRad.forEach(friend => {
+        friend["pos"] = 0;
+        friend["visible"] = false;
+      });
       this.getFrientFlag = true;
       this.sensorStarter();
-      axios
-        .get(server.apiUrl("/user/friend_direction"))
-        .then(response => {
-          if (response.data.ok === "true") {
-            this.friendRad = response.data.result;
-            console.log(this.friendRad);
-            this.getFrientFlag = true;
-          } else {
-            console.log("can't get friend place without ok");
-            getFriends();
-          }
-        })
-        .catch(response => {
-          console.log("can't get friends place");
-          console.log(response);
-          // getFriends();
-        })
-        .then(() => {
-          this.sensorStarter();
-        });
+      // axios
+      //   .get(server.apiUrl("/user/friend_direction"))
+      //   .then(response => {
+      //     if (response.data.ok === "true") {
+      //       this.friendRad = response.data.result;
+      //       console.log(this.friendRad);
+      //       this.getFrientFlag = true;
+      //     } else {
+      //       console.log("can't get friend place without ok");
+      //       getFriends();
+      //     }
+      //   })
+      //   .catch(response => {
+      //     console.log("can't get friends place");
+      //     console.log(response);
+      //     // getFriends();
+      //   })
+      //   .then(() => {
+      //     this.sensorStarter();
+      //   });
     },
     appendOnScreen(radXY) {
       var listToShow = [];
@@ -207,6 +223,103 @@ export default {
       //   });
       // }
       // console.log(listToShow);
+    },
+    // Display current direction and visiable lables by given device orientation
+    updateDir(quaternion_arr) {
+      // Construct the new rotation from global frame to local frame
+      let quaternion = new THREE.Quaternion();
+      quaternion.fromArray(quaternion_arr);
+
+      // Calucalte new heading
+      this.currentDir = this.calculateHeading(quaternion);
+
+      // Clear the displayed lables
+      this.listShowFriend = [];
+      // Enumerate whole circle.
+      this.friendRad = this.friendRad.map(friend => {
+        // Display the test lable if the test direction is in visible range.
+        friend["visible"] = this.inVisibleRange(friend["dir"]);
+        friend["pos"] = this.calculatePosition(friend["dir"]);
+        return friend;
+      });
+
+      console.log(this.friendRad);
+    },
+
+    // Return whether the given direction is visible from current direction.
+    inVisibleRange(testDir) {
+      // Get the normalized angle difference between current direction and given direction.
+      let diffAngle = testDir - this.currentDir;
+      diffAngle = Math.min(
+        Math.abs(diffAngle),
+        Math.abs(diffAngle + 2 * Math.PI),
+        Math.abs(diffAngle - 2 * Math.PI)
+      );
+
+      // The angle difference less than the half of FoV implies the given direction is in the visible range.
+      return diffAngle < this.FOV / 2;
+    },
+
+    // Return the 1-D-position of projected test direction.
+    calculatePosition(testDir) {
+      // Get the angle difference between the currection direction and the given direction.
+      let diffAngle = testDir - this.currentDir;
+
+      // Project the direction to the base line of current direction.
+      let projectedDir = Math.sin(diffAngle);
+
+      // The maximum position that projected direction will be.
+      const maxProjection = Math.sin(this.FOV / 2);
+
+      // Scale the projected direction in order to fit the display area.
+      projectedDir *= this.widthDisplay / 2 / maxProjection;
+
+      // Inverse the direction
+      projectedDir = -projectedDir;
+
+      // Normalize the projected direction to [0, this.wideDisplay]
+      projectedDir += this.widthDisplay / 2;
+
+      return projectedDir;
+    },
+
+    // Calculate heading angle in XY-Plane from given quaternion.
+    calculateHeading(orientation) {
+      let primaryProbe = new THREE.Vector3(0, 0, -1);
+      let secondProbe = new THREE.Vector3(0, 1, 0);
+
+      // Calculate the probes direction in global frame
+      primaryProbe.applyQuaternion(orientation);
+      secondProbe.applyQuaternion(orientation);
+
+      // Project the probes to the global XY-Plane
+      primaryProbe = this.projVec2XY(primaryProbe);
+      secondProbe = this.projVec2XY(secondProbe);
+
+      // Decide which probe can discribe the current heading
+      let selectedProbe = new THREE.Vector3();
+      const threshold = 1 / Math.sqrt(2);
+      if (primaryProbe.length() < threshold) {
+        selectedProbe.copy(secondProbe);
+      } else {
+        selectedProbe.copy(primaryProbe);
+      }
+
+      // Calculate the heading angle from selected probe
+      let headingAngle = Math.atan2(selectedProbe.y, selectedProbe.x);
+
+      // Convert the angle from [-pi, pi] to [0, 2pi]
+      if (headingAngle < 0) {
+        headingAngle += 2 * Math.PI;
+      }
+
+      return headingAngle;
+    },
+
+    // Project the given three dimentional vector to XY-Plane
+    projVec2XY(testVec) {
+      testVec.z = 0;
+      return testVec;
     }
   }
 };
@@ -219,7 +332,7 @@ export default {
   height: 2em;
   overflow: hidden;
 
-  nav {
+  nav div {
     position: absolute;
     display: inline-block;
     margin-left: -1em;
