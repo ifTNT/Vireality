@@ -132,6 +132,10 @@ export default {
 
           this.$emit("camera-ready", width * scale, height * scale);
           this.updatePico();
+          window.setInterval(() => {
+            console.log("LoopTest")
+            this.updateId();
+          },1000);
         },
         false
       );
@@ -192,8 +196,9 @@ export default {
         if (face[3] > 50.0) {
           console.log(face);
           // add all face in wayLength
-          wayLength[faceI][2] = face[1] - face[2] / 4;
-          wayLength[faceI][3] = face[0] - face[2] / 4;
+          wayLength[faceI][2] = face[1] - face[2] / 2;
+          wayLength[faceI][3] = face[0] - face[2] / 2;
+          wayLength[faceI][4] = face[2];
           if (this.confiTable[0] == undefined) {
             faceI++;
             continue;
@@ -201,9 +206,9 @@ export default {
           // find if there has same face
           for (var j = 0; j < this.confiTable.length; j++) {
             const xDist =
-              face[1] - face[2] / 4 - this.confiTable[j].position[0];
+              face[1] - face[2] / 2 - this.confiTable[j].position[0];
             const yDist =
-              face[0] - face[2] / 4 - this.confiTable[j].position[1];
+              face[0] - face[2] / 2 - this.confiTable[j].position[1];
             var target = Math.pow(xDist, 2) + Math.pow(yDist, 2);
             if (wayLength[faceI][1] > target && target < 1000) {
               wayLength[faceI][0] = j;
@@ -233,18 +238,20 @@ export default {
         if (wayLength[j][0] == -1) {
           // console.log("test: " + j);
           this.confiTable.push({
-            faceDeviceID: j,
+            faceDeviceID: String(Date.now()) + String(j),
             userID: NaN,
-            confidence: 11,
-            position: [wayLength[j][2], wayLength[j][3]],
+            confidence: 16,
+            position: [wayLength[j][2], wayLength[j][3], wayLength[j][4]],
             times: 0,
+            fetchCountDown: 0,
+            retryCnt: 0,
           });
         } else {
           // if (this.confiTable[j] == undefined) break;
-          this.confiTable[wayLength[j][0]].faceDeviceID =
-            this.confiTable[wayLength[j][0]].faceDeviceID.toString()[0] == "f"
-              ? this.confiTable[wayLength[j][0]].faceDeviceID
-              : "f" + this.confiTable[wayLength[j][0]].faceDeviceID;
+          // this.confiTable[wayLength[j][0]].faceDeviceID =
+          //   this.confiTable[wayLength[j][0]].faceDeviceID.toString()[0] == "f"
+          //     ? this.confiTable[wayLength[j][0]].faceDeviceID
+          //     : "f" + this.confiTable[wayLength[j][0]].faceDeviceID;
           this.confiTable[wayLength[j][0]].confidence = 15;
           this.confiTable[wayLength[j][0]].position = [
             wayLength[j][2],
@@ -364,6 +371,34 @@ export default {
         }
       }
       this.confidenceTable(ctx);
+    },
+    updateId: function(){
+      let ctx = this.$refs.canvas.getContext("2d");
+      // ctx.fillText("test", 100, 30);
+      for (var i = 0; i < this.confiTable.length; i++){
+        let currConfi = this.confidenceTable[i];
+        if(currConfi.userID == NaN){
+          if(currConfi.fetchCountDown > 0){
+            currConfi.fetchCountDown--;
+            continue;
+          }
+          // Exponential back-off
+          currConfi.retryCnt += 1;
+          currConfi.fetchCountDown = Math.pow(2, currConfi.retryCnt);
+          
+          this.fetchIdbyFace(
+            ctx.getImageData(
+              currConfi.position[0],
+              currConfi.position[1],
+              currConfi.position[2],
+              currConfi.position[2])
+            ,
+            currConfi.faceDeviceID);
+        }
+      }
+    },
+    fetchIdbyFace: function(img,faceDevID){
+      // this.confiTable.userID
     },
   },
 };
