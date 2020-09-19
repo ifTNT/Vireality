@@ -215,7 +215,7 @@ export default {
           faceI++;
         }
       }
-      console.log(wayLength);
+      // console.log(wayLength);
       var confiThis = new Array(this.confiTable.length);
       confiThis.fill(-1, 0, this.confiTable.length);
       for (var j = 0; j < wayLength.length; j++) {
