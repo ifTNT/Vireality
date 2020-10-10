@@ -47,9 +47,11 @@ export default {
   },
   mounted() {
     axios
+    /* [TODO]:還沒抓到user_id */
       .get(server.apiUrl("/user/" + this.Id + "/avatar"))
       .then(
         function(response) {
+          // console.log("AVA:"+response.data)
           this.imgSrc = response.data.avatar;
         }.bind(this)
       )

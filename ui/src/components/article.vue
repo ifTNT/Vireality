@@ -9,7 +9,7 @@
       <div class="articleHeader">
         <nav class="articleAuthor">
           <!-- 前者是要丟給child(profile_picture) props的參數名稱 後者是在parent(article) data區域之參數名稱 -->
-          <proPic :diameter="parentDiameter" :Id="author"></proPic>
+          <proPic :diameter="parentDiameter" :Id=authorName></proPic>
           <p>{{ authorName }}</p>
         </nav>
         <nav class="articleTime">{{postTime}}</nav>
@@ -61,7 +61,7 @@ export default {
       parentDiameter: "2em",
       articlPicture: [],
       postTime: "",
-      isStory: "",
+      isPublic: "",
       startPointX: 0,
       changePointX: 0,
       showIndex: 0,
@@ -83,20 +83,26 @@ export default {
   methods: {
     getArticleDetail() {
       const articleId = location.href.split("/").pop();
+      /* [TODO]:article_id 還沒帶進來 */
       console.log(articleId);
       axios
         // .get(server.apiUrl("/article/"+ articleId))
-        .get(server.apiUrl("/article/" + "5235")) // test
+        .get(server.apiUrl("/article/" + "a2")) // test
         .then(
           function(response) {
+            console.log(response.data)
             if (response.data.ok === "true") {
               this.articlPicture = response.data.thumbnail;
               this.articleTexts = response.data.text;
               this.authorName = response.data.author;
-              this.isStory = response.data.isStory;
+              this.isPublic = response.data.isPublic;
+              console.log("=====test=====")
+              console.log(Date.now())
+              console.log(Date.now()-parseInt(response.data.postTime))
+              console.log("=====test=====")
               if (Date.now() - parseInt(response.data.postTime) < 86400000) {
                 const pathTime =
-                  Date.now() - parseInt(response.data.postTime) / 1000;
+                  (Date.now() - parseInt(response.data.postTime)) / 1000;
                 if (pathTime < 60)
                   this.postTime = "".concat(pathTime, " sec ago");
                 else if (pathTime < 3600)

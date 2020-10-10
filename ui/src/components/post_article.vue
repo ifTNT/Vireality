@@ -1,5 +1,5 @@
  <template>
-  <!-- todo: 高度修改(畫面 地圖大小 上傳圖片)  POST的API(有問題 目前可以抓到全部需要放到DB的資料) -->
+  <!-- [TODO]: 高度修改(畫面 地圖大小 上傳圖片) -->
   <!-- 個人文章還沒抓到個人定位 -->
   <div class="post">
     <header>
@@ -52,12 +52,12 @@
         <span>好友</span>
       </div>
 
-      <h2>挑選您的文章類型</h2>
+      <!-- <h2>挑選您的文章類型</h2>
       <div class="type">
         <span>地點文章</span>
         <switches v-model="placeOrPersonal" theme="bootstrap" color="info"></switches>
         <span>個人</span>
-      </div>
+      </div> -->
     </div>
 
     <mapbox
@@ -124,6 +124,7 @@ export default {
       reader.readAsDataURL(file);
     },
     imageLoader(event) {
+      // console.log(event.target.result)
       this.img = event.target.result;
       this.hasUploadPic = true;
     },
@@ -147,16 +148,19 @@ export default {
       this.chooseLocation = true;
     },
     post() {
-      axios
-        .get(
-          server.apiUrl(
-            "/article/post?" +
-              this.content +
-              "=loren%2085fdsb&lon=" +
-              this.longitude +
-              "&lat=" +
-              this.latitude
-          )
+      console.log("!!!!POST!!!!")
+      axios.post(server.apiUrl("/article/" ),
+        {
+            /* [TODO]:uid還沒拿到 */
+            author: "a123", //test
+            text: this.content,
+            isPuclic: this.allOrFriend,
+            post_time: Date.now(),
+            /* [TODO]: 上傳檔案還不能顯示全部圖片 僅能顯示第一張 且尚未上傳到imgur */
+            // thumbnail: [String] FormData, 圖片集
+            lon: this.longitude,
+            lat: this.latitude
+          },
         )
         .then(
           function(response) {
@@ -166,7 +170,7 @@ export default {
         .catch(error => {
           console.log(error);
         });
-      document.location.href = "/#/main";
+      // document.location.href = "/#/main";
     }
   }
 };

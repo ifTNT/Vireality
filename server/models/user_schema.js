@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var UserSchema = new Schema({
     user_id: {
@@ -29,7 +30,7 @@ var UserSchema = new Schema({
         type: String,
         default: '他很懶甚麼都沒寫',
     },
-    face_id: String,
+    face_id: [Number],
     avator: {
         type: String,
         default: 'https://i.imgur.com/07XbOpL.png',
@@ -39,32 +40,6 @@ var UserSchema = new Schema({
         type: Date,
         required: true,
     },
-    last_active_time: {
-        type: Date,
-        required: true,
-    },
-});
-module.exports = mongoose.model("User", UserSchema);
-
-var ArticleSchema = new Schema({
-    article_id: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    post_time: {
-        type: Date,
-        required: true,
-    },
-    thumbnail: [String],
-    text: String,
-    isStory: Boolean, //true:限時動態 false:文章
-    public: Boolean, //true:公開 false:朋友可見
-    author: { //user_id
-        type: String,
-        required: true,
-        unique: true
-    },
     location: {
         longitude: {
             type: Number,
@@ -73,7 +48,5 @@ var ArticleSchema = new Schema({
             type: Number,
         },
     },
-    
-
 });
-module.exports = mongoose.model("Article", ArticleSchema);
+module.exports = mongoose.model("User", UserSchema);

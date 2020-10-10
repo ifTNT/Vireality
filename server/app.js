@@ -9,6 +9,8 @@ var articleListRouter = require("./routes/article_list");
 var articleRouter = require("./routes/article");
 var chatRouter = require("./routes/chat");
 var userRouter = require("./routes/user");
+var session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 
 var app = express();
 
@@ -30,4 +32,189 @@ app.use(function(req, res) {
   res.status(404).json({ ok: false, msg: "Endpoint not found" });
 });
 
+//Session
+app.use(session({
+  secret: 'recommand 128 bytes random string',
+  store: new MongoStore({url:'mongodb://localhost:27017/sessionDB'}),
+  cookie: { maxAge: 86400000 * 1000 }  //一天到期
+}));
+
 module.exports = app;
+
+
+// Mongoose
+const mongoose = require('mongoose');
+mongoose.set('useCreateIndex', true)
+/*
+ * 與 mongoDB 建立連連
+ * mongoose.connect('mongodb://[資料庫帳號]:[資料庫密碼]@[MongoDB位置]:[port]/[資料庫名稱]')
+ * mongoDB 預設的 port 是 27017
+ * todo 是 database 的名稱，當 app 執行時，mongoose 會自動建立這個 database
+ */
+
+mongoose.connect('mongodb://localhost/testDB', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+
+// 取得資料庫連線狀態
+const db = mongoose.connection;
+db.on('error', err => console.error('connection error', err));  // 連線異常
+db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));     // 連線成功
+
+
+
+/* ---------Test Start----------*/
+const Article = require('./models/article_schema');
+
+/* ----- Test add data -----*/
+// const article = new Article(
+//   {
+//     article_id: 'a1',
+//     post_time: Date.now(),
+//     author:'a123',
+//     thumbnail:["https://i.imgur.com/07XbOpL.png","https://imgur.com/gallery/V1VXuYH"],
+//     text:"hello",
+//     public:true,
+//     location: {
+//       longitude:120.278439,
+//       latitude:22.729114
+//     }
+//   }
+//  );
+// console.log(article.post_time);
+// article.getTime();
+
+/* ----- Test save data -----*/
+// article.save((err, article) => {
+//   if (err) {
+//     return console.error(err);
+//   }
+//   console.log('document saved');
+//   db.close(); // 結束與 database 的連線
+// });
+
+/* ----- Test get data -----*/
+// Article.find({}, (err, articles) => {
+//   if (err) {
+//     return console.error(err);
+//   }
+//   console.log(articles);
+// });
+
+
+
+
+/* ----- Test insert many doc -----*/
+// const articleData = [
+//   {
+//     article_id: 'a1',
+//     post_time: Date.now(),
+//     author:'a123',
+//     thumbnail:["https://i.imgur.com/07XbOpL.png","https://i.imgur.com/Dv8Vk68.jpeg"],
+//     text:"hello",
+//     public:true,
+//     location: {
+//       longitude:120.278439,
+//       latitude:22.729114
+//     }
+//   },
+//   {
+//     article_id: 'a2',
+//     post_time: Date.now(),
+//     author:'a456',
+//     thumbnail:["https://i.imgur.com/wYTCtRu.jpg","https://i.imgur.com/2bvab7y.jpg"],
+//     text:"none",
+//     public:false,
+//     location: {
+//       longitude:120.277849,
+//       latitude:22.729755
+//     }
+//   },  
+//   {
+//     article_id: 'a3',
+//     post_time: Date.now(),
+//     author:'a789',
+//     thumbnail:["https://i.imgur.com/APZOse6.jpg"],
+//     text:"cccc",
+//     public:true,
+//     location: {
+//       longitude:120.292276,
+//       latitude:22.732196
+//     }
+//   },
+//   {
+//     article_id: 'a4',
+//     post_time: Date.now(),
+//     author:'a123',
+//     thumbnail:["https://i.imgur.com/uvFEcJN.jpeg","https://i.imgur.com/XC5djWQ.jpeg"],
+//     text:"I'd like to thank little Crowley for modeling, and this months rent for set dressing.Update: poor little Crowley contracted an incurable disease, feline infectious peritonitis and passed away in November. She was only 6 months old. RIP in peace, my sweet money kitten.",
+//     public:false,
+//     location: {
+//       longitude:120.290055,
+//       latitude:22.732459
+//     }
+//   },
+//   {
+//     article_id: 'a5',
+//     post_time: Date.now(),
+//     author:'a456',
+//     thumbnail:["https://i.imgur.com/Bkg5wek.jpg","https://i.imgur.com/IqE14jF.jpg"],
+//     text:"Sorry boss, I can't come to work today...",
+//     public:false,
+//     location: {
+//       longitude:120.289141,
+//       latitude:22.732360
+//     }
+//   },  
+//   {
+//     article_id: 'a6',
+//     post_time: Date.now(),
+//     author:'a789',
+//     thumbnail:["https://i.imgur.com/pqggrK0.jpeg","https://i.imgur.com/0RDJVCH.jpeg","https://i.imgur.com/8tPiQDo.jpeg"],
+//     text:"It gets worse. People are now asking if we are fostering them and want to adopt them. I had to tell people she shared a strangers cats. Ffs",
+//     public:true,
+//     location: {
+//       longitude:120.287896,
+//       latitude:22.732929
+//     }
+//   },
+// ];
+
+// Article.insertMany(articleData, (err, articles) => {
+//   if (err) {
+//     return console.error(err);
+//   }
+// });
+/* ---------Test End----------*/
+
+
+
+
+
+
+/* ----- Test insert many doc -----*/
+// const User = require('./models/user_schema');
+
+// const userData = [
+//   {
+//     user_id: "a123",
+//     password: "b123",
+//     email: "ak@gmail.com",
+//     nickname: "CINDY",
+//     birthday: "1999/01/01",
+//     face_id: [],
+//     friend_list: [], //放user_id
+//     join_time: Date.now(),
+//     location: {
+//         longitude: 120.290768,
+//         latitude: 22.729104,
+//     },
+//   },
+// ];
+
+// User.insertMany(userData, (err, users) => {
+//   if (err) {
+//     return console.error(err);
+//   }
+// });
