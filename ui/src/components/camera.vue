@@ -357,6 +357,23 @@ export default {
           let _x = face[1] - _width / 2;
           let _y = face[0] - _width / 2;
 
+          let fX = Math.round(face[1]);
+          let fY = Math.round(face[0]);
+          let fW = Math.round(face[2]);
+
+          let faceX = Math.round(fX - fW/2) * 0.90;
+          let faceY = Math.round(fY - fW/2) * 0.90;
+          let faceW = fW * 1.20;
+          console.log(faceX);
+          console.log(faceY);
+          console.log(faceW);
+
+          ctx.beginPath();
+          ctx.lineWidth = '3';
+          ctx.strokeStyle = 'blue';
+          ctx.strokeRect(faceX, faceY, faceW, faceW);
+          ctx.stroke();
+
           //Draw box of detected face
           const aspect_ratio = 1;
           let _height = _width * aspect_ratio;
