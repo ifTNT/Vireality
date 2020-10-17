@@ -48,5 +48,8 @@ var UserSchema = new Schema({
             type: Number,
         },
     },
+    // geohash:{
+    //     type:String
+    // }
 });
 module.exports = mongoose.model("User", UserSchema);

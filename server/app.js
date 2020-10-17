@@ -19,6 +19,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+//Session
+app.use(session({
+  secret: 'recommand 128 bytes random string',
+  store: new MongoStore({url:'mongodb://localhost:27017/sessionDB'}),
+  cookie: { maxAge: 86400000 * 1000 }  //一天到期
+}));
+
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", miscRouter);
@@ -32,12 +40,7 @@ app.use(function(req, res) {
   res.status(404).json({ ok: false, msg: "Endpoint not found" });
 });
 
-//Session
-app.use(session({
-  secret: 'recommand 128 bytes random string',
-  store: new MongoStore({url:'mongodb://localhost:27017/sessionDB'}),
-  cookie: { maxAge: 86400000 * 1000 }  //一天到期
-}));
+
 
 module.exports = app;
 
@@ -117,7 +120,8 @@ const Article = require('./models/article_schema');
 //     location: {
 //       longitude:120.278439,
 //       latitude:22.729114
-//     }
+//     },
+//     geohash:"wsj9318nd"
 //   },
 //   {
 //     article_id: 'a2',
@@ -129,7 +133,8 @@ const Article = require('./models/article_schema');
 //     location: {
 //       longitude:120.277849,
 //       latitude:22.729755
-//     }
+//     },
+//     geohash:"wsj92czdm"
 //   },  
 //   {
 //     article_id: 'a3',
@@ -141,7 +146,8 @@ const Article = require('./models/article_schema');
 //     location: {
 //       longitude:120.292276,
 //       latitude:22.732196
-//     }
+//     },
+//     geohash:"wsj93660t"
 //   },
 //   {
 //     article_id: 'a4',
@@ -153,7 +159,8 @@ const Article = require('./models/article_schema');
 //     location: {
 //       longitude:120.290055,
 //       latitude:22.732459
-//     }
+//     },
+//     geohash:"wsj9362d1"
 //   },
 //   {
 //     article_id: 'a5',
@@ -165,7 +172,8 @@ const Article = require('./models/article_schema');
 //     location: {
 //       longitude:120.289141,
 //       latitude:22.732360
-//     }
+//     },
+//     geohash:"wsj934rcs"
 //   },  
 //   {
 //     article_id: 'a6',
@@ -177,7 +185,8 @@ const Article = require('./models/article_schema');
 //     location: {
 //       longitude:120.287896,
 //       latitude:22.732929
-//     }
+//     },
+//     geohash:"wsj934quz"
 //   },
 // ];
 
@@ -198,19 +207,77 @@ const Article = require('./models/article_schema');
 
 // const userData = [
 //   {
-//     user_id: "a123",
-//     password: "b123",
-//     email: "ak@gmail.com",
-//     nickname: "CINDY",
+//       birthday: "1999/01/01",
+//       interest: "打球阿",
+//       intro: "他很懶甚麼都沒寫",
+//       face_id: [],
+//       avator: "https://i.imgur.com/07XbOpL.png",
+//       friend_list: ["a789", "a456", "b123"],
+//       user_id: "a123",
+//       password: "b123",
+//       email: "ak@gmail.com",
+//       nickname: "CINDY",
+//       join_time: Date.now(),
+//       location: {
+//           longitude: 120.2769229,
+//           latitude: 22.7316944
+//       },
+//       geohash:"wsj92fnvx"
+//   },
+//   {
 //     birthday: "1999/01/01",
+//     interest: "打球阿",
+//     intro: "他很懶甚麼都沒寫",
 //     face_id: [],
-//     friend_list: [], //放user_id
+//     avator: "https://i.imgur.com/4pYPZvj.gif",
+//     friend_list: ["a789"],
+//     user_id: "a456",
+//     password: "b456",
+//     email: "aa@gmail.com",
+//     nickname: "BELLA",
+//     join_time: Date.now(),
+//     location: {
+//         longitude: 120.29289452026859,
+//         latitude: 22.73417243105847
+//     },
+//     geohash:"wsj936ds5"
+//   },
+//   {
+//     birthday: "1999/01/01",
+//     interest: "睡覺",
+//     intro: "嗨嗨",
+//     face_id: [],
+//     avator: "https://i.imgur.com/F8ygZ6M.jpeg",
+//     friend_list: ["a123", "a456"],
+//     user_id: "a789",
+//     password: "b789",
+//     email: "qwe@gmail.com",
+//     nickname: "LISA",
 //     join_time: Date.now(),
 //     location: {
 //         longitude: 120.290768,
-//         latitude: 22.729104,
+//         latitude: 22.729104
 //     },
+//     geohash:"wsj9339nd"
 //   },
+//   {
+//     birthday: "1999/08/25",
+//     interest: "SING",
+//     intro: "A_A",
+//     face_id: [],
+//     avator: "https://i.imgur.com/3QS8FN2.jpeg",
+//     friend_list: ["a789"],
+//     user_id: "b123",
+//     password: "c123",
+//     email: "vvvvvv@gmail.com",
+//     nickname: "CHEN",
+//     join_time: Date.now(),
+//     location: {
+//         longitude: 120.277094,
+//         latitude: 22.733319
+//     },
+//     geohash:"wsj92frp5"
+//   }
 // ];
 
 // User.insertMany(userData, (err, users) => {

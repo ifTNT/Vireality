@@ -5,6 +5,7 @@ const Article = require('../models/article_schema');
 /* 給定使用者經緯度，取得使用者附近(半徑10公尺的圓)文章列表，列表內有文章縮圖(有白邊)、發文座標和發文作者id。
 若有給定篩選時間則再根據給定時間篩選 */
 router.get("/geolocation", function(req, res, next) {
+  /*----- [TODO]:GeoHash去find正則表達 還是要計算距離 -----*/
   //計算距離公式
   /*
     var lon1,lon2;

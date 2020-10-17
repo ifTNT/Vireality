@@ -7,6 +7,10 @@ const User = require('../models/user_schema');
 
 /* 回傳詳細文章內容(作者資料、文章圖片、文章文字內容、發文時間) */
 router.get("/:id", function (req, res, next) {
+  // console.log(req.session)
+  // req.session.user_id = "a123"
+  // console.log(req.session)
+
   if (req.params.id === undefined) {
     res.json({
       ok: "false"
@@ -19,7 +23,7 @@ router.get("/:id", function (req, res, next) {
       console.log(err)
       return;
     } 
-    console.log("Result :\n", articles)
+    // console.log("Result :\n", articles)
     if (articles.length !== 0) {
       console.log("Send!")
       const dateTime = new Date(articles[0].post_time);
@@ -48,7 +52,7 @@ router.post("/", function (req, res, next) {
     });
     return;
   }
-  /* [TODO]:新增自DB還沒寫 圖片上傳還沒解決 */
+  /* [TODO]:新增自DB還沒寫 圖片上傳還沒解決 !!!GeoHash + imgur API!!!*/
   /* [TODO]:生成article_id是unique */
   // const articleData = [
   //     {

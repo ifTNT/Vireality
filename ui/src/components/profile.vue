@@ -47,7 +47,8 @@ export default {
             interest: "",
             intro: "",
             parentDiameter: "10em",
-            isFriend:false
+            isFriend:false,
+            friendship_state:0 //0:交友申請 1:送出交友申請 2:收到交友申請 3:聊天室
         };
     },
     components: {
