@@ -1,12 +1,13 @@
 <template>
     <div class="profile">
-                <profilePicture :diameter="parentDiameter" :Id="Id"></profilePicture>
-                <!-- <div class="profilePricture"></div> -->
-                <div class="name">{{ nickName }}</div>
-                <div class="hobbies">{{ interest }}</div>
-                <div class="description">{{ intro }}</div>
-            <button class="button" type="button" color="black">聊天室</button>
-        </div>
+        <profilePicture :diameter="parentDiameter" :Id="Id"></profilePicture>
+        <!-- <div class="profilePricture"></div> -->
+        <div class="name">{{ nickName }}</div>
+        <div class="hobbies">{{ interest }}</div>
+        <div class="description">{{ intro }}</div>
+        <button class="button" type="button" color="black" v-if="isFriend===true">聊天室</button>
+        <button class="button" type="button" color="black" @click=sendFriendRequest v-else>申請交友</button>
+    </div>
 </template>
 <script>
 import axios from 'axios';
@@ -37,7 +38,7 @@ export default {
         Id:{
             type: String,
             //預設為0px 避免父類別沒有傳入資料
-            default: "a123"
+            default: "a456"
         }
     },
     data(){
@@ -46,6 +47,7 @@ export default {
             interest: "",
             intro: "",
             parentDiameter: "10em",
+            isFriend:false
         };
     },
     components: {
@@ -60,6 +62,7 @@ export default {
                     this.nickName = response.data.nickName;
                     this.interest = response.data.interest;
                     this.intro = response.data.intro;
+                    this.isFriend = response.data.isFriend
                 }
                 else{
                     console.log("not ok");
@@ -69,6 +72,27 @@ export default {
         .catch(error => {
             console.log(error);
         });
+    },
+    methods: {
+        sendFriendRequest: function() {
+            console.log("friend req")
+            /* [TODO]:userid還沒 targetid要進入時收到*/
+            // axios
+            // .post(server.apiUrl("/chat/"+this.Id+"/friend_request"),{uid:"a123",targetUid: this.Id})
+            // .then(
+            //     function(response){
+            //         if(response.data.ok === "true"){
+            //             console.log("ok")
+            //         }
+            //         else{
+            //             console.log("not ok");
+            //         }
+            //     }.bind(this)
+            // )
+            // .catch(error => {
+            //     console.log(error);
+            // });
+        },
     }
 };
 </script>
