@@ -134,51 +134,55 @@ export default {
       }
       this.appendOnScreen(radXY);
     },
-    getFriends() {
-      this.friendRad = [
-        {
-          id: "123",
-          dir: 0
-        },
-        {
-          id: "1234",
-          dir: 3.3218
-        },
-        {
-          id: "12345",
-          dir: 1.3318
-        },
-        {
-          id: "123456",
-          dir: 2.3518
-        }
-      ];
-      this.friendRad.forEach(friend => {
-        friend["pos"] = 0;
-        friend["visible"] = false;
-      });
-      this.getFrientFlag = true;
-      this.sensorStarter();
-      // axios
-      //   .get(server.apiUrl("/user/friend_direction"))
-      //   .then(response => {
-      //     if (response.data.ok === "true") {
-      //       this.friendRad = response.data.result;
-      //       console.log(this.friendRad);
-      //       this.getFrientFlag = true;
-      //     } else {
-      //       console.log("can't get friend place without ok");
-      //       getFriends();
-      //     }
-      //   })
-      //   .catch(response => {
-      //     console.log("can't get friends place");
-      //     console.log(response);
-      //     // getFriends();
-      //   })
-      //   .then(() => {
-      //     this.sensorStarter();
-      //   });
+   getFriends() {
+    //   this.friendRad = [
+    //     {
+    //       id: "123",
+    //       dir: 0
+    //     },
+    //     {
+    //       id: "1234",
+    //       dir: 3.3218
+    //     },
+    //     {
+    //       id: "12345",
+    //       dir: 1.3318
+    //     },
+    //     {
+    //       id: "123456",
+    //       dir: 2.3518
+    //     }
+    //   ];
+    //   this.friendRad.forEach(friend => {
+    //     friend["pos"] = 0;
+    //     friend["visible"] = false;
+    //   });
+    //   this.getFrientFlag = true;
+    //   this.sensorStarter();
+      axios
+        .get(server.apiUrl("/user/friend_direction"))
+        .then(response => {
+          if (response.data.ok === "true") {
+            this.friendRad = response.data.result;
+            console.log(this.friendRad);
+            this.friendRad.forEach(friend => {
+              friend["pos"] = 0;
+              friend["visible"] = false;
+            });
+            this.getFrientFlag = true;
+          } else {
+            console.log("can't get friend place without ok");
+            getFriends();
+          }
+        })
+        .catch(response => {
+          console.log("can't get friends place");
+          console.log(response);
+          // getFriends();
+        })
+        .then(() => {
+          this.sensorStarter();
+        });
     },
     appendOnScreen(radXY) {
       var listToShow = [];

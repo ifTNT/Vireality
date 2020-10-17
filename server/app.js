@@ -19,6 +19,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+//Session
+app.use(session({
+  secret: 'recommand 128 bytes random string',
+  store: new MongoStore({url:'mongodb://localhost:27017/sessionDB'}),
+  cookie: { maxAge: 86400000 * 1000 }  //一天到期
+}));
+
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", miscRouter);
@@ -32,12 +40,7 @@ app.use(function(req, res) {
   res.status(404).json({ ok: false, msg: "Endpoint not found" });
 });
 
-//Session
-app.use(session({
-  secret: 'recommand 128 bytes random string',
-  store: new MongoStore({url:'mongodb://localhost:27017/sessionDB'}),
-  cookie: { maxAge: 86400000 * 1000 }  //一天到期
-}));
+
 
 module.exports = app;
 
