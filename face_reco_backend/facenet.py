@@ -1,6 +1,6 @@
 """
 facenet.py
-The main script of facenet-unit of face-recognition-backend
+The main script of facenet-unit of face recognition backend.
 """
 
 import time
@@ -17,8 +17,38 @@ from keras.models import load_model
 from joblib import dump, load
 import xgboost as xgb
 from xgboost import XGBClassifier
+import zmq
+import logging
+from common.network import *
+from common import zmq_serdes
+from common.protocol.msg import *
+import zlib
+import io
 
-def prewhiten(x):
+class Facenet():
+  def __init__(self, model_path, img_size):
+    self.model_path = model_path
+    self.img_size = img_size
+
+    start = time.time()
+    model_path = os.path.abspath(model_path)
+    self.model = load_model(model_path, compile=False)
+    last = time.time()
+
+    logging.info(f'loaded facenet model : {self.model_path}')
+    logging.info(f'Time spent on loading model: {(last-start)} seconds')
+
+  # Input an aligned image.
+  # Output the embedding of the image
+  def calc_embs(self, img, margin=10, batch_size=1):
+    preprocessed_img = self.__prewhiten(img)
+    embedding = self.model.predict_on_batch(preprocessed_img)
+    embedding = self.__l2_normalize(embedding)
+
+    return embedding
+
+  # Normalize the picture in preprocessing stage
+  def __prewhiten(self, x):
     if x.ndim == 4:
         axis = (1, 2, 3)
         size = x[0].size
@@ -34,50 +64,45 @@ def prewhiten(x):
     y = (x - mean) / std_adj
     return y
 
-def l2_normalize(x, axis=-1, epsilon=1e-10):
+  # L2 normalize to produce embeddings
+  def __l2_normalize(self, x, axis=-1, epsilon=1e-10):
     output = x / np.sqrt(np.maximum(np.sum(np.square(x), axis=axis, keepdims=True), epsilon))
     return output
 
-def load_and_align_images(filepaths, margin):
-    cascade = cv2.CascadeClassifier(cascade_path)
-
-    aligned_images = []
-    for filepath in filepaths:
-        # print(filepath)
-        img = imread(filepath)
-
-        faces = cascade.detectMultiScale(img,
-                                         scaleFactor=1.1,
-                                         minNeighbors=3)
-        (x, y, w, h) = faces[0]
-        cropped = img[y-margin//2:y+h+margin//2,
-                      x-margin//2:x+w+margin//2, :]
-        aligned = resize(cropped, (image_size, image_size), mode='reflect')
-        aligned_images.append(aligned)
-
-    return np.array(aligned_images)
-
-def calc_embs(filepaths, margin=10, batch_size=1):
-    aligned_images = prewhiten(load_and_align_images(filepaths, margin))
-    pd = []
-    for start in range(0, len(aligned_images), batch_size):
-        pd.append(model.predict_on_batch(aligned_images[start:start+batch_size]))
-    embs = l2_normalize(np.concatenate(pd))
-
-    return embs
-
 def main():
+  LOG_FORMAT = '%(asctime)s facenet-unit %(levelname)s: %(message)s'
+  logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
-  image_size = 160
-  start = time.time()
-  model_path = os.path.abspath('models/facenet_keras.h5')
-  model = load_model(model_path, compile=False)
-  last = time.time()
+  img_size = 160
+  expected_img_shape = (img_size, img_size, 3)
+  model_path = 'models/facenet_keras.h5'
+  logging.info('I am a facenet-unit')
+  facenet = Facenet(model_path, img_size)
+  
+  context = zmq.Context()
+  # Socket to recieve work
+  work_recv = context.socket(zmq.PULL)
+  work_recv.connect(get_zmq_uri(FRONT_IP(), FRONT_ISSUE_PORT()))
+  # Socket to send result
+  result_sender = context.socket(zmq.PUSH)
+  result_sender.connect(get_zmq_uri(RECO_SHED_IP(), RECO_SCHED_RECV_PORT()))
 
-  print(f'loaded facenet model : {model_path}')
-  print(f'Time spent on loading model: {(last-start)} seconds')
+  logging.info('Begin receive works from front-end-server')
 
+  while True:
+    work = zmq_serdes.recv_zipped_pickle(work_recv)
+    
+    logging.info('Received a work from front-end-server (req_id={})'.format(work.req_id))
+    
+    if(work.img.shape!=expected_img_shape):
+      """If image size dosen't match, reject it."""
+      result = FaceIDMsg(work.req_id, work.req_type, ResState.REJECT, "")
+    else:
+      """Recognize the face"""
+      face_id = facenet.calc_embs(work.img)
+      result = FaceIDMsg(work.req_id, work.req_type, ResState.OK, face_id)
 
+    zmq_serdes.send_zipped_pickle(result_sender, result)
 
 if __name__ == "__main__":
     main()
