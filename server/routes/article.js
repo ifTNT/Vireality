@@ -52,7 +52,7 @@ router.post("/", function (req, res, next) {
     });
     return;
   }
-  /* [TODO]:新增自DB還沒寫 圖片上傳還沒解決 !!!GeoHash!!!*/
+  /* [TODO]:新增自DB還沒寫 圖片上傳還沒解決 !!!GeoHash + imgur API!!!*/
   /* [TODO]:生成article_id是unique */
   // const articleData = [
   //     {

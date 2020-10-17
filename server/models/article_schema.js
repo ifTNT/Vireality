@@ -27,6 +27,9 @@ var ArticleSchema = new Schema({
             type: Number,
         },
     },
+    // geohash:{
+    //     type: String
+    // }
     
 
 });
