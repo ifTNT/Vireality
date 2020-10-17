@@ -11,6 +11,8 @@ Original file is located at
 import time
 import numpy as np
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+
 import matplotlib.pyplot as plt
 import cv2
 from sklearn.svm import SVC
@@ -25,18 +27,18 @@ from xgboost import XGBClassifier
 # %matplotlib inline
 start = time.time()
 
-cascade_path = 'C:/Users/User/Desktop/Facenet-Test/model/cv2/haarcascade_frontalface_alt2.xml'
+cascade_path = os.path.abspath('../model/cv2/haarcascade_frontalface_alt2.xml')
 
-image_dir_basepath = 'C:/Users/User/Desktop/Facenet-Test/data/images/'
+image_dir_basepath = os.path.abspath('../data/images/train')+'/'
 
 names = os.listdir(image_dir_basepath)
-names.remove('Test')
+#names.remove('Test')
 
 image_size = 160
 print('load names list : ' + str(time.time()-start))
 last = time.time()
 
-model_path = 'C:/Users/User/Desktop/Facenet-Test/model/keras/model/facenet_keras.h5'
+model_path = os.path.abspath('../model/keras/model/facenet_keras.h5')
 model = load_model(model_path)
 
 print('load model : ' + str(time.time()-last))
@@ -64,7 +66,7 @@ def l2_normalize(x, axis=-1, epsilon=1e-10):
 
 def load_and_align_images(filepaths, margin):
     cascade = cv2.CascadeClassifier(cascade_path)
-    
+
     aligned_images = []
     for filepath in filepaths:
         # print(filepath)
@@ -78,7 +80,7 @@ def load_and_align_images(filepaths, margin):
                       x-margin//2:x+w+margin//2, :]
         aligned = resize(cropped, (image_size, image_size), mode='reflect')
         aligned_images.append(aligned)
-            
+
     return np.array(aligned_images)
 
 def calc_embs(filepaths, margin=10, batch_size=1):
@@ -104,31 +106,38 @@ def train(dir_basepath, names, max_num_img=10):
         #                                 'emb' : embs_[i]}
         labels.extend([name] * len(embs_))
         embs.append(embs_)
-    
+
     print('compute each emb : ' + str(time.time()-last))
     lastt = time.time()
 
     embs = np.concatenate(embs)
     le = LabelEncoder().fit(labels)
     y = le.transform(labels)
-    # param = {'max_depth': 2, 'eta': 1, 'objective': 'multi:softmax'}
-    # dtrain = xgb.DMatrix(embs, label=y)
-    # bst = xgb.train(param, dtrain, 1)
-    # clf = XGBClassifier()
-    # clf = clf.fit(embs, y)
-    clf = SVC(kernel='linear', probability=True).fit(embs, y)
-    return le, clf
+    param = {
+        'max_depth': 256,
+        'eta': 1,
+        'objective': 'multi:softprob',
+        'num_class': len(names)
+    }
+    dtrain = xgb.DMatrix(embs, label=y)
+    num_passes = 5
+    bst = xgb.train(param, dtrain, num_passes)
+    #clf = XGBClassifier()
+    #clf = clf.fit(embs, y)
+    #clf = SVC(kernel='linear', probability=True).fit(embs, y)
+    return le, bst
 
 def infer(le, clf, filepaths):
     embs = calc_embs(filepaths)
     pred = le.inverse_transform(clf.predict(embs))
     return pred
-    
 
-le, clf = train(image_dir_basepath, names)
+
+le, bst = train(image_dir_basepath, names)
 # print(le.classes_)
 dump(le, "train_le.joblib")
-dump(clf, "train_model.joblib")
+bst.save_model('xgb_face.model')
+# dump(clf, "train_model.joblib")
 # start = time.time()
 # test_dirpath = os.path.join(image_dir_basepath, 'Test')
 # test_filepaths = [os.path.join(test_dirpath, f) for f in os.listdir(test_dirpath)]

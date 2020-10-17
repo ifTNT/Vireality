@@ -9,30 +9,35 @@ Original file is located at
 """
 
 # Commented out IPython magic to ensure Python compatibility.
+import csv
+import xgboost as xgb
+from scipy.spatial import distance
+from joblib import dump, load
+from keras.models import load_model
+from skimage.transform import resize
+from imageio import imread
+from sklearn.preprocessing import LabelEncoder
+from sklearn.svm import SVC
+import cv2
+import matplotlib.pyplot as plt
 import time
 import numpy as np
 import os
-import matplotlib.pyplot as plt
-import cv2
-from sklearn.svm import SVC
-from sklearn.preprocessing import LabelEncoder
-from imageio import imread
-from skimage.transform import resize
-from keras.models import load_model
-from joblib import dump, load
-from scipy.spatial import distance
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # %matplotlib inline
-threshold = 0.06
+threshold = 0.2
 
-cascade_path = 'C:/Users/User/Desktop/Facenet-Test/model/cv2/haarcascade_frontalface_alt2.xml'
+cascade_path = os.path.abspath('../model/cv2/haarcascade_frontalface_alt2.xml')
 
-image_dir_basepath = 'C:/Users/User/Desktop/Facenet-Test/data/images/'
+image_dir_basepath = os.path.abspath('../data/images/')+'/'
 image_size = 160
 start = time.time()
-model_path = 'C:/Users/User/Desktop/Facenet-Test/model/keras/model/facenet_keras.h5'
+model_path = os.path.abspath('../model/keras/model/facenet_keras.h5')
 model = load_model(model_path)
 # print(time.time()-start)
+
+
 def prewhiten(x):
     if x.ndim == 4:
         axis = (1, 2, 3)
@@ -49,13 +54,16 @@ def prewhiten(x):
     y = (x - mean) / std_adj
     return y
 
+
 def l2_normalize(x, axis=-1, epsilon=1e-10):
-    output = x / np.sqrt(np.maximum(np.sum(np.square(x), axis=axis, keepdims=True), epsilon))
+    output = x / np.sqrt(np.maximum(np.sum(np.square(x),
+                                           axis=axis, keepdims=True), epsilon))
     return output
+
 
 def load_and_align_images(filepaths, margin):
     cascade = cv2.CascadeClassifier(cascade_path)
-    
+
     aligned_images = []
     for filepath in filepaths:
         img = imread(filepath)
@@ -68,16 +76,18 @@ def load_and_align_images(filepaths, margin):
                       x-margin//2:x+w+margin//2, :]
         aligned = resize(cropped, (image_size, image_size), mode='reflect')
         aligned_images.append(aligned)
-            
+
     return np.array(aligned_images)
+
 
 def calc_embs(filepaths, margin=10, batch_size=1):
     aligned_images = prewhiten(load_and_align_images(filepaths, margin))
     pd = []
     for start in range(0, len(aligned_images), batch_size):
-        pd.append(model.predict_on_batch(aligned_images[start:start+batch_size]))
+        pd.append(model.predict_on_batch(
+            aligned_images[start:start+batch_size]))
     embs = l2_normalize(np.concatenate(pd))
-    
+
     return embs
 
 # def train(dir_basepath, names, max_num_img=10):
@@ -86,57 +96,72 @@ def calc_embs(filepaths, margin=10, batch_size=1):
 #     for name in names:
 #         dirpath = os.path.abspath(dir_basepath + name)
 #         filepaths = [os.path.join(dirpath, f) for f in os.listdir(dirpath)][:max_num_img]
-#         embs_ = calc_embs(filepaths)    
+#         embs_ = calc_embs(filepaths)
 #         labels.extend([name] * len(embs_))
 #         embs.append(embs_)
-        
+
 #     embs = np.concatenate(embs)
 #     le = LabelEncoder().fit(labels)
 #     y = le.transform(labels)
 #     clf = SVC(kernel='linear', probability=True).fit(embs, y)
 #     return le, clf
 
-def infer(le, clf, filepaths):
+
+def infer(le, bst, filepaths):
     embs = calc_embs(filepaths)
 
-    tmp = clf.predict_proba(embs)
-    print(tmp[0].max())
-    print(tmp[0])
-    if(tmp[0].max() < threshold): return ['unknown']
+    start = time.time()
 
-    pred = le.inverse_transform(clf.predict(embs))
-    return pred
+    dtest = xgb.DMatrix(embs)
+    ypred = bst.predict(dtest)
+
+    duration = time.time()-start
+    print('Predicting duration: {:.3} seconds.'.format(duration))
+
+    for (filepath, single_pred) in zip(filepaths, ypred):
+        single_pred = single_pred.flatten()
+
+        # Print overall prediction
+        #print('=============[Detailed Prediction]===============')
+        # for (index, pred) in enumerate(ypred):
+        #    print('{}:\t\t{:.5}'.format(le.classes_[index], pred))
+        # print('============================')
+
+        max_pred = np.argmax(single_pred)
+        if(single_pred[max_pred] < threshold):
+            pred_lable = le.classes_[max_pred] + '(unknown)'
+        else:
+            pred_lable = le.classes_[max_pred]
+        print('{}: \t Predict: {:20}\t Confidence: {:.3}'.format(
+            os.path.basename(filepath), pred_lable, single_pred[max_pred]))
+
 
 # le, clf = train(image_dir_basepath, names)
 # joblib.dump(clf, "train_model.m")
-start = time.time()
 
 le = load('train_le.joblib')
-clf = load('train_model.joblib') 
+bst = xgb.Booster({'nthread': 4})
+bst.load_model('xgb_face.model')
 test_dirpath = os.path.join(image_dir_basepath, 'Test')
-test_filepaths = [os.path.join(test_dirpath, f) for f in os.listdir(test_dirpath)]
+test_filepaths = [os.path.join(test_dirpath, f)
+                  for f in os.listdir(test_dirpath)]
 
-pred = infer(le, clf, test_filepaths)
+infer(le, bst, test_filepaths)
 
 # fig, axes = plt.subplots(1, 1, figsize=(10, 5))
 
 # for i in range(len(pred)):
-print('Prediction : '+str(pred[0]))
-    # axes[i].set_title('Prediction : '+str(pred[i]))
-    # axes[i].imshow(imread(test_filepaths[i]))
-    # axes[i].set_xticks([])
-    # axes[i].set_yticks([])
+#print('Prediction : '+str(pred[0]))
+# axes[i].set_title('Prediction : '+str(pred[i]))
+# axes[i].imshow(imread(test_filepaths[i]))
+# axes[i].set_xticks([])
+# axes[i].set_yticks([])
 # plt.show()
-endTime = time.time()-start
-print(endTime)
-import csv
 
 # 開啟輸出的 CSV 檔案
-with open('xbg.csv', 'a+', newline='') as csvfile:
-  # 建立 CSV 檔寫入器
-  writer = csv.writer(csvfile)
+# with open('xbg.csv', 'a+', newline='') as csvfile:
+#     # 建立 CSV 檔寫入器
+#     writer = csv.writer(csvfile)
 
-  # 寫入一列資料
-  writer.writerow([endTime])
-
-
+#     # 寫入一列資料
+#     writer.writerow([endTime])
