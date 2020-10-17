@@ -30,12 +30,14 @@ class Facenet():
     self.model_path = model_path
     self.img_size = img_size
 
+
+    logging.info(f'Loading facenet model...')
     start = time.time()
     model_path = os.path.abspath(model_path)
     self.model = load_model(model_path, compile=False)
     last = time.time()
 
-    logging.info(f'loaded facenet model : {self.model_path}')
+    logging.info(f'Loaded facenet model : {self.model_path}')
     logging.info(f'Time spent on loading model: {(last-start)} seconds')
 
   # Input an aligned image.
@@ -70,7 +72,7 @@ class Facenet():
     return output
 
 def main():
-  LOG_FORMAT = '%(asctime)s facenet-unit %(levelname)s: %(message)s'
+  LOG_FORMAT = '%(asctime)s [facenet-unit]: [%(levelname)s] %(message)s'
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
   img_size = 160
