@@ -12,9 +12,9 @@ class ResState(Enum):
 # The enumerate of request type
 class ReqType(Enum):
   NOP = 'nop'    # Default operation
-  RECO = 'reco'  # Request the system to recognize the face
+  RECOG = 'recog'  # Request the system to recognize the face
   NEW = 'new'    # Request the system to train new model with new face
 
 PictureMsg = namedtuple("PictureMsg", "req_id req_type img")
-FaceIDMsg = namedtuple("FaceIDMsg", "req_id req_type res_state face_id")
+FeatureMsg = namedtuple("FeatureMsg", "req_id req_type res_state face_id")
 UserIDMsg = namedtuple("UserIDMsg", "req_id res_state user_id")

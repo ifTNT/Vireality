@@ -8,41 +8,38 @@ import numpy as np
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
-import cv2
-from sklearn.svm import SVC
-from sklearn.preprocessing import LabelEncoder
-from imageio import imread
-from skimage.transform import resize
 from keras.models import load_model
-from joblib import dump, load
-import xgboost as xgb
-from xgboost import XGBClassifier
+from keras.models import Model
 import zmq
 import logging
 from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
-import zlib
-import io
 
 class Facenet():
-  def __init__(self, model_path, img_size):
-    self.model_path = model_path
+  def __init__(self, inception_resnet_v1_path, img_size):
     self.img_size = img_size
-
 
     logging.info(f'Loading facenet model...')
     start = time.time()
-    model_path = os.path.abspath(model_path)
-    self.model = load_model(model_path, compile=False)
+    model_path = os.path.abspath(inception_resnet_v1_path)
+    inception_resnet_v1 = load_model(model_path, compile=False)
+
+    # Remove the dropout layer, full-connected layer
+    # and the batch-normalizing layer
+    # from the original Inception ResNet-V1 model.
+    new_input_layer = inception_resnet_v1.input
+    new_output_layer = inception_resnet_v1.layers[-4].output
+    self.model = Model(new_input_layer, new_output_layer)
     last = time.time()
 
-    logging.info(f'Loaded facenet model : {self.model_path}')
+    logging.info(f'Loaded facenet model : {model_path}')
+    self.model.summary()
     logging.info(f'Time spent on loading model: {(last-start)} seconds')
 
   # Input an aligned image.
   # Output the embedding of the image
-  def calc_embs(self, img, margin=10, batch_size=1):
+  def calc_embs(self, img):
     preprocessed_img = self.__prewhiten(img)
     embedding = self.model.predict_on_batch(preprocessed_img)
     embedding = self.__l2_normalize(embedding)
@@ -67,8 +64,8 @@ class Facenet():
     return y
 
   # L2 normalize to produce embeddings
-  def __l2_normalize(self, x, axis=-1, epsilon=1e-10):
-    output = x / np.sqrt(np.maximum(np.sum(np.square(x), axis=axis, keepdims=True), epsilon))
+  def __l2_normalize(self, x, epsilon=1e-10):
+    output = x / np.sqrt(np.maximum(np.sum(np.square(x), keepdims=True), epsilon))
     return output
 
 def main():
@@ -77,7 +74,7 @@ def main():
 
   img_size = 160
   expected_img_shape = (img_size, img_size, 3)
-  model_path = 'models/facenet_keras.h5'
+  model_path = 'models/Inception_ResNet_v1_MS_Celeb_1M.h5'
   logging.info('I am a facenet-unit')
   facenet = Facenet(model_path, img_size)
   
@@ -87,7 +84,7 @@ def main():
   work_recv.connect(get_zmq_uri(FRONT_IP(), FRONT_ISSUE_PORT()))
   # Socket to send result
   result_sender = context.socket(zmq.PUSH)
-  result_sender.connect(get_zmq_uri(RECO_SHED_IP(), RECO_SCHED_RECV_PORT()))
+  result_sender.connect(get_zmq_uri(RECOG_SHED_IP(), RECOG_SCHED_RECV_PORT()))
 
   logging.info('Begin receive works from front-end-server')
 
@@ -98,11 +95,11 @@ def main():
     
     if(work.img.shape!=expected_img_shape):
       """If image size dosen't match, reject it."""
-      result = FaceIDMsg(work.req_id, work.req_type, ResState.REJECT, "")
+      result = FeatureMsg(work.req_id, work.req_type, ResState.REJECT, "")
     else:
       """Recognize the face"""
       face_id = facenet.calc_embs(work.img)
-      result = FaceIDMsg(work.req_id, work.req_type, ResState.OK, face_id)
+      result = FeatureMsg(work.req_id, work.req_type, ResState.OK, face_id)
 
     zmq_serdes.send_zipped_pickle(result_sender, result)
 
