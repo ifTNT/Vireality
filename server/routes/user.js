@@ -72,13 +72,14 @@ router.get("/friend_direction", async function(req, res, next) {
     if(uid === undefined){ throw "uid is undefined."}
 
     /*---- Find user's friend list ----*/
-    let err,user = await User.find({user_id: uid}, function (err, user) {})
+    let err,user = await User.find({user_id: uid})
     if (err) { throw err}
+    if(user.length === 0 ) { throw "NO user" }
     console.log(user[0].friend_list)
 
     /*---- Find friend's info  ----*/
     let friend
-    err,friend = await User.find({user_id: user[0].friend_list}, function (err, user) {})
+    err,friend = await User.find({user_id: user[0].friend_list})
     // console.log("friend",friend)
     if (err) { throw err}
 

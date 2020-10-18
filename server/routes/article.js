@@ -2,11 +2,10 @@ var express = require("express");
 // const  db  = require("../models/article_schema.js");
 var router = express.Router();
 const Article = require('../models/article_schema');
-const User = require('../models/user_schema');
 
 
 /* 回傳詳細文章內容(作者資料、文章圖片、文章文字內容、發文時間) */
-router.get("/:id", function (req, res, next) {
+router.get("/:id", async function (req, res, next) {
   // console.log(req.session)
   // req.session.user_id = "a123"
   // console.log(req.session)
@@ -40,6 +39,8 @@ router.get("/:id", function (req, res, next) {
     }
     
   });
+
+ 
 });
 
 /* 上傳文章 */
