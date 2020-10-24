@@ -3,18 +3,17 @@ var router = express.Router();
 const User = require('../models/user_schema');
 
 /* [TODO]:送交友申請到被申請人的聊天室 */
+/* [TODO]:還沒架起telegram api : 交友發送=>更改friendship 交友接受=>更改雙方user schema的friend_list*/
 router.post("/:targetUid/friend_request", function(req, res, next) {
   // Pre condition
   if (req.params.targetUid === undefined || req.query.uid === undefined) {
-    res.json({ ok: false });
+    res.json({ ok: "false", result: []});
     return;
   }
   res.json({
-    ok: true
-  });
-
-
-  
+    ok: "true", 
+    result: []
+  }); 
 });
 
 /* 回覆文章至作者聊天室 */

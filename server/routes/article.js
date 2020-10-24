@@ -3,7 +3,6 @@ var express = require("express");
 var router = express.Router();
 const Article = require('../models/article_schema');
 
-
 /* 回傳詳細文章內容(作者資料、文章圖片、文章文字內容、發文時間) */
 router.get("/:id", async function (req, res, next) {
   // console.log(req.session)
@@ -12,7 +11,8 @@ router.get("/:id", async function (req, res, next) {
 
   if (req.params.id === undefined) {
     res.json({
-      ok: "false"
+      ok: "false",
+      result: []
     });
   }
 
@@ -20,6 +20,10 @@ router.get("/:id", async function (req, res, next) {
   Article.find({article_id: req.params.id}, function (err, articles) {
     if (err) {
       console.log(err)
+      res.json({
+        ok: "false",
+        result: []
+      });
       return;
     } 
     // console.log("Result :\n", articles)
@@ -37,6 +41,9 @@ router.get("/:id", async function (req, res, next) {
         author: articles[0].author
       });
     }
+    else{
+      res.json({ok: "false",result: []});
+    }
     
   });
 
@@ -48,9 +55,7 @@ router.post("/", function (req, res, next) {
   /* [TODO]:前端(post_article.vue)尚未完成 */
   console.log(req.body)
   if (req.body.author === undefined ||req.query.lon === undefined ||req.query.lat === undefined ) {
-    res.json({
-      ok: false
-    });
+    res.json({ok: "false",result: []});
     return;
   }
   /* [TODO]:新增自DB還沒寫 圖片上傳還沒解決 !!!GeoHash + imgur API!!!*/
@@ -76,7 +81,7 @@ router.post("/", function (req, res, next) {
     //   }
     // });
     res.json({
-      ok: true
+      ok: "true"
     });
 });
 module.exports = router;

@@ -68,7 +68,7 @@ db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));
 
 
 /* ---------Test Start----------*/
-const Article = require('./models/article_schema');
+// const Article = require('./models/article_schema');
 
 /* ----- Test add data -----*/
 // const article = new Article(
@@ -284,4 +284,26 @@ const Article = require('./models/article_schema');
 //   if (err) {
 //     return console.error(err);
 //   }
+// });
+
+
+// const Friendship = require('./models/friendship_schema');
+
+/* ----- Test add data -----*/
+// const friendship = new Friendship(
+//   {
+//     send_user_id: "a123",
+//     target_user_id: "b123",
+//     status: 0//0:交友申請 1:送出交友申請 2:收到交友申請 3:聊天室 4:編輯
+//   }
+//  );
+
+
+/* ----- Test save data -----*/
+// friendship.save((err, friendships) => {
+//   if (err) {
+//     return console.error(err);
+//   }
+//   console.log('document saved');
+//   db.close(); // 結束與 database 的連線
 // });

@@ -10,8 +10,8 @@ router.get("/geolocation", async function(req, res, next) {
   try{
     if (req === undefined) { throw "requst is undefined."}
     /*---- Find Session uid ----*/
-    req.session.user_id = "a123"
-    console.log(req.session)
+    // req.session.user_id = "a123"
+    // console.log(req.session)
     uid = req.session.user_id
     console.log(uid)
     if(uid === undefined){ throw "uid is undefined."}
@@ -27,6 +27,9 @@ router.get("/geolocation", async function(req, res, next) {
     /*---- Find articles around the user ----*/
     let articles
     err, articles = await Article.find({geohash:{ $regex: re, $options: 'm'}}) //正則表達
+    if (err) { throw err}
+    if(articles.length === 0 ) { throw "NO articles." }
+
     // console.log(articles)
     dis = []
     articles.forEach(target =>{
@@ -75,7 +78,7 @@ router.get("/geolocation", async function(req, res, next) {
   }
   catch(e){
     console.log(e)
-    res.json({ ok: false ,result: []});
+    res.json({ ok: "false" ,result: []});
   }
 });
 
@@ -102,6 +105,12 @@ router.get("/user/:id", function(req, res, next) {
       res.json({
         ok: "true",
         result:articles
+      });
+    }
+    else{
+      res.json({
+        ok: "false",
+        result:[]
       });
     }
     
