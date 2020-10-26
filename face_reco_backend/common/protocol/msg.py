@@ -18,3 +18,4 @@ class ReqType(Enum):
 PictureMsg = namedtuple("PictureMsg", "req_id req_type img")
 FeatureMsg = namedtuple("FeatureMsg", "req_id req_type res_state face_id")
 UserIDMsg = namedtuple("UserIDMsg", "req_id res_state user_id")
+DeployModelMsg = namedtuple("DeployModelMsg", "serial model") # serial use unix_time_stamp

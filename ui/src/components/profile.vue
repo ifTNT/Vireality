@@ -5,8 +5,12 @@
         <div class="name">{{ nickName }}</div>
         <div class="hobbies">{{ interest }}</div>
         <div class="description">{{ intro }}</div>
-        <button class="button" type="button" color="black" v-if="isFriend===true">聊天室</button>
-        <button class="button" type="button" color="black" @click=sendFriendRequest v-else>申請交友</button>
+        <!-- 0:交友申請 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室 4:編輯,資料庫不存入-->
+        <button class="button" type="button" color="black" v-if="friendship_state===1">已送出申請</button>
+        <button class="button" type="button" color="black" v-if="friendship_state===2">收到交友申請</button>
+        <button class="button" type="button" color="black" v-if="friendship_state===3">聊天室</button>
+        <button class="button" type="button" color="black" v-if="friendship_state===4">編輯</button>
+        <button class="button" type="button" color="black" @click=sendFriendRequest v-if="friendship_state===0">申請交友</button>
     </div>
 </template>
 <script>
@@ -38,7 +42,7 @@ export default {
         Id:{
             type: String,
             //預設為0px 避免父類別沒有傳入資料
-            default: "a456"
+            default: "b123"
         }
     },
     data(){
@@ -47,8 +51,8 @@ export default {
             interest: "",
             intro: "",
             parentDiameter: "10em",
-            isFriend:false,
-            friendship_state:0 //0:交友申請 1:送出交友申請 2:收到交友申請 3:聊天室
+            // isFriend:false,
+            friendship_state:0 //0:交友申請 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室 4:編輯,資料庫不存入
         };
     },
     components: {
@@ -63,7 +67,8 @@ export default {
                     this.nickName = response.data.nickName;
                     this.interest = response.data.interest;
                     this.intro = response.data.intro;
-                    this.isFriend = response.data.isFriend
+                    // this.isFriend = response.data.isFriend
+                    this.friendship_state = response.data.friendship_state
                 }
                 else{
                     console.log("not ok");

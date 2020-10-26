@@ -1,49 +1,102 @@
 var express = require("express");
 var router = express.Router();
 const User = require('../models/user_schema');
-
+const Friendship = require('../models/friendship_schema')
+/*[ALERT]:前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
 /* 給定使用者ID，取得該使用者的個人資料(名字、興趣、一句話)。 */
-router.get("/:id/info", function(req, res, next) {
-  if (req.params.id === undefined) {
-    res.json({ ok: false });
-    return;
-  }
-  /* [TODO]:抓session userid，Friendship Scheme */
-  User.find({user_id: req.params.id}, function (err, info) {
-    if (err) {
-      console.log(err)
-      return;
-    } 
-    // console.log("Result :\n", info)
-    if (info.length !== 0) {
-      let isFriend = false
-      info[0].friend_list.forEach(person => {
-        if(req.params.id === person)
-            isFriend = true
-      });
-      console.log("Send!")
+router.get("/:id/info", async function(req, res, next) {
+  try{
+    if (req.params.id === undefined) { throw "No target user id."}
+    // req.session.user_id = "a123"
+    // console.log(req.session)
+    session_uid = req.session.user_id
+    // console.log(session_uid)
+    if(session_uid === undefined){ throw "uid is undefined."}
+
+    uid = req.params.id 
+    let err,info = await User.find({user_id: uid})
+    if (err) { throw "Find User info has error."} 
+    if (info.length === 0) { throw "No this user." }
+    /* 當登入的使用者與request的userid 一樣，則按鈕要顯示編輯(4) */
+    if (session_uid === uid){
       res.json({
         ok: "true",
         nickName: info[0].nickname,
         interest: info[0].interest,
         intro: info[0].intro,
-        isFriend: isFriend
+        friendship_state: 4
       });
+      return
     }
+    /* 確定是不是已經是朋友,顯示聊天室(3) */
     
-  });
+    info[0].friend_list.forEach(person => {
+      if(session_uid === person){
+        res.json({
+          ok: "true",
+          nickName: info[0].nickname,
+          interest: info[0].interest,
+          intro: info[0].intro,
+          friendship_state: 3
+        });
+      }
+      return
+    });
+    let friendship 
+    //0:交友申請，都沒有就會是這個，不存DB 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室,用USER SCHEMA確認，不存DB 4:編輯,資料庫不存入
+    /* 有人發送交友給session id 或是 session id有發送 */
+    err, friendship = await Friendship.find( { $or:[ {'send_user_id': session_uid}, {'target_user_id': session_uid} ]})
+    if (err) { throw "Find target user friendship has error."} 
+    /* 當session id 不存在朋友關係的DB中 */
+    if (friendship.length === 0) { 
+      res.json({
+        ok: "true",
+        nickName: info[0].nickname,
+        interest: info[0].interest,
+        intro: info[0].intro,
+        friendship_state: 0
+      });
+      return
+    }
+    /* 當有的話 查看該session id 是發送端 還是 接受端 */
+    console.log(friendship)
+    let state = 0
+    friendship.forEach(person =>{
+      if (person.send_user_id === session_uid && person.target_user_id === uid) {
+        state = person.status //已送出(1))
+        break;
+      }
+      else if (person.send_user_id === uid&& person.target_user_id === session_uid){
+        state = person.status + 1 //已送出(1+1=2)
+        break;
+      }
+    });
+    console.log("Send!")
+    res.json({
+      ok: "true",
+      nickName: info[0].nickname,
+      interest: info[0].interest,
+      intro: info[0].intro,
+      friendship_state: state
+    });
+  }
+  catch(e){
+    console.log(e)
+    res.json({ ok: "false" ,result: []});
+  }
 });
 
 
 /* 給定使用者ID，取得該使用者的大頭照。*/
 router.get("/:id/avatar", function(req, res, next) {
   if (req.params.id === undefined) {
-    res.json({ ok: false });
+    res.json({ ok: "false" ,result: []});
     return;
   }
   User.find({user_id: req.params.id}, function (err, pic) {
     if (err) {
       console.log(err)
+      res.json({ ok: "false" ,result: []});
       return;
     } 
     // console.log("Result :\n", pic)
@@ -54,6 +107,9 @@ router.get("/:id/avatar", function(req, res, next) {
         ok: "true",
         avatar:pic[0].avator
       });
+    }
+    else{
+      res.json({ ok: "false" ,result: []});
     }
   });
 
@@ -72,16 +128,17 @@ router.get("/friend_direction", async function(req, res, next) {
     if(uid === undefined){ throw "uid is undefined."}
 
     /*---- Find user's friend list ----*/
-    let err,user = await User.find({user_id: uid}, function (err, user) {})
+    let err,user = await User.find({user_id: uid})
     if (err) { throw err}
+    if(user.length === 0 ) { throw "NO user" }
     console.log(user[0].friend_list)
 
     /*---- Find friend's info  ----*/
     let friend
-    err,friend = await User.find({user_id: user[0].friend_list}, function (err, user) {})
+    err,friend = await User.find({user_id: user[0].friend_list})
     // console.log("friend",friend)
     if (err) { throw err}
-
+    if(friend.length === 0 ) { throw "NO friend." }
     /*---- Find friend's direction and response  ----*/
     result_dir = []
     friend.forEach(target =>{
@@ -108,7 +165,7 @@ router.get("/friend_direction", async function(req, res, next) {
   }
   catch(e){
     console.log(e)
-    res.json({ ok: false ,result: []});
+    res.json({ ok: "false" ,result: []});
   }
 });
 

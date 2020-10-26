@@ -2,18 +2,17 @@ var express = require("express");
 // const  db  = require("../models/article_schema.js");
 var router = express.Router();
 const Article = require('../models/article_schema');
-const User = require('../models/user_schema');
-
 
 /* 回傳詳細文章內容(作者資料、文章圖片、文章文字內容、發文時間) */
-router.get("/:id", function (req, res, next) {
+router.get("/:id", async function (req, res, next) {
   // console.log(req.session)
   // req.session.user_id = "a123"
   // console.log(req.session)
 
   if (req.params.id === undefined) {
     res.json({
-      ok: "false"
+      ok: "false",
+      result: []
     });
   }
 
@@ -21,6 +20,10 @@ router.get("/:id", function (req, res, next) {
   Article.find({article_id: req.params.id}, function (err, articles) {
     if (err) {
       console.log(err)
+      res.json({
+        ok: "false",
+        result: []
+      });
       return;
     } 
     // console.log("Result :\n", articles)
@@ -38,8 +41,13 @@ router.get("/:id", function (req, res, next) {
         author: articles[0].author
       });
     }
+    else{
+      res.json({ok: "false",result: []});
+    }
     
   });
+
+ 
 });
 
 /* 上傳文章 */
@@ -47,9 +55,7 @@ router.post("/", function (req, res, next) {
   /* [TODO]:前端(post_article.vue)尚未完成 */
   console.log(req.body)
   if (req.body.author === undefined ||req.query.lon === undefined ||req.query.lat === undefined ) {
-    res.json({
-      ok: false
-    });
+    res.json({ok: "false",result: []});
     return;
   }
   /* [TODO]:新增自DB還沒寫 圖片上傳還沒解決 !!!GeoHash + imgur API!!!*/
@@ -75,7 +81,7 @@ router.post("/", function (req, res, next) {
     //   }
     // });
     res.json({
-      ok: true
+      ok: "true"
     });
 });
 module.exports = router;
