@@ -73,7 +73,6 @@ def main():
       zmq_serdes.send_zipped_pickle(recog_sender, recog_msg)
       continue
       
-    # [TODO] Buffer the training bundle
     #If the request type is training request
     if work.req_type == ReqType.NEW:
       if work.label == "":
