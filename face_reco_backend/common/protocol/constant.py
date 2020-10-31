@@ -9,4 +9,4 @@ FEATURE_SHAPE = lambda: (1,1792)
 
 # The input array of training-unit
 # The recognize scheduler should arange 10 features into on training bundle
-TRAINING_INPUT_SHAPE = lambda: (10, FEATURE_SHAPE()[1])
+TRAIN_INPUT_SHAPE = lambda: (10, FEATURE_SHAPE()[1])

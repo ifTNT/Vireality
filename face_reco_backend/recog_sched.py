@@ -14,7 +14,14 @@ import logging
 from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
-from common.protocol.constant import FEATURE_SHAPE
+from common.protocol.constant import FEATURE_SHAPE, TRAIN_INPUT_SHAPE
+
+def send_reject(socket, req_id):
+  reject_msg = UserIDMsg(req_id, ResState.REJECT, "")
+  zmq_serdes.send_zipped_pickle(socket, reject_msg)
+
+
+train_buffer = {}
 
 def main():
   LOG_FORMAT = '%(asctime)s [recog-sched]: [%(levelname)s] %(message)s'
@@ -50,15 +57,13 @@ def main():
     #If the request is rejected by deep unit
     if work.res_state == ResState.REJECT:
       logging.info('[req_id={}] Forwarding rejected result to front-end-server'.format(work.req_id))
-      reject_msg = UserIDMsg(work.req_id, ResState.REJECT, "")
-      zmq_serdes.send_zipped_pickle(reject_sender, forward_msg)
+      send_reject(reject_sender, work.req_id)
       continue
     
     #If the result of deep unit mismatch
     if work.face_id.shape != FEATURE_SHAPE():
       logging.info('[req_id={}] The shape of feature mismatch. shape={}'.format(work.req_id, work.face_id.shape))
-      reject_msg = UserIDMsg(work.req_id, ResState.REJECT, "")
-      zmq_serdes.send_zipped_pickle(reject_sender, reject_msg)
+      send_reject(reject_sender, work.req_id)
       continue
     
     #If the request type is recognize request
@@ -69,6 +74,34 @@ def main():
       continue
       
     # [TODO] Buffer the training bundle
+    #If the request type is training request
+    if work.req_type == ReqType.NEW:
+      if work.label == "":
+        logging.info('[req_id={}] Rejected training request with empty label'.format(work.req_id))
+        send_reject(reject_sender, work.req_id)
+        continue
+      
+      logging.info('[req_id={}] Buffering training request'.format(work.req_id))
+
+      label = work.label
+      if label in train_buffer.keys():
+        new_bundle = np.concatenate((work.face_id, train_buffer[label]))
+        train_buffer[label] = new_bundle
+      else:
+        train_buffer[label] = work.face_id
+
+      logging.info('[req_id={}] Shape of training buffer = {}'.format(work.req_id, train_buffer[label].shape))
+
+      # If the training bundle is satisfied
+      if train_buffer[label].shape == TRAIN_INPUT_SHAPE():
+        logging.info('[req_id={}] Training bundle of label={} satisfied. Send to train-unit'.format(work.req_id, label))
+        train_msg = TrainMsg(label, train_buffer[label])
+        zmq_serdes.send_zipped_pickle(train_sender, train_msg)
+
+        # Clear the training buffer
+        del train_buffer[label]
+
+
 
 if __name__ == "__main__":
     main()
