@@ -8,6 +8,8 @@ import logging
 from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
+import codecs, json 
+import random
 
 ## dataset
 from keras.datasets import mnist
@@ -191,9 +193,9 @@ def create_base_network(image_input_shape, embedding_size):
     input_image = Input(shape=image_input_shape)
 
     x = Flatten()(input_image)
-    x = Dense(128, activation='relu')(x)
-    x = Dropout(0.1)(x)
-    x = Dense(128, activation='relu')(x)
+    # x = Dense(128, activation='relu')(x)
+    # x = Dropout(0.1)(x)
+    x = Dense(128, activation='sigmoid')(x)
     x = Dropout(0.1)(x)
     x = Dense(embedding_size)(x)
 
@@ -202,7 +204,7 @@ def create_base_network(image_input_shape, embedding_size):
     return base_network
 
 # if __name__ == "__main__":
-def train_main():
+def train_main((x_train, y_train):
     # in case th"is scriot is called from another file, let's make sure it doesn't start training the network...
 
     batch_size = 256
@@ -216,37 +218,37 @@ def train_main():
     step = 10
 
     # The data, split between train and test sets
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
     x_train = x_train.astype('float32')
     x_test = x_test.astype('float32')
-    x_train /= 255.
-    x_test /= 255.
-    input_image_shape = (28, 28, 1)
-    x_val = x_test[:2000, :, :]
-    y_val = y_test[:2000]
+    x_test = np.random.shuffle(x_train)[:-2]
+    x_train = x_train[8:]
+    y_test = y_train
+    input_image_shape = (1792,1)
+    x_val = x_test
+    y_val = y_test
 
     # Network training...
     if train_flag == True:
         base_network = create_base_network(input_image_shape, embedding_size)
 
-        input_images = Input(shape=input_image_shape, name='input_image') # input layer for images
+        input_faceId = Input(shape=input_image_shape, name='input_faceId') # input layer for images
         input_labels = Input(shape=(1,), name='input_label')    # input layer for labels
-        embeddings = base_network([input_images])               # output of network -> embeddings
+        embeddings = base_network([input_faceId])               # output of network -> embeddings
         labels_plus_embeddings = concatenate([input_labels, embeddings])  # concatenating the labels + embeddings
 
         # Defining a model with inputs (images, labels) and outputs (labels_plus_embeddings)
-        model = Model(inputs=[input_images, input_labels],
+        model = Model(inputs=[input_faceId, input_labels],
                       outputs=labels_plus_embeddings)
 
         model.summary()
-        plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
+        # plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
 
         # train session
         opt = Adam(lr=0.0001)  # choose optimiser. RMS is good too!
 
         model.compile(loss=triplet_loss_adapted_from_tf, optimizer=opt)
 
-        filepath = "semiH_trip_MNIST_v13_ep{epoch:02d}_BS%d.hdf5" % batch_size
+        filepath = "Triplet_losss_ep{epoch:02d}_BS%d.hdf5" % batch_size
         checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, period=25)
         callbacks_list = [checkpoint]
 
@@ -265,7 +267,7 @@ def train_main():
             validation_data=([x_val, y_val], dummy_gt_val),
             callbacks=callbacks_list)
         
-        plt.figure(figsize=(8,8))
+        # plt.figure(figsize=(8,8))
         plt.plot(H.history['loss'], label='training loss')
         plt.plot(H.history['val_loss'], label='validation loss')
         plt.legend()
@@ -274,7 +276,7 @@ def train_main():
     else:
 
         #####
-        model = load_model('./trained model/semiH_trip_MNIST_v13_ep25_BS256.hdf5',
+        model = load_model('./trained model/Triplet_losss_ep25_BS256.hdf5',
                                         custom_objects={'triplet_loss_adapted_from_tf':triplet_loss_adapted_from_tf})
 
     # Test the network
@@ -282,7 +284,7 @@ def train_main():
     # creating an empty network
     testing_embeddings = create_base_network(input_image_shape,
                                              embedding_size=embedding_size)
-    x_embeddings_before_train = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 28, 28, 1)))
+    x_embeddings_before_train = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 1792, 1)))
     # Grabbing the weights from the trained network
     for layer_target, layer_source in zip(testing_embeddings.layers, model.layers[2].layers):
         weights = layer_source.get_weights()
@@ -291,7 +293,7 @@ def train_main():
 
     # Visualizing the effect of embeddings -> using PCA!
 
-    x_embeddings = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 28, 28, 1)))
+    x_embeddings = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 1792, 1)))
     dict_embeddings = {}
     dict_gray = {}
     test_class_labels = np.unique(np.array(y_test))
@@ -317,6 +319,45 @@ def train_main():
         plt.legend()
 
     plt.show()
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
+def useridTable(face_id, label, file_path):
+    x_faceId = []
+    y_label = []
+    x_faceId = np.array(x_faceId)
+    y_label = np.array(y_label)
+    try:
+        obj_text = codecs.open(file_path, 'r', encoding='utf-8').read()
+        userIdFeatureTable = np.array(json.loads(obj_text))        
+        for index in userIdFeatureTable:
+            y_label = np.append(y_label,index['user_id'])
+            x_faceId = np.append(x_faceId,index['faceId'])
+        x_faceId = x_faceId.reshape(int(x_faceId.size / 17920),10,1792)
+    except Exception:
+        print("read file filed")
+    
+    arrIndex = np.where(y_label == label)[0]
+    if arrIndex.size != 0:
+        x_faceId[arrIndex[0]] = np.concatenate((x_faceId[arrIndex[0]], face_id), axis=0)
+    else:
+        x_faceId = np.append(x_faceId,face_id).reshape(1,1792)
+        y_label = np.append(y_label,label)
+    fileWrite = []
+    fileWrite = np.array(fileWrite)
+    fileWrite = np.append(df,[{'user_id': i, 'faceId': x} for i, x in zip(y_label,x_faceId)])
+    fileWrite = fileWrite.tolist()
+    json.dump(fileWrite, codecs.open(file_path, 'w', encoding='utf-8'), separators=(',', ':'), sort_keys=True, cls=MyEncoder)
+    return (x_faceId,y_label)
 
 def main():
   LOG_FORMAT = '%(asctime)s [train-unit]: [%(levelname)s] %(message)s'
@@ -346,7 +387,10 @@ def main():
     else:
       """Recognize the face"""
     #   face_id = facenet.calc_embs(work.img)
-        train_main()
+        file_path = './models/faceDB.json'
+        
+        train_main( useridTable(work.face_id, work.label, file_path) )
+
         result = DeployModelMsg(unix_time_stamp, outPutModel)
 
     zmq_serdes.send_zipped_pickle(result_sender, result)
