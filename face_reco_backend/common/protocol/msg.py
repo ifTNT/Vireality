@@ -48,7 +48,7 @@ UserIDMsg = namedtuple("UserIDMsg", "req_id res_state user_id")
 # The message carry training request from recog-scheduler to train-unit
 #
 # label: Same as FeatureMsg.
-# face_id: Same as FeatureMsg.
+# face_id: 10 of face_id of single user.
 TrainMsg = namedtuple("TrainMsg", "label face_id")
 
 # The message carry trained model from train-unit to recog-unit
