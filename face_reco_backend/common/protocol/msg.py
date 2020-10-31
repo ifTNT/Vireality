@@ -53,6 +53,6 @@ TrainMsg = namedtuple("TrainMsg", "label face_id")
 
 # The message carry trained model from train-unit to recog-unit
 #
-# serial: THe serial number of this model. Use unix time stamp.
+# serial: The serial number of this model. Use unix time stamp.
 # model: The new model. Type is keras.models.Model
 DeployModelMsg = namedtuple("DeployModelMsg", "serial model")
