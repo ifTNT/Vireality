@@ -4,7 +4,10 @@ The main script of facenet-unit of face recognition backend.
 """
 
 import time
+import sys
 import numpy as np
+# Prevent array truncation while printing nparray
+np.set_printoptions(threshold=sys.maxsize)
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
@@ -41,8 +44,8 @@ class Facenet():
   # Output the embedding of the image
   def calc_embs(self, img):
     preprocessed_img = self.__prewhiten(img)
-    embedding = self.model.predict_on_batch(preprocessed_img)
-    embedding = self.__l2_normalize(embedding)
+    embedding = self.model.predict_on_batch(preprocessed_img)[0]
+    #embedding = self.__l2_normalize(embedding)
 
     return embedding
 
@@ -73,7 +76,7 @@ def main():
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
   img_size = 160
-  expected_img_shape = (img_size, img_size, 3)
+  expected_img_shape = (1, img_size, img_size, 3)
   model_path = 'models/Inception_ResNet_v1_MS_Celeb_1M.h5'
   logging.info('I am a facenet-unit')
   facenet = Facenet(model_path, img_size)
@@ -94,12 +97,15 @@ def main():
     logging.info('Received a work from front-end-server (req_id={})'.format(work.req_id))
     
     if(work.img.shape!=expected_img_shape):
-      """If image size dosen't match, reject it."""
-      result = FeatureMsg(work.req_id, work.req_type, ResState.REJECT, "")
+      #If image size dosen't match, reject it.
+      logging.info('[req_id={}] Image size mismatch, rejected. Image size={}'.format(work.req_id, work.img.shape))
+      result = FeatureMsg(work.req_id, work.req_type, ResState.REJECT, "", "")
     else:
-      """Recognize the face"""
+      #Recognize the face
       face_id = facenet.calc_embs(work.img)
-      result = FeatureMsg(work.req_id, work.req_type, ResState.OK, face_id)
+      result = FeatureMsg(work.req_id, work.req_type, ResState.OK, face_id, work.label)
+      logging.info('[req_id={}] Embbeding caculated!. Shape of embbeding = {}'.format(work.req_id, result.face_id.shape))
+      #logging.debug('Embbeding: \n{}'.format(result.face_id))
 
     zmq_serdes.send_zipped_pickle(result_sender, result)
 
