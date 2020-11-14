@@ -56,15 +56,14 @@ router.get("/:id", async function (req, res, next) {
 /* 上傳文章 */
 router.post("/", async function (req, res, next) {
   try{
-    console.log(req.body)
-    // req.session.user_id = "a123"
-    // console.log(req.session)
+    req.session.user_id = "a123"
+    console.log(req.session)
     uid = req.session.user_id
     console.log(uid)
   
     if (uid === undefined ||req.body.lat === undefined ||req.body.lon === undefined ) throw "Can't find lat,lon,uid"
     geoHash = geohash.encode(req.body.lat, req.body.lon)
-    console.log(geoHash);
+    console.log(`GeoHash of posted article:${geoHash}`);
   
     options = {
       'method': 'POST',
@@ -76,11 +75,11 @@ router.post("/", async function (req, res, next) {
           'image': req.body.thumbnail.split(',')[1] }
     };
     await request(options, function (error, response) {
-      if (error) throw err
+      if (error) throw error;
       const imgurURL = response.body
       console.log(imgurURL)
       const imgurURLToJSON2 = JSON.parse(imgurURL).data.link
-      console.log(imgurURLToJSON2)
+      //console.log(imgurURLToJSON2)
     
       /* 生成article_id是unique userid+time*/
       const articleData = [
