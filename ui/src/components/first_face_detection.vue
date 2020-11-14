@@ -9,10 +9,10 @@
       <span class="warningMessage">{{ warningMessage }}</span>
     </div>
     <!-- 顯示進度圈圈 -->
-    <img class="progressFaceDetection" src="/static/media/loader.png" />
+    <img v-if="showProgress" class="progressFaceDetection" src="/static/media/loader.png" />
     <!-- 完成之後會顯示此圖 未完成時不出現 -->
     <img
-      v-if="showCompeleteFaceDetection"
+      v-else
       class="compeleteFaceDetection"
       src="/static/media/compelete.png"
     />
@@ -47,7 +47,7 @@ export default {
       warningMessage: "偵測不到臉部T^T",
       showWarningMessage: true,
       // 顯示完成掃描的圖 正常情況不會顯示
-      showCompeleteFaceDetection: true
+      showProgress: true
     };
   },
 };
@@ -55,7 +55,7 @@ export default {
 <style scoped>
 
 .camera{
-  height: 100vh;
+  height: 147vw;/*34.5em*/
   width: 100vw;
  /*以下純測試用 加入相機後可以刪除的部分*/
   background-image: url("/static/media/testPic.jpg");
@@ -64,7 +64,7 @@ export default {
 
 .firstFaceDetection {
   /* 設定每個方塊垂直置中 */
-  height: 100vh;
+  height: 147vw;/*34.5em*/
   display: flex;
   /*justify-content: center;*/
   flex-direction: column;
@@ -104,11 +104,14 @@ export default {
 .progressFaceDetection,
 .compeleteFaceDetection {
   width: 30vw;
-  position: fixed;
-  top: 50vh;
-  left: 50vw;
+  /* [TODO]:要固定位置還是用margin */
+  /* position: fixed; */
+  /* top: 75vw;17em */
+  /* left: 50vw;
   margin-left: -15vw;
-  margin-top: -15vw;
+  margin-top: -15vw; */
+  margin-top:40vw;
+
 }
 
 /* 以下為響應式的設定 */

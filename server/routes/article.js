@@ -57,8 +57,8 @@ router.get("/:id", async function (req, res, next) {
 router.post("/", async function (req, res, next) {
   try{
     console.log(req.body)
-    req.session.user_id = "a123"
-    console.log(req.session)
+    // req.session.user_id = "a123"
+    // console.log(req.session)
     uid = req.session.user_id
     console.log(uid)
   
