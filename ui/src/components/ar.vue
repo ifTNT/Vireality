@@ -236,6 +236,8 @@ export default {
           } else {
             // Iterate the articles
             res.result.forEach(async article => {
+              // [TODO] Do not append same article
+
               // Fetch the texture from external website.
               const texture = await this.loadTexture(article.thumbnail);
               let articleMaterial = new THREE.MeshBasicMaterial({

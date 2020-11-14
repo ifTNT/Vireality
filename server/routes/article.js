@@ -75,7 +75,7 @@ router.post("/", async function (req, res, next) {
           'image': req.body.thumbnail.split(',')[1] }
     };
     await request(options, function (error, response) {
-      if (error) throw err
+      if (error) throw error;
       const imgurURL = response.body
       console.log(imgurURL)
       const imgurURLToJSON2 = JSON.parse(imgurURL).data.link

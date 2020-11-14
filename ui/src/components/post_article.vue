@@ -13,7 +13,7 @@
         <div
           class="postButton"
           @click="post"
-          v-if="chooseLocation||placeOrPersonal"
+          v-if="(chooseLocation||placeOrPersonal)&&geolocationReady"
         >{{postButtonName}}</div>
         <div
           class="nextButton"
@@ -90,6 +90,7 @@ export default {
       content: "",
       choosePicAndContent: true,
       chooseLocation: false,
+      geolocationReady: false,
       remindContent: "請在地圖中選擇您所在的位置",
       choseTypeAndPrivacy: false,
       allOrFriend: false,
@@ -117,6 +118,7 @@ export default {
       // childValue就是子组件传过来的值
       this.latitude = lat;
       this.longitude = lng;
+      this.geolocationReady = true;
     },
     changeImage(e) {
       const file = event.target.files.item(0); //取得File物件
