@@ -7,8 +7,8 @@ const Friendship = require('../models/friendship_schema')
 router.get("/:id/info", async function(req, res, next) {
   try{
     if (req.params.id === undefined) { throw "No target user id."}
-    // req.session.user_id = "a123"
-    // console.log(req.session)
+    req.session.user_id = "a123"
+    console.log(req.session)
     session_uid = req.session.user_id
     // console.log(session_uid)
     if(session_uid === undefined){ throw "uid is undefined."}
@@ -31,6 +31,7 @@ router.get("/:id/info", async function(req, res, next) {
     /* 確定是不是已經是朋友,顯示聊天室(3) */
     
     info[0].friend_list.forEach(person => {
+      console.log("friend_list:",person)
       if(session_uid === person){
         res.json({
           ok: "true",
@@ -64,11 +65,9 @@ router.get("/:id/info", async function(req, res, next) {
     friendship.forEach(person =>{
       if (person.send_user_id === session_uid && person.target_user_id === uid) {
         state = person.status //已送出(1))
-        break;
       }
       else if (person.send_user_id === uid&& person.target_user_id === session_uid){
         state = person.status + 1 //已送出(1+1=2)
-        break;
       }
     });
     console.log("Send!")

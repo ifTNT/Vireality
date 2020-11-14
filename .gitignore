@@ -13,3 +13,6 @@ dist/
 *.ntvs*
 *.njsproj
 *.sln
+
+# Token
+server/routes/token.js

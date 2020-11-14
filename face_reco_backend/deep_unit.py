@@ -45,7 +45,7 @@ class Facenet():
   # Output the embedding of the image
   def calc_embs(self, img):
     preprocessed_img = self.__prewhiten(img)
-    embedding = self.model.predict_on_batch(preprocessed_img).reshape(FEATURE_SHAPE())
+    embedding = self.model.predict_on_batch(preprocessed_img)
     #embedding = self.__l2_normalize(embedding)
 
     return embedding

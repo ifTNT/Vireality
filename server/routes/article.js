@@ -2,6 +2,9 @@ var express = require("express");
 // const  db  = require("../models/article_schema.js");
 var router = express.Router();
 const Article = require('../models/article_schema');
+const geohash = require('ngeohash');
+const imgur = require('./token');
+const request = require('request')
 
 /* 回傳詳細文章內容(作者資料、文章圖片、文章文字內容、發文時間) */
 router.get("/:id", async function (req, res, next) {
@@ -51,37 +54,61 @@ router.get("/:id", async function (req, res, next) {
 });
 
 /* 上傳文章 */
-router.post("/", function (req, res, next) {
-  /* [TODO]:前端(post_article.vue)尚未完成 */
-  console.log(req.body)
-  if (req.body.author === undefined ||req.query.lon === undefined ||req.query.lat === undefined ) {
-    res.json({ok: "false",result: []});
-    return;
-  }
-  /* [TODO]:新增自DB還沒寫 圖片上傳還沒解決 !!!GeoHash + imgur API!!!*/
-  /* [TODO]:生成article_id是unique */
-  // const articleData = [
-  //     {
-  //       article_id: 'a1',
-  //       post_time: Date.now(),
-  //       author:'a123',
-  //       thumbnail:["https://i.imgur.com/07XbOpL.png","https://i.imgur.com/Dv8Vk68.jpeg"],
-  //       text:"hello",
-  //       public:true,
-  //       location: {
-  //         longitude:120.278439,
-  //         latitude:22.729114
-  //       }
-  //     },
-  //   ];
+router.post("/", async function (req, res, next) {
+  try{
+    console.log(req.body)
+    req.session.user_id = "a123"
+    console.log(req.session)
+    uid = req.session.user_id
+    console.log(uid)
+  
+    if (uid === undefined ||req.body.lat === undefined ||req.body.lon === undefined ) throw "Can't find lat,lon,uid"
+    geoHash = geohash.encode(req.body.lat, req.body.lon)
+    console.log(geoHash);
+  
+    options = {
+      'method': 'POST',
+      'url': 'https://api.imgur.com/3/image',
+      'headers': {
+          'Authorization': 'Bearer ' + imgur.token
+      },
+      formData: {
+          'image': req.body.thumbnail.split(',')[1] }
+    };
+    await request(options, function (error, response) {
+      if (error) throw err
+      const imgurURL = response.body
+      console.log(imgurURL)
+      const imgurURLToJSON2 = JSON.parse(imgurURL).data.link
+      console.log(imgurURLToJSON2)
     
-    // Article.insertMany(articleData, (err, articles) => {
-    //   if (err) {
-    //     return console.error(err);
-    //   }
-    // });
-    res.json({
-      ok: "true"
+      /* 生成article_id是unique userid+time*/
+      const articleData = [
+        {
+          article_id: uid + req.body.post_time,
+          post_time: req.body.post_time,
+          author: uid,
+          thumbnail:[imgurURLToJSON2],
+          text:req.body.text,
+          public:req.body.isPublic,
+          location: {
+            longitude:req.body.lon,
+            latitude:req.body.lat
+          },
+          geohash:geoHash
+        },
+      ];
+      
+      Article.insertMany(articleData, (err, articles) => {
+        if (err) throw err
+      });
+
+      res.json({ ok: "true" });
     });
+  }
+  catch(e){
+    console.log(e)
+    res.json({ok: "false",result: []});
+  } 
 });
 module.exports = router;
