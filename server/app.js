@@ -9,8 +9,8 @@ var articleListRouter = require("./routes/article_list");
 var articleRouter = require("./routes/article");
 var chatRouter = require("./routes/chat");
 var userRouter = require("./routes/user");
-var session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
+var session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 
 var app = express();
 
@@ -21,11 +21,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 //Session
-app.use(session({
-  secret: 'recommand 128 bytes random string',
-  store: new MongoStore({url:'mongodb://localhost:27017/sessionDB'}),
-  cookie: { maxAge: 86400000 * 1000 }  //一天到期
-}));
+app.use(
+  session({
+    secret: "recommand 128 bytes random string",
+    store: new MongoStore({ url: "mongodb://localhost:27017/sessionDB" }),
+    cookie: { maxAge: 86400000 * 1000 }, //一天到期
+  })
+);
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -36,18 +38,15 @@ app.use("/article", articleRouter);
 app.use("/chat", chatRouter);
 
 //404 Router
-app.use(function(req, res) {
+app.use(function (req, res) {
   res.status(404).json({ ok: false, msg: "Endpoint not found" });
 });
 
-
-
 module.exports = app;
 
-
 // Mongoose
-const mongoose = require('mongoose');
-mongoose.set('useCreateIndex', true)
+const mongoose = require("mongoose");
+mongoose.set("useCreateIndex", true);
 /*
  * 與 mongoDB 建立連連
  * mongoose.connect('mongodb://[資料庫帳號]:[資料庫密碼]@[MongoDB位置]:[port]/[資料庫名稱]')
@@ -55,17 +54,17 @@ mongoose.set('useCreateIndex', true)
  * todo 是 database 的名稱，當 app 執行時，mongoose 會自動建立這個 database
  */
 
-mongoose.connect('mongodb://localhost/testDB', {
+mongoose.connect("mongodb://localhost/testDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-})
+});
 
 // 取得資料庫連線狀態
 const db = mongoose.connection;
-db.on('error', err => console.error('connection error', err));  // 連線異常
-db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));     // 連線成功
-
-
+db.on("error", (err) => console.error("connection error", err)); // 連線異常
+db.once("open", (db) =>
+  console.log("It is Connected to MongoDB and use testDB")
+); // 連線成功
 
 /* ---------Test Start----------*/
 // const Article = require('./models/article_schema');
@@ -105,9 +104,6 @@ db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));
 //   console.log(articles);
 // });
 
-
-
-
 /* ----- Test insert many doc -----*/
 // const articleData = [
 //   {
@@ -135,7 +131,7 @@ db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));
 //       latitude:22.729755
 //     },
 //     geohash:"wsj92czdm"
-//   },  
+//   },
 //   {
 //     article_id: 'a3',
 //     post_time: Date.now(),
@@ -174,7 +170,7 @@ db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));
 //       latitude:22.732360
 //     },
 //     geohash:"wsj934rcs"
-//   },  
+//   },
 //   {
 //     article_id: 'a6',
 //     post_time: Date.now(),
@@ -196,11 +192,6 @@ db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));
 //   }
 // });
 /* ---------Test End----------*/
-
-
-
-
-
 
 /* ----- Test insert many doc -----*/
 // const User = require('./models/user_schema');
@@ -286,7 +277,6 @@ db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));
 //   }
 // });
 
-
 // const Friendship = require('./models/friendship_schema');
 
 /* ----- Test add data -----*/
@@ -297,7 +287,6 @@ db.once('open', db => console.log('It is Connected to MongoDB and use testDB'));
 //     status: 0//0:交友申請 1:送出交友申請 2:收到交友申請 3:聊天室 4:編輯
 //   }
 //  );
-
 
 /* ----- Test save data -----*/
 // friendship.save((err, friendships) => {

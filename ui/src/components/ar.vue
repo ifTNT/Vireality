@@ -29,6 +29,8 @@ import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import convertGeolocation from "../lib/geolocation_converter.js";
 import Camera from "@/components/camera";
+import axios from "axios";
+
 export default {
   name: "AR_view",
   props: {
@@ -205,32 +207,51 @@ export default {
       }
       this.renderer.render(this.scene, this.camera);
     },
+
+    // The promise wrapper of three.js texture loader
+    loadTexture: function(url) {
+      return new Promise(resolve => {
+        new THREE.TextureLoader().load(url, resolve);
+      });
+    },
     // Fetch articles near by the user.
     // Including id, thumbnail, lontitude and latitude.
     loadArticles: function() {
-      //[TODO] Dynamic load article id
-      //[TODO] Dynamic article loader
-
-      //[TODO] Dynamic load different article meterial
-      const texture = new THREE.TextureLoader().load(
-        "/static/media/test_article.png"
-      );
-      let testArticleMaterial = new THREE.MeshBasicMaterial({ map: texture });
-
-      // [Test] Generate new article in current position
+      // Get current position
       let { longitude, latitude } = this.controls.getCurrentPosition();
-      let { x, y } = convertGeolocation({ longitude, latitude });
 
-      this.addArticle(x, y, testArticleMaterial, 0);
+      // Refresh the article thumbnail
+      axios
+        .get(server.apiUrl("/articles/geolocation"), {
+          params: {
+            lon: longitude,
+            lat: latitude
+          }
+        })
+        .then(res => {
+          if (res.ok !== "true") {
+            console.log("[AR] Get article list failed.");
+          } else {
+            // Iterate the articles
+            res.result.forEach(async article => {
+              // Fetch the texture from external website.
+              const texture = await this.loadTexture(article.thumbnail);
+              let articleMaterial = new THREE.MeshBasicMaterial({
+                map: texture
+              });
 
-      //const spriteMap = new THREE.TextureLoader().load(
-      //"/static/media/placeholder.png"
-      //  "/static/media/test_article.png"
-      //);
-      //this.spriteMaterial = new THREE.SpriteMaterial({
-      //  map: spriteMap,
-      //  color: 0xffffff
-      //});
+              // Convert the geolocation to AR coordinate.
+              let { lon, lat } = article;
+              let { x, y } = convertGeolocation({
+                longitude: lon,
+                latitude: lat
+              });
+
+              // Append article
+              this.addArticle(x, y, articleMaterial, article.id);
+            });
+          }
+        });
     },
     addArticle: function(x, y, material, id) {
       console.log(`Added new article (${x},${y})`);

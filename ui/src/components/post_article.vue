@@ -57,7 +57,7 @@
         <span>地點文章</span>
         <switches v-model="placeOrPersonal" theme="bootstrap" color="info"></switches>
         <span>個人</span>
-      </div> -->
+      </div>-->
     </div>
 
     <mapbox
@@ -148,20 +148,19 @@ export default {
       this.chooseLocation = true;
     },
     post() {
-      console.log("!!!!POST!!!!")
-      axios.post(server.apiUrl("/article/" ),
-        {
-            /* [TODO]:uid還沒拿到 */
-            author: "a123", //test
-            text: this.content,
-            isPuclic: this.allOrFriend,
-            post_time: Date.now(),
-            /* [TODO]: 上傳檔案還不能顯示全部圖片 僅能顯示第一張 且尚未上傳到imgur */
-            // thumbnail: [String] FormData, 圖片集
-            lon: this.longitude,
-            lat: this.latitude
-          },
-        )
+      console.log("!!!!POST!!!!");
+      axios
+        .post(server.apiUrl("/article/"), {
+          /* [TODO]:uid還沒拿到 */
+          author: "a123", //test
+          text: this.content,
+          isPuclic: this.allOrFriend,
+          post_time: Date.now(),
+          /* [TODO]: 上傳檔案還不能顯示全部圖片 僅能顯示第一張 且尚未上傳到imgur */
+          // thumbnail: [String] FormData, 圖片集
+          lon: this.longitude,
+          lat: this.latitude
+        })
         .then(
           function(response) {
             console.log(response);
@@ -170,7 +169,7 @@ export default {
         .catch(error => {
           console.log(error);
         });
-      // document.location.href = "/#/main";
+      document.location.href = "/#/main";
     }
   }
 };
