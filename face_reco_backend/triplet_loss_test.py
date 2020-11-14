@@ -1,6 +1,8 @@
 import time
 import numpy as np
 import os
+from datetime import datetime
+import copy
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
 import zmq
@@ -204,14 +206,18 @@ def create_base_network(image_input_shape, embedding_size):
     return base_network
 
 # if __name__ == "__main__":
-def train_main((x_train, y_train)):
+def train_main(train):
     # in case th"is scriot is called from another file, let's make sure it doesn't start training the network...
-
+    x_train, y_train, file_path = train
+    x_train = np.reshape(x_train,(int(len(x_train)/ 1792), 1792, 1))
+    x_train = np.array(x_train,dtype='float32')
+    y_train = np.array(y_train)
     y_dict = {}
-    for i in range(y_train):
+    for i in range(len(y_train)):
         y_dict[str(i)] = y_train[i]
         y_train[i] = i
-    x_train_all = x_train
+    
+    x_train_all = copy.deepcopy(x_train)
 
     batch_size = 256
     epochs = 25
@@ -223,19 +229,28 @@ def train_main((x_train, y_train)):
 
     step = 10
 
-    # The data, split between train and test sets
-    x_train = x_train.astype('float32')
-    x_test = x_test.astype('float32')
-    # y_tran_path = "y_tran".encode()
-    # binary_int = int.from_bytes(y_tran_path, "big")
-    # binary_string = bin(binary_int)
+    x_test = []
+    x_test = np.array(x_test)
+    path_xTrain = copy.deepcopy(x_train)
+    x_train = np.array([],dtype=x_train.dtype)
+    for i in range(int(len(path_xTrain)/10)):
+        np.random.shuffle(path_xTrain[i * 10 : (i + 1) * 10])
+        x_test = np.append(x_test, path_xTrain[i * 10 + 8 : (i + 1) * 10])
+        x_train = np.append(x_train, path_xTrain[i * 10 : (i + 1) * 10 -2])
+    x_train = np.reshape(x_train,(int(len(x_train)/ 1792), 1792, 1))
+    x_test = np.reshape(x_test,(int(len(x_test)/ 1792), 1792, 1))
 
-    x_test = np.random.shuffle(x_train)[:-2]
-    x_train = x_train[8:]
-    y_test = y_train
+    y_test = []
     input_image_shape = (1792,1)
     x_val = x_test
-    y_val = y_test
+    y_val = []
+    for i in y_train:
+        for j in range(8):
+            y_test.append(i)
+        for j in range(2):
+            y_val.append(i)
+    y_test = np.array(y_test)
+    y_val = np.array(y_val)
 
     # Network training...
     if train_flag == True:
@@ -251,38 +266,29 @@ def train_main((x_train, y_train)):
                       outputs=labels_plus_embeddings)
 
         model.summary()
-        # plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
-
         # train session
         opt = Adam(lr=0.0001)  # choose optimiser. RMS is good too!
 
         model.compile(loss=triplet_loss_adapted_from_tf, optimizer=opt)
 
         filepath = "./models/Triplet_losss_ep{epoch:02d}_BS%d.hdf5" % batch_size
-        checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, period=25)
+        checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=True, period=25)
         callbacks_list = [checkpoint]
 
         # Uses 'dummy' embeddings + dummy gt labels. Will be removed as soon as loaded, to free memory
         dummy_gt_train = np.zeros((len(x_train), embedding_size + 1))
         dummy_gt_val = np.zeros((len(x_val), embedding_size + 1))
-
-        x_train = np.reshape(x_train, (len(x_train), x_train.shape[1], x_train.shape[1], 1))
-        x_val = np.reshape(x_val, (len(x_val), x_train.shape[1], x_train.shape[1], 1))
+        
+        x_train = np.reshape(x_train,(x_train.shape[0], x_train.shape[1], 1))
+        x_val = np.reshape(x_val,(x_val.shape[0], x_val.shape[1], 1))
 
         H = model.fit(
-            x=[x_train,y_val],
+            x=[x_train,y_test],
             y=dummy_gt_train,
             batch_size=batch_size,
             epochs=epochs,
             validation_data=([x_val, y_val], dummy_gt_val),
             callbacks=callbacks_list)
-        
-        # plt.figure(figsize=(8,8))
-        plt.plot(H.history['loss'], label='training loss')
-        plt.plot(H.history['val_loss'], label='validation loss')
-        plt.legend()
-        plt.title('Train/validation loss')
-        plt.show()
     else:
 
         #####
@@ -291,35 +297,30 @@ def train_main((x_train, y_train)):
 
     # creating an empty network
     testing_embeddings = create_base_network(input_image_shape, embedding_size=embedding_size)
-    # x_embeddings_before_train = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 1792, 1)))
     # Grabbing the weights from the trained network
     for layer_target, layer_source in zip(testing_embeddings.layers, model.layers[2].layers):
         weights = layer_source.get_weights()
         layer_target.set_weights(weights)
         del weights
 
-    # Visualizing the effect of embeddings -> using PCA!
-
     x_embeddings = testing_embeddings.predict(np.reshape(x_train_all, (len(x_train_all), 1792, 1)))
-    for i in range(x_embeddings):
-        decomposed_embeddings_class = decomposed_embeddings[y_test == i]
-        y_dict[str(i)] = [y_dict[str(i)],decomposed_embeddings_class]
-
-    print(y_dict)
-
-    json_dump = json.dumps(y_dict, cls=MyEncoder)
-
-    print(json_dump)
     
-    return y_dict
-    # test_class_labels = np.unique(np.array(y_test))
-
-    # pca = PCA(n_components=no_of_components)
-    # decomposed_embeddings = pca.fit_transform(x_embeddings)
-    # for label in test_class_labels:
-    #     decomposed_embeddings_class = decomposed_embeddings[y_test == label]
-    #     y_dict[(label)] = [y_dict[(label)],decomposed_embeddings_class]
+    fileWrite = []
+    fileWrite = np.array(fileWrite)
     
+    fileWrite = np.append(fileWrite,[{
+        'user_id': i, 'faceId': x,'label': label, 'embedding': embedding} 
+            for i, x, label, embedding in zip(
+                y_train, np.reshape(x_train_all,
+                (int(x_train_all.shape[0]/10), 10, 1792, 1)),
+                range(len(y_train)),
+                np.reshape(x_embeddings,(int(x_embeddings.shape[0]/10), 10, 64, 1)))])
+    fileWrite = fileWrite.tolist()
+    json.dump(fileWrite, codecs.open(file_path, 'w', encoding='utf-8'), separators=(',', ':'), sort_keys=True, cls=MyEncoder)
+    
+    print("done train")
+    return model
+
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -343,22 +344,14 @@ def useridTable(face_id, label, file_path):
         for index in userIdFeatureTable:
             y_label = np.append(y_label,index['user_id'])
             x_faceId = np.append(x_faceId,index['faceId'])
-        x_faceId = x_faceId.reshape(int(x_faceId.size / 17920),10,1792)
+        x_faceId = x_faceId.reshape(int(x_faceId.size / 17920),10,1792)    
     except Exception:
         print("read file filed")
     
-    arrIndex = np.where(y_label == label)[0]
-    if arrIndex.size != 0:
-        x_faceId[arrIndex[0]] = np.concatenate((x_faceId[arrIndex[0]], face_id), axis=0)
-    else:
-        x_faceId = np.append(x_faceId,face_id).reshape(1,1792)
-        y_label = np.append(y_label,label)
-    fileWrite = []
-    fileWrite = np.array(fileWrite)
-    fileWrite = np.append(df,[{'user_id': i, 'faceId': x} for i, x in zip(y_label,x_faceId)])
-    fileWrite = fileWrite.tolist()
-    json.dump(fileWrite, codecs.open(file_path, 'w', encoding='utf-8'), separators=(',', ':'), sort_keys=True, cls=MyEncoder)
-    return (x_faceId,y_label)
+    x_faceId = np.append(x_faceId,face_id.reshape(10,1792))
+    y_label = np.append(y_label,label)
+    
+    return (x_faceId, y_label, file_path)
 
 def main():
   LOG_FORMAT = '%(asctime)s [train-unit]: [%(levelname)s] %(message)s'
@@ -369,32 +362,37 @@ def main():
   context = zmq.Context()
   # Socket to recieve work
   work_recv = context.socket(zmq.PULL)
-  work_recv.connect(get_zmq_uri(RECOG_SHED_IP(), TRAIN_ISSUE_PORT()))
+  work_recv.connect(get_zmq_uri(RECOG_SCHED_IP(), TRAIN_ISSUE_PORT()))
   # Socket to send result
   result_sender = context.socket(zmq.PUSH)
-  result_sender.listen(get_zmq_uri(TRAIN_IP(), TRAIN_PUBLISH_PORT()))
+  result_sender.bind(get_zmq_uri(TRAIN_IP(), TRAIN_PUBLISH_PORT()))
 
   logging.info('Begin receive works from recog-sched')
 
   while True:
     work = zmq_serdes.recv_zipped_pickle(work_recv)
     
-    logging.info('Received a work from recog-sched (req_id={})'.format(work.req_id))
+    logging.info('Received a work from recog-sched (label={})'.format(work.label))
     
-    if(work.req_type!=ReqType.NEW):
-      """If image size dosen't match, reject it."""
-    #   result = FeatureMsg(work.req_id, work.req_type, ResState.REJECT, "")
-        continue
-    else:
-      """Recognize the face"""
-    #   face_id = facenet.calc_embs(work.img)
-        file_path = './models/faceDB.json'
-        
-        outPutModel = train_main( useridTable(work.face_id, work.label, file_path) )
-        
-        result = DeployModelMsg(unix_time_stamp, outPutModel)
+    # if(work.label!=ReqType.NEW):
+    #     """If image size dosen't match, reject it."""
+    # #   result = FeatureMsg(work.req_id, work.req_type, ResState.REJECT, "")
+    #     continue
+    # else:
+    """Recognize the face"""
+#   face_id = facenet.calc_embs(work.img)
+    file_path = './models/faceDB.json'
+    
+    outPutModel = train_main( useridTable(work.face_id, work.label, file_path) )
+    
+    fileModel = open("./models/Triplet_losss_ep25_BS256.hdf5", mode='rb')
+    modelBits = fileModel.read()
+    fileModel.close()
+    print("read finish")
 
-    zmq_serdes.send_zipped_pickle(result_sender, result)
+    result = DeployModelMsg(int(datetime.now().timestamp()*1000), modelBits)
+
+    # zmq_serdes.send_zipped_pickle(result_sender, result)
 
 if __name__ == "__main__":
     main()
