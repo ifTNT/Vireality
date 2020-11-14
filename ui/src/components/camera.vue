@@ -133,7 +133,6 @@ export default {
           this.$emit("camera-ready", width * scale, height * scale);
           this.updatePico();
           window.setInterval(() => {
-            console.log("LoopTest")
             this.updateId();
           },1000);
         },

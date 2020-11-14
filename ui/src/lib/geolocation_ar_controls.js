@@ -45,7 +45,7 @@ export default class GeolocationARControls {
     }
   }
   handleGeolocationUpdate(pos) {
-    let { x, y } = pos;
+    let { x, y, latitude, longitude } = pos;
     if (this.isLocationFixed === false) {
       this.currentPosition.x = x;
       this.currentPosition.y = y;
@@ -53,6 +53,8 @@ export default class GeolocationARControls {
     }
     this.newPosition.x = x;
     this.newPosition.y = y;
+    this.currentPosition.latitude = latitude;
+    this.currentPosition.longitude = longitude;
   }
   update() {
     this.camera.quaternion.copy(this.quaternion);
@@ -65,5 +67,8 @@ export default class GeolocationARControls {
       (1 - alpha) * this.currentPosition.y + alpha * this.newPosition.y;
     this.camera.position.x = this.currentPosition.x;
     this.camera.position.y = this.currentPosition.y;
+  }
+  getCurrentPosition() {
+    return this.currentPosition;
   }
 }
