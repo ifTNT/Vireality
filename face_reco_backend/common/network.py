@@ -18,7 +18,7 @@ FRONT_RECV_PORT = lambda: ('tcp', '5560')
 
 # The IP address of front-end-server, reco-scheduler and training unit
 FRONT_IP = lambda: "127.0.0.1"
-RECOG_SHED_IP = lambda: "127.0.0.1"
+RECOG_SCHED_IP = lambda: "127.0.0.1"
 TRAIN_IP = lambda: "127.0.0.1"
 
 def get_zmq_uri(ip, port):

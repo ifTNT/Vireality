@@ -47,6 +47,7 @@ export default {
     },
     // 初始化
     init(lng, lat) {
+      /* [TODO]:藏token */
       mapboxgl.accessToken =
         "pk.eyJ1IjoibG92ZTEyNDM1NiIsImEiOiJja2FiY2l0OXMwMG9kMnJxZ3N6d2Z3cTNvIn0.bYm9ygwRCG_cRVRU3695bA";
       const map = new mapboxgl.Map({

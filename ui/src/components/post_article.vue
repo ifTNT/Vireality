@@ -47,9 +47,9 @@
     <div class="TypeAndPrivacy" v-if="choseTypeAndPrivacy">
       <h2>誰可以看到您的文章</h2>
       <div class="privacy">
-        <span>所有人</span>
-        <switches v-model="allOrFriend" theme="bootstrap" color="info"></switches>
         <span>好友</span>
+        <switches v-model="allOrFriend" theme="bootstrap" color="info"></switches>
+        <span>所有人</span>
       </div>
 
       <!-- <h2>挑選您的文章類型</h2>
@@ -78,6 +78,7 @@ import Mapbox from "./mapbox.vue";
 import Switches from "vue-switches";
 import axios from "axios";
 
+
 export default {
   data() {
     return {
@@ -96,7 +97,8 @@ export default {
       placeOrPersonal: false,
       // map: null,
       longitude: 0,
-      latitude: 0
+      latitude: 0,
+      file:""
     };
   },
 
@@ -122,6 +124,7 @@ export default {
       const reader = new FileReader(); //建立FileReader 監聽 Load 事件
       reader.addEventListener("load", this.imageLoader);
       reader.readAsDataURL(file);
+      this.file = e.target.files[0]
     },
     imageLoader(event) {
       // console.log(event.target.result)
@@ -149,29 +152,50 @@ export default {
     },
     post() {
       console.log("!!!!POST!!!!")
+      /* IMGUR */
+      /* [TODO]:藏token */
+
+      let formData = new FormData();
+      console.log(this.file);
+      formData.append('image', this.file); //required
+      console.log(formData.get('image'));
+      // axios({
+      //   method: 'POST',
+      //   url: 'https://api.imgur.com/3/image',
+      //   data: formData,
+      //   headers: {
+      //   Authorization: 'Bearer ' + imgur.token //放置你剛剛申請的Client-ID
+      //   },
+      //   mimeType: 'multipart/form-data'
+      //   }).then(res => {
+      //     console.log("上傳了XD",res.data.data.link)
+      //     this.UploadDB(res.data.data.link)
+      //   }).catch(e => {
+      //     console.log(e)
+      // })
       axios.post(server.apiUrl("/article/" ),
-        {
-            /* [TODO]:uid還沒拿到 */
-            author: "a123", //test
-            text: this.content,
-            isPuclic: this.allOrFriend,
-            post_time: Date.now(),
-            /* [TODO]: 上傳檔案還不能顯示全部圖片 僅能顯示第一張 且尚未上傳到imgur */
-            // thumbnail: [String] FormData, 圖片集
-            lon: this.longitude,
-            lat: this.latitude
-          },
-        )
-        .then(
-          function(response) {
-            console.log(response);
-          }.bind(this)
-        )
-        .catch(error => {
-          console.log(error);
-        });
-      // document.location.href = "/#/main";
-    }
+      {
+          text: this.content,
+          isPublic: this.allOrFriend,
+          post_time: Date.now(),
+          /* [TODO]: 上傳檔案僅能一張 FormData, 圖片集*/
+          thumbnail: this.img, 
+          lon: this.longitude,
+          lat: this.latitude
+        },
+      )
+      .then(
+        function(response) {
+          console.log(response);
+        }.bind(this)
+      )
+      .catch(error => {
+        console.log(error);
+      });
+
+    },
+    // document.location.href = "/#/main";
+
   }
 };
 </script>

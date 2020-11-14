@@ -8,6 +8,7 @@ import logging
 from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
+from common.protocol.constant import DEEP_INPUT_SHAPE
 import threading
 import numpy as np
 import cv2
@@ -31,8 +32,7 @@ def load_image(name):
   img = cv2.imread(img_path)
 
   # Scale image to proper size
-  dst_size = 160
-  img = cv2.resize(img, (dst_size, dst_size))
+  img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
   img = np.expand_dims(img, axis=0)
 
   return img
