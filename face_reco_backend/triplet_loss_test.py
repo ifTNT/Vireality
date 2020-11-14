@@ -204,8 +204,14 @@ def create_base_network(image_input_shape, embedding_size):
     return base_network
 
 # if __name__ == "__main__":
-def train_main((x_train, y_train):
+def train_main((x_train, y_train)):
     # in case th"is scriot is called from another file, let's make sure it doesn't start training the network...
+
+    y_dict = {}
+    for i in range(y_train):
+        y_dict[str(i)] = y_train[i]
+        y_train[i] = i
+    x_train_all = x_train
 
     batch_size = 256
     epochs = 25
@@ -220,6 +226,10 @@ def train_main((x_train, y_train):
     # The data, split between train and test sets
     x_train = x_train.astype('float32')
     x_test = x_test.astype('float32')
+    # y_tran_path = "y_tran".encode()
+    # binary_int = int.from_bytes(y_tran_path, "big")
+    # binary_string = bin(binary_int)
+
     x_test = np.random.shuffle(x_train)[:-2]
     x_train = x_train[8:]
     y_test = y_train
@@ -248,7 +258,7 @@ def train_main((x_train, y_train):
 
         model.compile(loss=triplet_loss_adapted_from_tf, optimizer=opt)
 
-        filepath = "Triplet_losss_ep{epoch:02d}_BS%d.hdf5" % batch_size
+        filepath = "./models/Triplet_losss_ep{epoch:02d}_BS%d.hdf5" % batch_size
         checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, period=25)
         callbacks_list = [checkpoint]
 
@@ -260,7 +270,7 @@ def train_main((x_train, y_train):
         x_val = np.reshape(x_val, (len(x_val), x_train.shape[1], x_train.shape[1], 1))
 
         H = model.fit(
-            x=[x_train,y_train],
+            x=[x_train,y_val],
             y=dummy_gt_train,
             batch_size=batch_size,
             epochs=epochs,
@@ -276,15 +286,12 @@ def train_main((x_train, y_train):
     else:
 
         #####
-        model = load_model('./trained model/Triplet_losss_ep25_BS256.hdf5',
+        model = load_model('./models/Triplet_losss_ep25_BS256.hdf5',
                                         custom_objects={'triplet_loss_adapted_from_tf':triplet_loss_adapted_from_tf})
 
-    # Test the network
-
     # creating an empty network
-    testing_embeddings = create_base_network(input_image_shape,
-                                             embedding_size=embedding_size)
-    x_embeddings_before_train = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 1792, 1)))
+    testing_embeddings = create_base_network(input_image_shape, embedding_size=embedding_size)
+    # x_embeddings_before_train = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 1792, 1)))
     # Grabbing the weights from the trained network
     for layer_target, layer_source in zip(testing_embeddings.layers, model.layers[2].layers):
         weights = layer_source.get_weights()
@@ -293,32 +300,26 @@ def train_main((x_train, y_train):
 
     # Visualizing the effect of embeddings -> using PCA!
 
-    x_embeddings = testing_embeddings.predict(np.reshape(x_test, (len(x_test), 1792, 1)))
-    dict_embeddings = {}
-    dict_gray = {}
-    test_class_labels = np.unique(np.array(y_test))
+    x_embeddings = testing_embeddings.predict(np.reshape(x_train_all, (len(x_train_all), 1792, 1)))
+    for i in range(x_embeddings):
+        decomposed_embeddings_class = decomposed_embeddings[y_test == i]
+        y_dict[str(i)] = [y_dict[str(i)],decomposed_embeddings_class]
 
-    pca = PCA(n_components=no_of_components)
-    decomposed_embeddings = pca.fit_transform(x_embeddings)
-#     x_test_reshaped = np.reshape(x_test, (len(x_test), 28 * 28))
-    decomposed_gray = pca.fit_transform(x_embeddings_before_train)
+    print(y_dict)
+
+    json_dump = json.dumps(y_dict, cls=MyEncoder)
+
+    print(json_dump)
     
-    fig = plt.figure(figsize=(16, 8))
-    for label in test_class_labels:
-        decomposed_embeddings_class = decomposed_embeddings[y_test == label]
-        decomposed_gray_class = decomposed_gray[y_test == label]
+    return y_dict
+    # test_class_labels = np.unique(np.array(y_test))
 
-        plt.subplot(1,2,1)
-        plt.scatter(decomposed_gray_class[::step,1], decomposed_gray_class[::step,0],label=str(label))
-        plt.title('before training (embeddings)')
-        plt.legend()
-
-        plt.subplot(1,2,2)
-        plt.scatter(decomposed_embeddings_class[::step, 1], decomposed_embeddings_class[::step, 0], label=str(label))
-        plt.title('after @%d epochs' % epochs)
-        plt.legend()
-
-    plt.show()
+    # pca = PCA(n_components=no_of_components)
+    # decomposed_embeddings = pca.fit_transform(x_embeddings)
+    # for label in test_class_labels:
+    #     decomposed_embeddings_class = decomposed_embeddings[y_test == label]
+    #     y_dict[(label)] = [y_dict[(label)],decomposed_embeddings_class]
+    
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -389,8 +390,8 @@ def main():
     #   face_id = facenet.calc_embs(work.img)
         file_path = './models/faceDB.json'
         
-        train_main( useridTable(work.face_id, work.label, file_path) )
-
+        outPutModel = train_main( useridTable(work.face_id, work.label, file_path) )
+        
         result = DeployModelMsg(unix_time_stamp, outPutModel)
 
     zmq_serdes.send_zipped_pickle(result_sender, result)
