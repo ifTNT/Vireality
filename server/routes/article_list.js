@@ -37,7 +37,7 @@ router.get("/geolocation", async function (req, res, next) {
     console.log(user[0].location);
     console.log(user[0].geohash);
     //省去末兩位
-    var re = "^" + user[0].geohash.substr(0, 7);
+    var re = "^" + user[0].geohash.substr(0, 5);
     console.log(re);
     /*---- Find articles around the user ----*/
     let articles;
@@ -51,6 +51,8 @@ router.get("/geolocation", async function (req, res, next) {
     if (articles.length === 0) {
       throw "NO articles.";
     }
+
+    console.log(`Article found: ${articles.length}`);
 
     // console.log(articles)
     dis = [];
@@ -77,7 +79,8 @@ router.get("/geolocation", async function (req, res, next) {
         );
       s = s * 6378137.0; // 取WGS84標準參考橢球中的地球長半徑(單位:m)
       s = Math.round(s * 10000) / 10000; //單位為公尺
-      if (s < 10)
+      console.log(`Article ${target.article_id}: Distance is ${s}m`);
+      if (s < 20)
         /* [ALERT,TODO]:先丟一張照片出去 避免錯誤 */
         dis.push({
           id: target.article_id,

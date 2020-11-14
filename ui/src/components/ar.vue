@@ -229,6 +229,8 @@ export default {
           }
         })
         .then(res => {
+          console.log(res);
+          res = res.data;
           if (res.ok !== "true") {
             console.log("[AR] Get article list failed.");
           } else {
