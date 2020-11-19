@@ -18,7 +18,7 @@ from keras.datasets import mnist
 
 ## for Model definition/training
 from keras.models import Model, load_model
-from keras.layers import Input, Flatten, Dense, concatenate,  Dropout
+from keras.layers import Input, Flatten, Dense, concatenate,  Dropout, Lambda
 from keras.optimizers import Adam
 
 from keras.utils import plot_model
@@ -28,7 +28,10 @@ from keras.callbacks import ModelCheckpoint
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import dtypes
+from tensorflow.python.ops import nn
+
 import tensorflow as tf
+
 
 ## for visualizing 
 import matplotlib.pyplot as plt, numpy as np
@@ -195,11 +198,13 @@ def create_base_network(image_input_shape, embedding_size):
     input_image = Input(shape=image_input_shape)
 
     x = Flatten()(input_image)
+    x = Dropout(0.1)(x)
     # x = Dense(128, activation='relu')(x)
     # x = Dropout(0.1)(x)
     x = Dense(128, activation='sigmoid')(x)
     x = Dropout(0.1)(x)
     x = Dense(embedding_size)(x)
+    x = Lambda(lambda x :nn.l2_normalize(x, axis=1, epsilon=1e-10))(x)
 
     base_network = Model(inputs=input_image, outputs=x)
     # plot_model(base_network, to_file='base_network.png', show_shapes=True, show_layer_names=True)
@@ -390,9 +395,14 @@ def main():
     fileModel.close()
     print("read finish")
 
-    result = DeployModelMsg(int(datetime.now().timestamp()*1000), modelBits)
+    outPutWeight = []
+    # for i in outPutModel.layers:
+    #     outPutWeight.append(i.get_weights())
+    #     print(len(i.get_weights()))
+    outPutWeight.append(outPutModel.layers[2].get_weights())
+    result =[ DeployModelMsg(int(datetime.now().timestamp()*1000), modelBits),outPutWeight]
 
-    # zmq_serdes.send_zipped_pickle(result_sender, result)
+    zmq_serdes.send_zipped_pickle(result_sender, result)
 
 if __name__ == "__main__":
     main()
