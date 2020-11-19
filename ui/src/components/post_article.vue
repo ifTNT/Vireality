@@ -13,7 +13,7 @@
         <div
           class="postButton"
           @click="post"
-          v-if="chooseLocation||placeOrPersonal"
+          v-if="(chooseLocation||placeOrPersonal)&&geolocationReady"
         >{{postButtonName}}</div>
         <div
           class="nextButton"
@@ -57,7 +57,7 @@
         <span>地點文章</span>
         <switches v-model="placeOrPersonal" theme="bootstrap" color="info"></switches>
         <span>個人</span>
-      </div> -->
+      </div>-->
     </div>
 
     <mapbox
@@ -78,7 +78,6 @@ import Mapbox from "./mapbox.vue";
 import Switches from "vue-switches";
 import axios from "axios";
 
-
 export default {
   data() {
     return {
@@ -91,6 +90,7 @@ export default {
       content: "",
       choosePicAndContent: true,
       chooseLocation: false,
+      geolocationReady: false,
       remindContent: "請在地圖中選擇您所在的位置",
       choseTypeAndPrivacy: false,
       allOrFriend: false,
@@ -98,7 +98,7 @@ export default {
       // map: null,
       longitude: 0,
       latitude: 0,
-      file:""
+      file: ""
     };
   },
 
@@ -118,13 +118,14 @@ export default {
       // childValue就是子组件传过来的值
       this.latitude = lat;
       this.longitude = lng;
+      this.geolocationReady = true;
     },
     changeImage(e) {
       const file = event.target.files.item(0); //取得File物件
       const reader = new FileReader(); //建立FileReader 監聽 Load 事件
       reader.addEventListener("load", this.imageLoader);
       reader.readAsDataURL(file);
-      this.file = e.target.files[0]
+      this.file = e.target.files[0];
     },
     imageLoader(event) {
       // console.log(event.target.result)
@@ -151,14 +152,14 @@ export default {
       this.chooseLocation = true;
     },
     post() {
-      console.log("!!!!POST!!!!")
+      console.log("!!!!POST!!!!");
       /* IMGUR */
       /* [TODO]:藏token */
 
       let formData = new FormData();
       console.log(this.file);
-      formData.append('image', this.file); //required
-      console.log(formData.get('image'));
+      formData.append("image", this.file); //required
+      console.log(formData.get("image"));
       // axios({
       //   method: 'POST',
       //   url: 'https://api.imgur.com/3/image',
@@ -173,29 +174,26 @@ export default {
       //   }).catch(e => {
       //     console.log(e)
       // })
-      axios.post(server.apiUrl("/article/" ),
-      {
+      axios
+        .post(server.apiUrl("/article/"), {
           text: this.content,
           isPublic: this.allOrFriend,
           post_time: Date.now(),
           /* [TODO]: 上傳檔案僅能一張 FormData, 圖片集*/
-          thumbnail: this.img, 
+          thumbnail: this.img,
           lon: this.longitude,
           lat: this.latitude
-        },
-      )
-      .then(
-        function(response) {
-          console.log(response);
-        }.bind(this)
-      )
-      .catch(error => {
-        console.log(error);
-      });
-
-    },
-    // document.location.href = "/#/main";
-
+        })
+        .then(
+          function(response) {
+            console.log(response);
+          }.bind(this)
+        )
+        .catch(error => {
+          console.log(error);
+        });
+      document.location.href = "/#/main";
+    }
   }
 };
 </script>

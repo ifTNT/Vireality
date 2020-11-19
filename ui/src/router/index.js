@@ -18,6 +18,8 @@ import PostLocation from "@/components/post_article_location";
 import TestAbsSpeed from "@/components/test_absolute_speed_sensor";
 import TestTimeLine from "@/components/test_timeline";
 import TestFriendListAround from "@/components/test_friend_list_around";
+import Registration from "@/components/Registration";
+import Login from "@/components/login";
 
 Vue.use(Router);
 
@@ -49,6 +51,16 @@ let router = new Router({
       path: "/first_face_detection",
       name: "First face detection",
       component: FirstFaceDetection
+    },
+    {
+      path: "/registration",
+      name: "userRegistration",
+      component: Registration
+    },
+    {
+      path: "/login",
+      name: "Login",
+      component: Login
     },
     {
       path: "/article",

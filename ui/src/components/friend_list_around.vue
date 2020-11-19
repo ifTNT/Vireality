@@ -134,31 +134,31 @@ export default {
       }
       this.appendOnScreen(radXY);
     },
-   getFriends() {
-    //   this.friendRad = [
-    //     {
-    //       id: "123",
-    //       dir: 0
-    //     },
-    //     {
-    //       id: "1234",
-    //       dir: 3.3218
-    //     },
-    //     {
-    //       id: "12345",
-    //       dir: 1.3318
-    //     },
-    //     {
-    //       id: "123456",
-    //       dir: 2.3518
-    //     }
-    //   ];
-    //   this.friendRad.forEach(friend => {
-    //     friend["pos"] = 0;
-    //     friend["visible"] = false;
-    //   });
-    //   this.getFrientFlag = true;
-    //   this.sensorStarter();
+    getFriends() {
+      //   this.friendRad = [
+      //     {
+      //       id: "123",
+      //       dir: 0
+      //     },
+      //     {
+      //       id: "1234",
+      //       dir: 3.3218
+      //     },
+      //     {
+      //       id: "12345",
+      //       dir: 1.3318
+      //     },
+      //     {
+      //       id: "123456",
+      //       dir: 2.3518
+      //     }
+      //   ];
+      //   this.friendRad.forEach(friend => {
+      //     friend["pos"] = 0;
+      //     friend["visible"] = false;
+      //   });
+      //   this.getFrientFlag = true;
+      //   this.sensorStarter();
       axios
         .get(server.apiUrl("/user/friend_direction"))
         .then(response => {
@@ -246,8 +246,6 @@ export default {
         friend["pos"] = this.calculatePosition(friend["dir"]);
         return friend;
       });
-
-      console.log(this.friendRad);
     },
 
     // Return whether the given direction is visible from current direction.

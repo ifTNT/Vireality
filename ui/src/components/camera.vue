@@ -133,7 +133,6 @@ export default {
           this.$emit("camera-ready", width * scale, height * scale);
           this.updatePico();
           window.setInterval(() => {
-            console.log("LoopTest")
             this.updateId();
           },1000);
         },
@@ -370,9 +369,9 @@ export default {
           let faceX = Math.round(fX - fW/2) * 0.90;
           let faceY = Math.round(fY - fW/2) * 0.90;
           let faceW = fW * 1.20;
-          console.log(faceX);
-          console.log(faceY);
-          console.log(faceW);
+          // console.log(faceX);
+          // console.log(faceY);
+          // console.log(faceW);
 
           ctx.beginPath();
           ctx.lineWidth = '3';

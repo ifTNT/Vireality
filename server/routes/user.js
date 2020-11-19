@@ -2,13 +2,16 @@ var express = require("express");
 var router = express.Router();
 const User = require('../models/user_schema');
 const Friendship = require('../models/friendship_schema')
+const HashMethod = require('hash-anything').sha1
+
 /*[ALERT]:前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
+/* [TODO]:have some error for client */
 /* 給定使用者ID，取得該使用者的個人資料(名字、興趣、一句話)。 */
 router.get("/:id/info", async function(req, res, next) {
   try{
     if (req.params.id === undefined) { throw "No target user id."}
-    req.session.user_id = "a123"
-    console.log(req.session)
+    // req.session.user_id = "a123"
+    // console.log(req.session)
     session_uid = req.session.user_id
     // console.log(session_uid)
     if(session_uid === undefined){ throw "uid is undefined."}
@@ -168,4 +171,40 @@ router.get("/friend_direction", async function(req, res, next) {
   }
 });
 
+/* 使用者登入 */
+router.post("/login", function(req, res, next) {
+    if(req.body.uid===undefined || req.body.password===undefined){
+      res.json({ ok: "false" ,result: []});
+      return
+    }
+    console.log(req.body)
+    const hashPW = HashMethod(req.body.password)
+    console.log(hashPW)
+    User.find({user_id: req.body.uid}, function (err, user) {
+      if (err) {
+        console.log(err)
+        res.json({ ok: "false" ,result: []});
+        return;
+      } 
+      console.log("Result :\n", user)
+      console.log(typeof(hashPW))
+      console.log(typeof(user[0].password))
+      if (user.length !== 0 && hashPW===user[0].password) {
+        console.log("IN DB!")
+        req.session.user_id = req.body.uid
+        req.session.save(() => {
+          console.log(req.session);
+          return res.json({
+            ok: "true",
+          });
+        });
+      }
+      else{
+        return res.json({ ok: "false" ,result: []});
+        
+      }
+    });
+  
+
+});
 module.exports = router;

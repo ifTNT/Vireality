@@ -1,6 +1,11 @@
 <template>
   <div>
-    <camera class="fullScreen" v-on:camera-ready="onCameraReady" v-on:open="openUrl" v-bind:tap-coordinate="this.tapCoordinate" />
+    <camera
+      class="fullScreen"
+      v-on:camera-ready="onCameraReady"
+      v-on:open="openUrl"
+      v-bind:tap-coordinate="this.tapCoordinate"
+    />
     <canvas class="fullScreen" ref="arCanvas"></canvas>
     <div id="overlay">
       <font-awesome-icon
@@ -14,7 +19,7 @@
       <!-- <font-awesome-layers class="fa-lg" ref="add" v-on:click="addArticle" v-if="started">
         <font-awesome-icon icon="map-marker-alt" size="4x" transform="right-3" inverse />
         <font-awesome-icon icon="plus" size="lg" transform="down-5" inverse />
-      </font-awesome-layers> -->
+      </font-awesome-layers>-->
     </div>
   </div>
 </template>
@@ -22,7 +27,10 @@
 //Reference: https://stackoverflow.com/questions/47849626/import-and-use-three-js-library-in-vue-component
 import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
+import convertGeolocation from "../lib/geolocation_converter.js";
 import Camera from "@/components/camera";
+import axios from "axios";
+
 export default {
   name: "AR_view",
   props: {
@@ -65,7 +73,7 @@ export default {
       let ray = new THREE.Raycaster();
       ray.setFromCamera(tapCoord, this.camera);
       let intersects = ray.intersectObjects(this.scene.children);
-      
+
       //if there are at least one object intersected with the ray
       if (intersects.length > 0) {
         //Open the cloest article
@@ -81,8 +89,8 @@ export default {
         `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
       );
     },
-    openUrl(url){
-      // Open url in router view of upper components 
+    openUrl(url) {
+      // Open url in router view of upper components
       this.$emit("open", url);
     },
     initAR: function() {
@@ -117,7 +125,7 @@ export default {
         (180 / Math.PI) *
         2 *
         Math.atan(((refCCDSize / 2) * scale) / refFocalLength);
-      console.log(`[AR] FoV of Virtual Camera: ${this.cameraFoV}`);
+      console.log(`[AR] FoV of Virtual Camera: ${cameraFoV}`);
 
       //Make a camera that have equivlent FoV of device's camera
       this.camera = new THREE.PerspectiveCamera(
@@ -174,26 +182,14 @@ export default {
       //An axes helper
       this.axesHelper = new THREE.AxesHelper(0.1);
       this.axesHelper.position.set(0, 0, 0);
-      //this.scene.add(this.axesHelper);
+      this.scene.add(this.axesHelper);
 
-      //Load the article meterial
-      //[TODO] Dynamic load different article meterial
-      //[TODO] Dynamic article loader
-      const texture = new THREE.TextureLoader().load(
-        "/static/media/test_article.png"
-      );
-      this.articleMaterial = new THREE.MeshBasicMaterial({ map: texture });
-      //const spriteMap = new THREE.TextureLoader().load(
-      //"/static/media/placeholder.png"
-      //  "/static/media/test_article.png"
-      //);
-      //this.spriteMaterial = new THREE.SpriteMaterial({
-      //  map: spriteMap,
-      //  color: 0xffffff
-      //});
+      //Periodicly load article from server
+      setInterval(this.loadArticles, 5000);
 
       this.animate();
     },
+
     animate: function() {
       window.requestAnimationFrame(this.animate.bind(this));
       this.controls.update();
@@ -211,10 +207,64 @@ export default {
       }
       this.renderer.render(this.scene, this.camera);
     },
-    addArticle: function(x, y) {
+
+    // The promise wrapper of three.js texture loader
+    loadTexture: function(url) {
+      return new Promise(resolve => {
+        new THREE.TextureLoader().load(url, resolve);
+      });
+    },
+    // Fetch articles near by the user.
+    // Including id, thumbnail, lontitude and latitude.
+    loadArticles: function() {
+      // Get current position
+      let { longitude, latitude } = this.controls.getCurrentPosition();
+
+      // Refresh the article thumbnail
+      axios
+        .get(server.apiUrl("/articles/geolocation"), {
+          params: {
+            lon: longitude,
+            lat: latitude
+          }
+        })
+        .then(res => {
+          console.log(res);
+          res = res.data;
+          if (res.ok !== "true") {
+            console.log("[AR] Get article list failed.");
+          } else {
+            // Iterate the articles
+            res.result.forEach(async article => {
+              // [TODO] Do not append same article
+
+              // Fetch the texture from external website.
+              const texture = await this.loadTexture(article.thumbnail);
+              let articleMaterial = new THREE.MeshBasicMaterial({
+                map: texture
+              });
+
+              // Convert the geolocation to AR coordinate.
+              let { lon, lat } = article;
+              let { x, y } = convertGeolocation({
+                longitude: lon,
+                latitude: lat
+              });
+
+              // Append article
+              this.addArticle(x, y, articleMaterial, article.id);
+            });
+          }
+        });
+    },
+    addArticle: function(x, y, material, id) {
+      console.log(`Added new article (${x},${y})`);
+      console.log(
+        `Camera coordinate (${this.camera.position.x},${this.camera.position.y})`
+      );
       //let { x, y } = this.camera.position;
       const geometry = new THREE.BoxGeometry(0.01, 1, 1); // Article cube
-      let newArticle = new THREE.Mesh(geometry, this.articleMaterial);
+      let newArticle = new THREE.Mesh(geometry, material);
       //let newArticle = new THREE.Sprite(this.spriteMaterial);
       //newArticle.center.set(0.5, 0); //Center Bottom
       //newArticle.scale.set(1, 1, 1);
@@ -228,10 +278,9 @@ export default {
       //newArticle.position.z = 0.0;
       newArticle.rotation.x = Math.PI / 2;
 
-      //[TODO] Dynamic load article id
       //Set the custom data
       newArticle.userData = {
-        link: `/main/article`
+        link: `/main/article/${id}`
       };
 
       //Let the article facing to camera
