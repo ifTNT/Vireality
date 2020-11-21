@@ -33,6 +33,10 @@ from tensorflow.python.ops import nn
 
 import tensorflow as tf
 
+# Packages for approximate nearest neighbor
+from annoy import AnnoyIndex
+
+# This network defination must same as that be used in train-unit
 def create_base_network(image_input_shape=FEATURE_SHAPE(), embedding_size=64):
     """
     Base network to be shared (eq. to feature extraction).
@@ -49,17 +53,6 @@ def create_base_network(image_input_shape=FEATURE_SHAPE(), embedding_size=64):
     base_network = Model(inputs=input_image, outputs=x)
 
     return base_network
-
-#   using network
-    # testing_embeddings = create_base_network(input_image_shape,
-    #                                          embedding_size=embedding_size)
-    # # Grabbing the weights from the trained network
-    # for layer_target, layer_source in zip(testing_embeddings.layers, model.layers[2].layers):
-    #     weights = layer_source.get_weights()
-    #     layer_target.set_weights(weights)
-    #     del weights
-
-    # x_embeddings = testing_embeddings.predict(np.reshape(img_input, (len(img_input)), 28, 28, 1)))
 
 def fetch_weight_from_mongodb(db):
     # Selection collection from database
@@ -93,7 +86,40 @@ def create_model_from_mongodb(db):
 
     return weighted_model
 
-def face_recog_proc(sock, db, model):
+def construct_ann_from_mongodb(db):
+    # Selection collection from database
+    face_id_db_collection = db['face_id']
+
+    # Prepare the mapping from ANN index to user_id
+    # and the ANN instance.
+    ann_map = {}
+    embedding_size = 64
+    ann = AnnoyIndex(embedding_size, 'euclidean')
+    
+    # Load all of the faces form MongoDB
+    i=0
+    for user in face_id_db_collection.find():
+        for embedding in user['embedding']:
+            ann_map[i] = user['user_id']
+            ann.add_item(i, embedding)
+            i+=1
+    del i
+
+    logging.info("Loaded user_id and embeddings from MongoDB successfully.")
+    logging.info("Constructing ANN searching trees.")
+
+    # Construct the ANN searching tree
+    # Fixed to 10 trees.
+    # [TODO] Adaptive tree number accroding to faces
+    ann.build(10)
+
+    logging.info("ANN searching tree constructed.")
+
+    return (ann_map, ann)
+
+
+
+def face_recog_proc(sock, db, model, ann_map, ann):
 
     # Type should be RecogMsg
     work = zmq_serdes.recv_zipped_pickle(sock)
@@ -101,10 +127,51 @@ def face_recog_proc(sock, db, model):
     logging.info('Received a work from recog-sched (req_id={})'.format(work.req_id))
 
     # Calculate embeddings from model
-    embedding = model.predict(np.array([work.face_id]))
+    embedding = model.predict(np.array([work.face_id]))[0]
     logging.debug("Embedding calculated")
 
     # [TODO] ANN and send result to front-end-server
+    # Perform ANN search. Get top 10 nearest neighbor.
+    # If the following two condition is satisfied, return the user_id.
+    # Otherwise, returns user not found.
+    # Condition#1:
+    #   There existed at least one neighbor that distance<=dist_thld.
+    # Condition#2:
+    #    The number of neighbors that satisfied cond#1 is greater than cnt_thld
+    # If there existed mor than one lables satisfied the above two conditions,
+    # return user not found.
+    dist_thld = 0.2
+    cnt_thld = 2
+    ids, dists = ann.get_nns_by_vector(embedding, 10, include_distances=True)
+    # Check which neighbors satisfied cond#1
+    near_enough_neighbor = {}
+    for id, dist in zip(ids, dists):
+        user_id = ann_map[id]
+        if dist <= dist_thld:
+            if user_id in near_enough_neighbor.keys():
+                near_enough_neighbor[user_id] += 1
+            else:
+                near_enough_neighbor[user_id] = 1
+
+    # Check which neighbor satisfied cond#2
+    result_cnt = 0
+    result_user_id = -1
+    for user_id in near_enough_neighbor:
+        if near_enough_neighbor[user_id] > cnt_thld:
+            result_cnt += 1
+            result_user_id = user_id
+    # If there are exately one lable satisfied the two conditions,
+    # return it. Otherwise, return user not found.
+    result_msg = {}
+    if result_cnt == 1:
+        result_msg = UserIDMsg(work.req_id, ResState.OK, result_user_id)
+    else:
+        result_msg = UserIDMsg(work.req_id, ResState.NOTFOUND, "")
+    
+    logging.info("Recognize result of req_id={} is {}, user_id={}".format(result_msg.req_id, result_msg.res_state, result_msg.user_id))
+
+    return result_msg
+
 
 def update_model_proc(sock, db, model):
 
@@ -118,8 +185,11 @@ def update_model_proc(sock, db, model):
 
     # Copy weights to base model
     new_model = copy_weights(model, weights)
+
+    # Construct the new ANN searching tree
+    ann_map, ann = construct_ann_from_mongodb(db)
     
-    return new_model
+    return new_model, ann_map, ann
 
 def main():
   LOG_FORMAT = '%(asctime)s [recog-unit]: [%(levelname)s] %(message)s'
@@ -139,6 +209,9 @@ def main():
 
   # Create model
   embedding_model = create_model_from_mongodb(db_database)
+
+  # Construct the ANN searching tree
+  ann_map, ann = construct_ann_from_mongodb(db_database)
 
   context = zmq.Context()
   # Socket to receive work
@@ -163,12 +236,15 @@ def main():
   while True:
     socks = dict(zmq_poller.poll(1000))
     if work_recv in socks and socks[work_recv] == zmq.POLLIN:
-        face_recog_proc(
+        result_msg = face_recog_proc(
             work_recv,
             db_database,
-            embedding_model)
+            embedding_model,
+            ann_map,
+            ann)
+        zmq_serdes.send_zipped_pickle(result_sender, result_msg)
     if model_recv in socks and socks[model_recv] == zmq.POLLIN:
-        embedding_model = update_model_proc(
+        embedding_model, ann_map, ann = update_model_proc(
             model_recv,
             db_database,
             embedding_model)
