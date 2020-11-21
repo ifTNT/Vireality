@@ -1,5 +1,6 @@
 var express = require("express");
 var router = express.Router();
+const geohash = require("ngeohash");
 const Article = require("../models/article_schema");
 const User = require("../models/user_schema");
 
@@ -21,45 +22,60 @@ router.get("/geolocation", async function (req, res, next) {
     if (uid === undefined) {
       throw "uid is undefined.";
     }
-    /*---- Find user's location(lon,lat) and geohash ----*/
-    let err,
-      user = await User.find({ user_id: uid });
-    if (err) {
-      throw err;
-    }
-    if (
-      user.length === 0 ||
-      user[0].location.longitude === undefined ||
-      user[0].location.latitude === undefined
-    ) {
-      throw "Not have this user or no lon or lat";
-    }
-    console.log(user[0].location);
-    console.log(user[0].geohash);
+    /*---- Get user's location(lon,lat) from parameter ----*/
+    let user_location = {
+      longitude: req.query["lon"] || 0,
+      latitude: req.query["lat"] || 0,
+    };
+    let user_geohash = geohash.encode(
+      user_location.latitude,
+      user_location.longitude
+    );
+    User.update(
+      { user_id: uid },
+      {
+        location: {
+          longitude: user_location.longitude,
+          latitude: user_location.latitude,
+        },
+        geohash: user_geohash,
+      }
+    );
+    // let err,
+    //   user = await User.find({ user_id: uid });
+    // if (err) {
+    //   throw err;
+    // }
+    // if (
+    //   user.length === 0 ||
+    //   user[0].location.longitude === undefined ||
+    //   user[0].location.latitude === undefined
+    // ) {
+    //   throw "Not have this user or no lon or lat";
+    // }
+    console.log(
+      `User location: ${JSON.stringify(
+        user_location
+      )}, Geohash: ${user_geohash}`
+    );
     //省去末兩位
-    var re = "^" + user[0].geohash.substr(0, 5);
-    console.log(re);
+    var re = "^" + user_geohash.substr(0, 6);
     /*---- Find articles around the user ----*/
-    let articles;
-    err,
-      (articles = await Article.find({
+    let err,
+      articles = await Article.find({
         geohash: { $regex: re, $options: "m" },
-      })); //正則表達
+      }); //正則表達
     if (err) {
       throw err;
     }
-    if (articles.length === 0) {
-      throw "NO articles.";
-    }
-
     console.log(`Article found: ${articles.length}`);
 
     // console.log(articles)
     dis = [];
     articles.forEach((target) => {
       // google map 計算距離方式
-      var lon1 = user[0].location.longitude;
-      var lat1 = user[0].location.latitude;
+      var lon1 = user_location.longitude;
+      var lat1 = user_location.latitude;
       var lon2 = target.location.longitude;
       var lat2 = target.location.latitude;
 
@@ -90,7 +106,6 @@ router.get("/geolocation", async function (req, res, next) {
           author: target.author,
         });
     });
-    console.log("DIS:\n", dis);
     res.json({
       ok: "true",
       result: dis,
