@@ -30,6 +30,7 @@ import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import convertGeolocation from "../lib/geolocation_converter.js";
 import Camera from "@/components/camera";
 import axios from "axios";
+import screenfull from "screenfull";
 
 export default {
   name: "AR_view",
@@ -60,14 +61,14 @@ export default {
       alpha: true,
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(screen.availWidth, screen.availHeight);
   },
   watch: {
     tapCoordinate: function (newCoord, oldCoord) {
       //Normalize the coordinate to (-1, 1)
       let { x, y } = newCoord;
-      x = (x / window.innerWidth) * 2 - 1;
-      y = -(y / window.innerHeight) * 2 + 1;
+      x = (x / screen.availWidth) * 2 - 1;
+      y = -(y / screen.availHeight) * 2 + 1;
 
       let tapCoord = new THREE.Vector2(x, y);
       let ray = new THREE.Raycaster();
@@ -96,6 +97,10 @@ export default {
     initAR: function () {
       this.started = true;
 
+      if (screenfull.isEnabled) {
+        screenfull.request();
+      }
+
       //===============Camera and Control================
       //                                                |
       // This camera is expect to have the same FoV,    |
@@ -110,7 +115,7 @@ export default {
 
       // Three.js only sets the vertical FoV.
       // How much video had been croped in height.
-      let scale = window.innerHeight / this.videoHeight;
+      let scale = screen.availHeight / this.videoHeight;
 
       // Full-frame CCD (36mm)
       let refCCDSize = 36;
@@ -130,7 +135,7 @@ export default {
       //Make a camera that have equivlent FoV of device's camera
       this.camera = new THREE.PerspectiveCamera(
         cameraFoV, //Calcualted FoV.
-        window.innerWidth / window.innerHeight, //Aspect ratio
+        screen.availWidth / screen.availHeight, //Aspect ratio
         0.5, //Near plate
         1100 //Far plate
       );
