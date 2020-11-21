@@ -17,3 +17,4 @@ venv/
 .vscode
 __pycache__
 models/faceDB.json
+test_images/lfw_face_dataset

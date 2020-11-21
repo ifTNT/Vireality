@@ -204,11 +204,9 @@ db.once("open", (db) =>
 //       interest: "打球阿",
 //       intro: "他很懶甚麼都沒寫",
 //       face_id: [],
-//       avator: "https://i.imgur.com/07XbOpL.png",
 //       friend_list: ["a789", "a456", "b123"],
 //       user_id: "a123",
 //       password: "b123",
-//       email: "ak@gmail.com",
 //       nickname: "CINDY",
 //       join_time: Date.now(),
 //       location: {
@@ -226,7 +224,6 @@ db.once("open", (db) =>
 //     friend_list: ["a789"],
 //     user_id: "a456",
 //     password: "b456",
-//     email: "aa@gmail.com",
 //     nickname: "BELLA",
 //     join_time: Date.now(),
 //     location: {
@@ -244,7 +241,6 @@ db.once("open", (db) =>
 //     friend_list: ["a123", "a456"],
 //     user_id: "a789",
 //     password: "b789",
-//     email: "qwe@gmail.com",
 //     nickname: "LISA",
 //     join_time: Date.now(),
 //     location: {
@@ -262,7 +258,6 @@ db.once("open", (db) =>
 //     friend_list: ["a789"],
 //     user_id: "b123",
 //     password: "c123",
-//     email: "vvvvvv@gmail.com",
 //     nickname: "CHEN",
 //     join_time: Date.now(),
 //     location: {

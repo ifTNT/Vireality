@@ -3,6 +3,8 @@ var router = express.Router();
 const User = require('../models/user_schema');
 const Friendship = require('../models/friendship_schema')
 const HashMethod = require('hash-anything').sha1
+const imgur = require('./token');
+const request = require('request')
 
 /*[ALERT]:前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
 /* [TODO]:have some error for client */
@@ -206,5 +208,110 @@ router.post("/login", function(req, res, next) {
     });
   
 
+});
+
+
+router.post("/findAccount", function(req, res, next) {
+    if (req === undefined) { res.json({ ok: "false" }); }
+    /*---- User's Account whether exist----*/
+    console.log(req.body)
+    User.find({user_id: req.body.uid}, function (err, person) {
+      if (err) { res.json({ ok: "false" });  }
+      console.log("Result :\n", person)
+      if (person.length !== 0) { res.json({ ok: "false" }); }
+      else{
+        res.json({
+          ok: "true",
+        });
+      }
+    })
+    
+});
+
+
+router.post("/createAccount",async function(req, res, next) {
+  if (req === undefined) { res.json({ ok: "false" }); }
+  /*---- User's Account whether exist----*/
+  console.log(req.body)
+  /*
+    uid: this.userId,
+    password:this.password,
+    nickname:this.nickname,
+    birthday:this.birthday,
+    interest:this.interest,
+    intro:this.intro,
+    avator:this.img
+  */
+  /* Transfer password to hash */
+  const hashPW = HashMethod(req.body.password)
+  //[TODO]:faceID
+  let insertObj = {
+    user_id: req.body.uid,
+    password: hashPW,
+    birthday: req.body.birthday,
+    join_time: Date.now(),
+  }
+  if(req.body.interest!==""){
+    insertObj["interest"] = req.body.interest
+  }
+  if(req.body.intro!==""){
+    insertObj["intro"] = req.body.intro
+  }
+  if(req.body.nickname!==""){
+    insertObj["nickname"] = req.body.nickname
+  }
+
+  if(req.body.avator!=="https://i.imgur.com/oPYT6RD.png"){
+      options = {
+        'method': 'POST',
+        'url': 'https://api.imgur.com/3/image',
+        'headers': {
+            'Authorization': 'Bearer ' + imgur.token
+        },
+        formData: {
+            'image': req.body.avator.split(',')[1] }
+      };
+      // [TODO]: await???
+      await request(options, function (error, response) {
+        if (error) {res.json({ ok: "false" }); }
+        const imgurURL = response.body
+        console.log(imgurURL)
+        const imgurURLToJSON2 = JSON.parse(imgurURL).data.link
+        insertObj['avator'] = imgurURLToJSON2
+        const userData = [insertObj]
+        console.log(userData)
+        User.insertMany(userData, (err, users) => {
+          if (err) {
+            return console.error(err);
+          }
+          else{
+            //[TODO]:session問題
+            req.session.user_id = req.body.uid
+            res.json({
+              ok: "true",
+            });
+          }
+        });
+      })
+  }
+  else{
+    const userData = [insertObj]
+    console.log(userData)
+    User.insertMany(userData, (err, users) => {
+      if (err) {
+        return console.error(err);
+      }
+      else{
+        //[TODO]:session問題
+        req.session.user_id = req.body.uid
+        res.json({
+          ok: "true",
+        });
+      }
+    });
+  }
+
+
+  
 });
 module.exports = router;
