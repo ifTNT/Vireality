@@ -271,6 +271,7 @@ router.post("/createAccount",async function(req, res, next) {
         formData: {
             'image': req.body.avator.split(',')[1] }
       };
+      // [TODO]: await???
       await request(options, function (error, response) {
         if (error) {res.json({ ok: "false" }); }
         const imgurURL = response.body
