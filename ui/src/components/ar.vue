@@ -35,8 +35,8 @@ export default {
   name: "AR_view",
   props: {
     tapCoordinate: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   data: () => ({
     camera: null,
@@ -51,19 +51,19 @@ export default {
     started: false,
     videoWidth: 0,
     videoHeight: 0,
-    articles: []
+    articles: new Set([]),
   }),
   mounted() {
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.$refs.arCanvas,
       antialias: true,
-      alpha: true
+      alpha: true,
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   },
   watch: {
-    tapCoordinate: function(newCoord, oldCoord) {
+    tapCoordinate: function (newCoord, oldCoord) {
       //Normalize the coordinate to (-1, 1)
       let { x, y } = newCoord;
       x = (x / window.innerWidth) * 2 - 1;
@@ -79,7 +79,7 @@ export default {
         //Open the cloest article
         this.openUrl(intersects[0].object.userData.link);
       }
-    }
+    },
   },
   methods: {
     onCameraReady(videoWidth, videoHeight) {
@@ -93,7 +93,7 @@ export default {
       // Open url in router view of upper components
       this.$emit("open", url);
     },
-    initAR: function() {
+    initAR: function () {
       this.started = true;
 
       //===============Camera and Control================
@@ -158,7 +158,7 @@ export default {
       );
       var groundMaterial = new THREE.MeshBasicMaterial({
         color: 0xaaaaaa, // The color of mesh.
-        wireframe: true // Use wireframe for debugging.
+        wireframe: true, // Use wireframe for debugging.
       });
       this.vground = new THREE.Mesh(groundGeometry, groundMaterial);
       this.vground.position.set(0, 0, 0);
@@ -190,7 +190,7 @@ export default {
       this.animate();
     },
 
-    animate: function() {
+    animate: function () {
       window.requestAnimationFrame(this.animate.bind(this));
       this.controls.update();
 
@@ -209,14 +209,14 @@ export default {
     },
 
     // The promise wrapper of three.js texture loader
-    loadTexture: function(url) {
-      return new Promise(resolve => {
+    loadTexture: function (url) {
+      return new Promise((resolve) => {
         new THREE.TextureLoader().load(url, resolve);
       });
     },
     // Fetch articles near by the user.
     // Including id, thumbnail, lontitude and latitude.
-    loadArticles: function() {
+    loadArticles: function () {
       // Get current position
       let { longitude, latitude } = this.controls.getCurrentPosition();
 
@@ -225,39 +225,41 @@ export default {
         .get(server.apiUrl("/articles/geolocation"), {
           params: {
             lon: longitude,
-            lat: latitude
-          }
+            lat: latitude,
+          },
         })
-        .then(res => {
+        .then((res) => {
           console.log(res);
           res = res.data;
           if (res.ok !== "true") {
             console.log("[AR] Get article list failed.");
           } else {
             // Iterate the articles
-            res.result.forEach(async article => {
-              // [TODO] Do not append same article
+            res.result.forEach(async (article) => {
+              // If there existed same article, do not append.
+              if (this.articles.has(article.id)) return;
 
               // Fetch the texture from external website.
               const texture = await this.loadTexture(article.thumbnail);
               let articleMaterial = new THREE.MeshBasicMaterial({
-                map: texture
+                map: texture,
               });
 
               // Convert the geolocation to AR coordinate.
               let { lon, lat } = article;
               let { x, y } = convertGeolocation({
                 longitude: lon,
-                latitude: lat
+                latitude: lat,
               });
 
               // Append article
               this.addArticle(x, y, articleMaterial, article.id);
+              this.articles.add(article.id);
             });
           }
         });
     },
-    addArticle: function(x, y, material, id) {
+    addArticle: function (x, y, material, id) {
       console.log(`Added new article (${x},${y})`);
       console.log(
         `Camera coordinate (${this.camera.position.x},${this.camera.position.y})`
@@ -280,11 +282,11 @@ export default {
 
       //Set the custom data
       newArticle.userData = {
-        link: `/main/article/${id}`
+        link: `/main/article/${id}`,
       };
 
       //Let the article facing to camera
-      let faceOnCamera = function() {
+      let faceOnCamera = function () {
         newArticle.rotation.y = Math.atan2(
           newArticle.position.y - this.camera.position.y,
           newArticle.position.x - this.camera.position.x
@@ -293,13 +295,12 @@ export default {
       }.bind(this);
       faceOnCamera();
 
-      this.articles.push(newArticle);
       this.scene.add(newArticle);
-    }
+    },
   },
   components: {
-    camera: Camera
-  }
+    camera: Camera,
+  },
 };
 </script>
 
