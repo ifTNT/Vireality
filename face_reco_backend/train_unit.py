@@ -13,6 +13,9 @@ from common.protocol.msg import *
 from common.protocol.constant import *
 import codecs, json 
 import random
+from pymongo import MongoClient
+import pickle
+from bson.binary import Binary
 
 ## for Model definition/training
 from keras.models import Model, load_model
@@ -195,15 +198,15 @@ def create_base_network(image_input_shape, embedding_size):
     x = Dense(512, activation='sigmoid')(x)
     x = Dropout(0.1)(x)
     x = Dense(embedding_size)(x)
-    #x = Lambda(lambda x :nn.l2_normalize(x, axis=1, epsilon=1e-10))(x)
+    x = Lambda(lambda x :nn.l2_normalize(x, axis=1, epsilon=1e-10))(x)
 
     base_network = Model(inputs=input_image, outputs=x)
-    # plot_model(base_network, to_file='base_network.png', show_shapes=True, show_layer_names=True)
+
     return base_network
 
 # if __name__ == "__main__":
-def train_main(x_train, y_train, file_path):
-    # in case th"is scriot is called from another file, let's make sure it doesn't start training the network...
+def train_main(x_train, y_train):
+    # in case this scriot is called from another file, let's make sure it doesn't start training the network...
     x_train = np.reshape(x_train,(len(x_train)//1792, 1, 1792))
     x_train = np.array(x_train,dtype='float32')
     user_id = copy.deepcopy(y_train)
@@ -255,21 +258,14 @@ def train_main(x_train, y_train, file_path):
 
     model.summary()
     # train session
-    opt = Adam(lr=0.0001)  # choose optimiser. RMS is good too!
+    opt = Adam(lr=0.001)  # choose optimiser. RMS is good too!
 
     model.compile(loss=triplet_loss_adapted_from_tf, optimizer=opt)
-
-    # filepath = "./models/Triplet_losss_ep{epoch:02d}_BS%d.hdf5" % batch_size
-    # checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=True, period=25)
-    # callbacks_list = [checkpoint]
 
     # Uses 'dummy' embeddings + dummy gt labels. Will be removed as soon as loaded, to free memory
     dummy_gt_train = np.zeros((len(x_train), embedding_size + 1))
     dummy_gt_val = np.zeros((len(x_val), embedding_size + 1))
     
-    #x_train = np.reshape(x_train,(x_train.shape[0], 1, x_train.shape[2]))
-    #x_val = np.reshape(x_val,(x_val.shape[0], 1, x_val.shape[2]))
-
     H = model.fit(
         x=[x_train,y_test],
         y=dummy_gt_train,
@@ -289,7 +285,7 @@ def train_main(x_train, y_train, file_path):
 
     # Group 10 samples of x_train together
     num_x = x_train_all.shape[0]//10
-    reshaped_faceId = np.reshape(x_train_all,(num_x, 10, 1792))
+    reshaped_feature = np.reshape(x_train_all,(num_x, 10, 1792))
 
     # Label: the index of y_train
     user_label = range(len(y_train))
@@ -299,22 +295,10 @@ def train_main(x_train, y_train, file_path):
     reshaped_embs = np.reshape(x_embeddings,(num_x, 10, 64))
 
     # Write the database to file
-    grouped_db = zip(y_train, reshaped_faceId, user_label, reshaped_embs)
+    grouped_db = zip(user_id, reshaped_feature, user_label, reshaped_embs)
 
-    formatted_db = []
-    for i, x, label, embedding in grouped_db:
-        formatted_db.append({
-            'user_id': user_id[i],
-            'faceId': x,
-            'label': label,
-            'embedding': embedding
-        })
-
-    db_file = codecs.open(file_path, 'w', encoding='utf-8')
-    json.dump(formatted_db, db_file, separators=(',', ':'),cls=NumPyEncoder)
-    
     print("done train")
-    return (model, reshaped_embs)
+    return (model, grouped_db)
 
 class NumPyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -347,12 +331,75 @@ def readUseridTable(face_id, label, file_path):
     
     return (x_faceId, y_label)
 
+def fetchTrainingFaceFromMongo(db):
+    # Select the collection from db
+    face_id_collection = db['face_id']
+
+    # The value that stored the faceID and the label
+    x_faceId = []
+    y_label = []
+
+    # Enumerate all of the faces
+    for faces in face_id_collection.find():
+        y_label = np.append(y_label,faces['user_id'])
+        x_faceId = np.append(x_faceId,faces['feature'])
+
+    # Convert to numpy array
+    x_faceId = np.array(x_faceId)
+    y_label = np.array(y_label)
+
+    return (x_faceId, y_label)
+
+def saveWeightToMongoDB(db, weight):
+    # Select the collection from db
+    weight_collection = db['weight']
+
+    # Serialized weight
+    bin_weight = Binary(pickle.dumps(weight))
+
+    # Remove the old weights and insert new weights
+    weight_collection.drop()
+    weight_collection.insert({'model': bin_weight})
+
+def saveFaceIdDatabaseToMongoDB(db, new_database):
+    # Select the collection from db
+    face_id_collection = db['face_id']
+
+    # Remove the old datas.
+    # Due to all of the data will be modified when training new model. 
+    face_id_collection.drop()
+
+    new_documents = []
+    for user_id, x, label, embedding in new_database:
+        new_documents.append({
+            'user_id': user_id,
+            'feature': x.tolist(),
+            'label': label,
+            'embedding': embedding.tolist()
+        })
+
+    # Save to MongoDB
+    face_id_collection.insert_many(new_documents)
+
+def saveAnnToMongoDB(db):
+    pass
+
 def main():
   LOG_FORMAT = '%(asctime)s [train-unit]: [%(levelname)s] %(message)s'
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
   logging.info('I am a train-unit')
   
+  # Connection to MongoDB
+  db_uri = "mongodb://localhost" 
+  try: 
+    db_client = MongoClient(db_uri)
+    db_database = db_client['vireality_face_recog_backend']
+    logging.info("Connected to database")
+    logging.debug(db_client.server_info())
+  except:
+    logging.critical("Connect to database failed. Check if mongoDB alive.")
+
   context = zmq.Context()
   # Socket to recieve work
   work_recv = context.socket(zmq.PULL)
@@ -367,14 +414,16 @@ def main():
     work = zmq_serdes.recv_zipped_pickle(work_recv)
     
     logging.info('Received a work from recog-sched (label={})'.format(work.label))
-    
-    # [TODO] Read faceID DB from MongoDB.
 
+    # Read faceID DB from MongoDB.
+    x_faceId, y_label = fetchTrainingFaceFromMongo(db_database)
+    x_faceId = np.append(x_faceId, work.face_id)
+    y_label = np.append(y_label, work.label)
     # Training new model with incoming faces.
     # Write the user-id, raw feature and embeddings to face_db_file
-    face_db_path = './models/faceDB.json'
-    x_faceId, y_label = readUseridTable(work.face_id, work.label, face_db_path)
-    outPutModel, embs = train_main(x_faceId, y_label, face_db_path)
+    #face_db_path = './models/faceDB.json'
+    #x_faceId, y_label = readUseridTable(work.face_id, work.label, face_db_path)
+    outPutModel, new_database = train_main(x_faceId, y_label)
 
     # Extract the weights and biases form new-trained model.
     # Only extract the weight of fully connected layer.
@@ -388,10 +437,13 @@ def main():
     # And save to file.
 
     # [TODO] Save weights, faceID DB, ANN to MongoDB.
+    saveWeightToMongoDB(db_database, outPutWeight)
+    saveFaceIdDatabaseToMongoDB(db_database, new_database)
+    saveAnnToMongoDB(db_database)
 
     # Issue deploy message to recog-units
     deploy_msg = DeployModelMsg(int(datetime.now().timestamp()*1000))
-    zmq_serdes.send_zipped_pickle(result_sender, deploy_msg)
+    #zmq_serdes.send_zipped_pickle(result_sender, deploy_msg)
 
 if __name__ == "__main__":
     main()
