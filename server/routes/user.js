@@ -277,24 +277,38 @@ router.post("/createAccount",async function(req, res, next) {
         console.log(imgurURL)
         const imgurURLToJSON2 = JSON.parse(imgurURL).data.link
         insertObj['avator'] = imgurURLToJSON2
+        const userData = [insertObj]
         console.log(userData)
+        User.insertMany(userData, (err, users) => {
+          if (err) {
+            return console.error(err);
+          }
+          else{
+            //[TODO]:session問題
+            req.session.user_id = req.body.uid
+            res.json({
+              ok: "true",
+            });
+          }
+        });
       })
   }
-  const userData = [insertObj]
-  console.log(userData)
-  User.insertMany(userData, (err, users) => {
-    if (err) {
-      return console.error(err);
-    }
-    else{
-      //[TODO]:session問題
-      req.session.user_id = req.body.uid
-      res.json({
-        ok: "true",
-      });
-    }
-  });
-
+  else{
+    const userData = [insertObj]
+    console.log(userData)
+    User.insertMany(userData, (err, users) => {
+      if (err) {
+        return console.error(err);
+      }
+      else{
+        //[TODO]:session問題
+        req.session.user_id = req.body.uid
+        res.json({
+          ok: "true",
+        });
+      }
+    });
+  }
 
 
   
