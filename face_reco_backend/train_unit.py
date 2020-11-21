@@ -298,7 +298,7 @@ def train_main(x_train, y_train):
     grouped_db = zip(user_id, reshaped_feature, user_label, reshaped_embs)
 
     print("done train")
-    return (model, grouped_db)
+    return (testing_embeddings, grouped_db)
 
 class NumPyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -401,10 +401,10 @@ def main():
     logging.critical("Connect to database failed. Check if mongoDB alive.")
 
   context = zmq.Context()
-  # Socket to recieve work
+  # Socket to receive work
   work_recv = context.socket(zmq.PULL)
   work_recv.connect(get_zmq_uri(RECOG_SCHED_IP(), TRAIN_ISSUE_PORT()))
-  # Socket to send result
+  # Socket to publish training notification
   result_sender = context.socket(zmq.PUSH)
   result_sender.bind(get_zmq_uri(TRAIN_IP(), TRAIN_PUBLISH_PORT()))
 
@@ -428,10 +428,9 @@ def main():
     # Extract the weights and biases form new-trained model.
     # Only extract the weight of fully connected layer.
     outPutWeight = []
-    # for i in outPutModel.layers:
-    #     outPutWeight.append(i.get_weights())
-    #     print(len(i.get_weights()))
-    outPutWeight.append(outPutModel.layers[2].get_weights())
+    for i in outPutModel.layers:
+        outPutWeight.append(i.get_weights())
+    #outPutWeight.append(outPutModel.layers[2].get_weights())
 
     # Calculate Approximate Nearest Neighbors.
     # And save to file.
@@ -443,7 +442,8 @@ def main():
 
     # Issue deploy message to recog-units
     deploy_msg = DeployModelMsg(int(datetime.now().timestamp()*1000))
-    #zmq_serdes.send_zipped_pickle(result_sender, deploy_msg)
+    zmq_serdes.send_zipped_pickle(result_sender, deploy_msg)
+    logging.info("Published model deploing message with serial={}.".format(deploy_msg.serial))
 
 if __name__ == "__main__":
     main()
