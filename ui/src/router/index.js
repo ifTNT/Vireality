@@ -18,7 +18,7 @@ import PostLocation from "@/components/post_article_location";
 import TestAbsSpeed from "@/components/test_absolute_speed_sensor";
 import TestTimeLine from "@/components/test_timeline";
 import TestFriendListAround from "@/components/test_friend_list_around";
-import Registration from "@/components/Registration";
+import Registration from "@/components/registration";
 import Login from "@/components/login";
 
 Vue.use(Router);
