@@ -10,6 +10,7 @@
     <div id="overlay">
       <font-awesome-icon
         icon="play-circle"
+        class="play-btn"
         size="5x"
         inverse
         ref="start"
@@ -334,6 +335,27 @@ export default {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+}
+
+.play-btn {
+  color: #45818e;
+  background: #b4a7d6;
+  border-radius: 50%;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 100%;
+  }
+
+  50% {
+    opacity: 50%;
+  }
+
+  100% {
+    opacity: 100%;
+  }
 }
 
 /* Make video to at least 100% wide and tall */
