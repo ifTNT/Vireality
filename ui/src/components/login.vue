@@ -53,6 +53,7 @@ export default {
 
        register(){
            console.log("註冊")
+           document.location.href = "/#/registration"
        },
        login(){
            console.log("登入")
@@ -68,6 +69,7 @@ export default {
                  function(response) {
                      console.log(response.data);
                      if(response.data.ok==='true'){
+                        this.errMassage = ""
                         document.location.href = "/#/main"
                      }
                      else{

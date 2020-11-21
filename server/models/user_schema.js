@@ -10,17 +10,12 @@ var UserSchema = new Schema({
         type: String,
         required: true,
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
     nickname: {
         type: String,
+        default: '匿名人士',
     },
     birthday: {
         type: String,
-        default: '1910/01/01',
     },
     interest: {
         type: String,
@@ -33,7 +28,7 @@ var UserSchema = new Schema({
     face_id: [Number],
     avator: {
         type: String,
-        default: 'https://i.imgur.com/07XbOpL.png',
+        default:"https://i.imgur.com/oPYT6RD.png"
     },
     friend_list: [String], //放user_id
     join_time: {
@@ -43,13 +38,16 @@ var UserSchema = new Schema({
     location: {
         longitude: {
             type: Number,
+            default: 0,
         },
         latitude: {
             type: Number,
+            default: 0,
         },
     },
     geohash:{
-        type:String
+        type:String,
+        default: 's00000000',
     }
 });
 module.exports = mongoose.model("User", UserSchema);
