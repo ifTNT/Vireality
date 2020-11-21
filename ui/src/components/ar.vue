@@ -22,6 +22,10 @@
         <font-awesome-icon icon="plus" size="lg" transform="down-5" inverse />
       </font-awesome-layers>-->
     </div>
+    <div class="loading-wrapper" v-if="lossLocation">
+      <loading :scale="0.3" :stickToBottom="true"></loading>
+      <div class="text">Searching GPS...</div>
+    </div>
   </div>
 </template>
 <script>
@@ -30,6 +34,7 @@ import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import convertGeolocation from "../lib/geolocation_converter.js";
 import Camera from "@/components/camera";
+import Loading from "./loading.vue";
 import axios from "axios";
 import screenfull from "screenfull";
 
@@ -54,6 +59,7 @@ export default {
     videoWidth: 0,
     videoHeight: 0,
     articles: new Set([]),
+    lossLocation: false,
   }),
   mounted() {
     this.renderer = new THREE.WebGLRenderer({
@@ -224,7 +230,14 @@ export default {
     // Including id, thumbnail, lontitude and latitude.
     loadArticles: function () {
       // Get current position
-      let { longitude, latitude } = this.controls.getCurrentPosition();
+      let {
+        longitude,
+        latitude,
+        accuracy,
+      } = this.controls.getCurrentPosition();
+
+      // If accuracy is too low, display lost GPS signal.
+      this.lossLocation = accuracy > 15;
 
       // Refresh the article thumbnail
       axios
@@ -306,6 +319,7 @@ export default {
   },
   components: {
     camera: Camera,
+    loading: Loading,
   },
 };
 </script>
@@ -342,6 +356,23 @@ export default {
   background: #b4a7d6;
   border-radius: 50%;
   animation: blink 1s ease-in-out infinite;
+}
+
+.loading-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  color: white;
+  align-items: flex-end;
+}
+
+.loading-wrapper .text {
+  height: 75px;
+  margin-left: -0.5em;
+  display: flex;
+  align-items: center;
+  font-family: 'Audiowide', cursive;
 }
 
 @keyframes blink {
