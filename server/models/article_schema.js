@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-/* [TODO]: 加GeoHash */
 var ArticleSchema = new Schema({
     article_id: {
         type: String,

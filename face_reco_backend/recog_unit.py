@@ -130,7 +130,7 @@ def face_recog_proc(sock, db, model, ann_map, ann):
     embedding = model.predict(np.array([work.face_id]))[0]
     logging.debug("Embedding calculated")
 
-    # [TODO] ANN and send result to front-end-server
+    # Perform ANN and send result to front-end-server
     # Perform ANN search. Get top 10 nearest neighbor.
     # If the following two condition is satisfied, return the user_id.
     # Otherwise, returns user not found.

@@ -1,20 +1,22 @@
 {
   "name": "Vireality",
   "short_name": "Vireality",
+  "description": "下世代的社群軟體",
   "icons": [
     {
-      "src": "",
+      "src": "/static/media/icons/android-chrome-192x192.webp",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/static/img/icons/android-chrome-512x512.png",
+      "src": "/static/media/icons/android-chrome-512x512.webp",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
   "start_url": "/index.html",
-  "display": "standalone",
-  "background_color": "#FAFAFA",
-  "theme_color": "#4DBA87"
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#d0e0e3",
+  "theme_color": "#76a5af"
 }

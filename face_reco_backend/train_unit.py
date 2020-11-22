@@ -435,7 +435,7 @@ def main():
     # Calculate Approximate Nearest Neighbors.
     # And save to file.
 
-    # [TODO] Save weights, faceID DB, ANN to MongoDB.
+    # Save weights, faceID DB, ANN to MongoDB.
     saveWeightToMongoDB(db_database, outPutWeight)
     saveFaceIdDatabaseToMongoDB(db_database, new_database)
     saveAnnToMongoDB(db_database)

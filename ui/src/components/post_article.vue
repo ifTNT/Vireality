@@ -94,6 +94,7 @@
 import Mapbox from "./mapbox.vue";
 import Switches from "vue-switches";
 import axios from "axios";
+import screenfull from "screenfull";
 
 export default {
   data() {
@@ -148,6 +149,11 @@ export default {
       // console.log(event.target.result)
       this.img = event.target.result;
       this.hasUploadPic = true;
+
+      // Enter full screen again
+      if (screenfull.isEnabled) {
+        screenfull.request();
+      }
     },
 
     handleBack(fallback) {
