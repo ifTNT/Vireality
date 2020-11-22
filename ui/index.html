@@ -15,24 +15,21 @@
       href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
       rel="stylesheet"
     />
-    <!-- google map -->
-    <!-- <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0hHqhvpq3LwQh2NgIo82-Cy_3YnHTDlY">
-    </script> -->
-
-    <!-- map box -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/v1.10.1/mapbox-gl.js"></script>
-    <link
-      href="https://api.mapbox.com/mapbox-gl-js/v1.10.1/mapbox-gl.css"
-      rel="stylesheet"
-    />
-    <!--  -->
 
     <title>Vireality</title>
 
     <style>
       /* The style of loader */
       .loader {
+        /* The background color should remain same with those of
+           PWA default splash-screen */
+        background: #76a5af;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+
+      .loader .center {
         width: 100px;
         height: 300px;
         margin: 100px auto;
@@ -40,6 +37,8 @@
         flex-direction: column;
         align-items: center;
         font-family: "Audiowide", cursive;
+        transition: opacity 1s;
+        opacity: 0;
       }
 
       .loader .cube {
@@ -136,16 +135,18 @@
     <div id="app">
       <!-- The content within this area will be replaced while Vue.js loaded -->
       <div class="loader">
-        <div class="cube">
-          <div class="top"></div>
-          <div class="right"></div>
-          <div class="bottom"></div>
-          <div class="left"></div>
-          <div class="front"></div>
-          <div class="back">Vireality</div>
+        <div class="center">
+          <div class="cube">
+            <div class="top"></div>
+            <div class="right"></div>
+            <div class="bottom"></div>
+            <div class="left"></div>
+            <div class="front"></div>
+            <div class="back">Vireality</div>
+          </div>
+          <div class="shadow"></div>
+          <div class="loading-text">LOADING...</div>
         </div>
-        <div class="shadow"></div>
-        <div class="loading-text">LOADING...</div>
       </div>
     </div>
     <script>
@@ -157,6 +158,19 @@
           navigator.serviceWorker.register("./service-worker.js");
         });
       }
+
+      // Transition from default splash-screen to animated one.
+      // DOMContentLoaded will be called while the domtree is loaded.
+      // At the same time, the default splash-screen will gone.
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("loaded");
+        console.log(screen.availWidth, screen.availHeight);
+        height = screen.availHeight;
+        width = screen.availWidth;
+        document.querySelector(".loader").style.width = width + "px";
+        document.querySelector(".loader").style.height = height + "px";
+        document.querySelector(".loader .center").style.opacity = 1;
+      });
     </script>
   </body>
 </html>

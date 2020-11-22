@@ -7,6 +7,7 @@ const path = require("path");
 const baseWebpackConfig = require("./webpack.base.conf");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 const { GenerateSW } = require("workbox-webpack-plugin");
 const FriendlyErrorsPlugin = require("friendly-errors-webpack-plugin");
 const portfinder = require("portfinder");
@@ -57,8 +58,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       poll: config.dev.poll
     },
     https: config.dev.httpsServer,
-    key: fs.readFileSync('../certification_for_test/key.pem'),
-    cert: fs.readFileSync('../certification_for_test/cert.pem'),
+    key: fs.readFileSync("../certification_for_test/key.pem"),
+    cert: fs.readFileSync("../certification_for_test/cert.pem"),
     disableHostCheck: true, //For ngrok
 
     //CORS support
@@ -83,6 +84,10 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       template: "index.html",
       favicon: "favicon.ico",
       inject: true
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      module: ["app"],
+      defaultAttribute: "defer"
     }),
     // copy custom static assets
     new CopyWebpackPlugin([

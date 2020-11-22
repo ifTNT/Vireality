@@ -17,12 +17,14 @@
 
 
 <script>
-import Toolbar from "./toolbar.vue";
-import AR from "./ar.vue";
-import Gesture from "./main_gesture.vue";
-import FriendList from "./friend_list_around.vue";
-import TimeLine from "./timeline.vue";
 import * as Hammer from "hammerjs";
+
+// Lazy loading components
+const Toolbar = () => import("./toolbar.vue");
+const AR = () => import("./ar.vue");
+const Gesture = () => import("./main_gesture.vue");
+const FriendList = () => import("./friend_list_around.vue");
+const TimeLine = () => import("./timeline.vue");
 
 const oneDay = 86400000; //Timestamp coresponding to one day.
 // var Content = "none";

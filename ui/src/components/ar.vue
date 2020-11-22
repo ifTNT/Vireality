@@ -33,10 +33,12 @@
 import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import convertGeolocation from "../lib/geolocation_converter.js";
-import Camera from "@/components/camera";
-import Loading from "./loading.vue";
 import axios from "axios";
 import screenfull from "screenfull";
+
+// Lazy-loading components
+const Camera = () => import("./camera.vue");
+const Loading = () => import("./loading.vue");
 
 export default {
   name: "AR_view",
