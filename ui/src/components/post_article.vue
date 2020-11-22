@@ -4,22 +4,31 @@
   <div class="post">
     <header>
       <nav class="backAndNextButton">
-        <img src="static/media/back.svg" @click.prevent="handleBack(fromRoute)" />
+        <img
+          src="static/media/back.svg"
+          @click.prevent="handleBack(fromRoute)"
+        />
         <div
           class="nextButton"
           v-if="choosePicAndContent && this.img != null"
           @click="nextSetPage"
-        >{{nextButtonName}}</div>
+        >
+          {{ nextButtonName }}
+        </div>
         <div
           class="postButton"
           @click="post"
-          v-if="(chooseLocation||placeOrPersonal)&&geolocationReady"
-        >{{postButtonName}}</div>
+          v-if="(chooseLocation || placeOrPersonal) && geolocationReady"
+        >
+          {{ postButtonName }}
+        </div>
         <div
           class="nextButton"
           @click="nextSetLocationPage"
           v-if="choseTypeAndPrivacy && !placeOrPersonal"
-        >{{nextButtonName}}</div>
+        >
+          {{ nextButtonName }}
+        </div>
       </nav>
       <nav></nav>
     </header>
@@ -27,20 +36,24 @@
     <div class="postArticleBody" v-if="choosePicAndContent">
       <div class="picture">
         <label class="uploadPicButton">
-          {{upLoadPicName}}
+          {{ upLoadPicName }}
           <!-- 選擇檔案按鈕 但因為需要美化 因此直接display none -->
           <input
             type="file"
             accept="image/jpg, image/jpeg, image/png, image/gif"
             @change="changeImage"
             multiple
-            style="display:none"
+            style="display: none"
           />
         </label>
         <img class="pic" v-if="hasUploadPic" :src="img" />
       </div>
       <div class="textArea">
-        <textarea placeholder="輸入文章內容" class="inputContent" v-model="content"></textarea>
+        <textarea
+          placeholder="輸入文章內容"
+          class="inputContent"
+          v-model="content"
+        ></textarea>
       </div>
     </div>
 
@@ -48,7 +61,11 @@
       <h2>誰可以看到您的文章</h2>
       <div class="privacy">
         <span>好友</span>
-        <switches v-model="allOrFriend" theme="bootstrap" color="info"></switches>
+        <switches
+          v-model="allOrFriend"
+          theme="bootstrap"
+          color="info"
+        ></switches>
         <span>所有人</span>
       </div>
 
@@ -68,7 +85,7 @@
       v-if="chooseLocation"
     ></mapbox>
     <!-- <div class="map" id="googleMap" v-if="chooseLocation" ></div> -->
-    <div class="remind" v-if="chooseLocation">{{remindContent}}</div>
+    <div class="remind" v-if="chooseLocation">{{ remindContent }}</div>
   </div>
 </template>
 
@@ -98,23 +115,23 @@ export default {
       // map: null,
       longitude: 0,
       latitude: 0,
-      file: ""
+      file: "",
     };
   },
 
   beforeRouteEnter(to, from, next) {
-    next(vm => {
+    next((vm) => {
       vm.fromRoute = from; //放上一頁參數
     });
   },
   components: {
     // 新增大頭照的components tag命名為proPic
     mapbox: Mapbox,
-    Switches
+    Switches,
   },
   mounted() {},
   methods: {
-    childByValue: function(lng, lat) {
+    childByValue: function (lng, lat) {
       // childValue就是子组件传过来的值
       this.latitude = lat;
       this.longitude = lng;
@@ -154,26 +171,11 @@ export default {
     post() {
       console.log("!!!!POST!!!!");
       /* IMGUR */
-      /* [TODO]:藏token */
 
       let formData = new FormData();
       console.log(this.file);
       formData.append("image", this.file); //required
       console.log(formData.get("image"));
-      // axios({
-      //   method: 'POST',
-      //   url: 'https://api.imgur.com/3/image',
-      //   data: formData,
-      //   headers: {
-      //   Authorization: 'Bearer ' + imgur.token //放置你剛剛申請的Client-ID
-      //   },
-      //   mimeType: 'multipart/form-data'
-      //   }).then(res => {
-      //     console.log("上傳了XD",res.data.data.link)
-      //     this.UploadDB(res.data.data.link)
-      //   }).catch(e => {
-      //     console.log(e)
-      // })
       axios
         .post(server.apiUrl("/article/"), {
           text: this.content,
@@ -182,19 +184,19 @@ export default {
           /* [TODO]: 上傳檔案僅能一張 FormData, 圖片集*/
           thumbnail: this.img,
           lon: this.longitude,
-          lat: this.latitude
+          lat: this.latitude,
         })
         .then(
-          function(response) {
+          function (response) {
             console.log(response);
           }.bind(this)
         )
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         });
       document.location.href = "/#/main";
-    }
-  }
+    },
+  },
 };
 </script>
 

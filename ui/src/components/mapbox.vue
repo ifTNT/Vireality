@@ -6,18 +6,18 @@ import mapboxgl from "mapbox-gl";
 export default {
   props: {
     mapWidth: {
-      type: String
+      type: String,
     },
     mapHeight: {
-      type: String
-    }
+      type: String,
+    },
   },
   data() {
     return {
       longitude: 0,
       latitude: 0,
       marker: Object,
-      map: Object
+      map: Object,
     };
   },
   mounted() {
@@ -28,20 +28,20 @@ export default {
       var lng = 0.0;
       var lat = 0.0;
       // 找到現在的位置
-      var getPosition = function(options) {
-        return new Promise(function(resolve, reject) {
+      var getPosition = function (options) {
+        return new Promise(function (resolve, reject) {
           navigator.geolocation.getCurrentPosition(resolve, reject, options);
         });
       };
       getPosition()
-        .then(position => {
+        .then((position) => {
           console.log(position);
           console.log(position.coords.latitude, position.coords.longitude);
           lng = position.coords.longitude;
           lat = position.coords.latitude;
           this.init(lng, lat);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err.message);
         });
     },
@@ -54,10 +54,10 @@ export default {
         container: this.$refs.basicMapbox,
         style: "mapbox://styles/mapbox/streets-v11",
         center: [lng, lat], //設定地圖中心在地位點
-        zoom: 18, // 地圖比例
+        zoom: 16, // 地圖比例
         scrollZoom: false,
-        doubleClickZoom: false,
-        touchZoomRotate: false
+        doubleClickZoom: true,
+        touchZoomRotate: true,
       });
       this.map = map;
 
@@ -72,7 +72,7 @@ export default {
 
       this.marker = new mapboxgl.Marker({
         //draggable: true
-        color: "#000000"
+        color: "#000000",
       })
         .setLngLat([lng, lat])
         .addTo(map);
@@ -98,17 +98,17 @@ export default {
       this.longitude = lng;
       this.latitude = lat;
       this.$emit("childByValue", this.longitude, this.latitude);
-    }
+    },
   },
   computed: {
     mapSize() {
       let styleObj = {
         width: this.mapWidth,
-        height: this.mapHeight
+        height: this.mapHeight,
       };
       return styleObj;
-    }
-  }
+    },
+  },
 };
 </script>
 <style>
