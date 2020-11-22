@@ -198,8 +198,7 @@ export default {
       this.axesHelper.position.set(0, 0, 0);
       this.scene.add(this.axesHelper);
 
-      //Periodicly load article from server
-      setInterval(this.loadArticles, 5000);
+      this.loadArticles();
 
       this.animate();
     },
@@ -231,6 +230,9 @@ export default {
     // Fetch articles near by the user.
     // Including id, thumbnail, lontitude and latitude.
     loadArticles: function () {
+      //Periodicly load article from server
+      setTimeout(this.loadArticles, 5000);
+
       // Get current position
       let {
         longitude,
