@@ -37,13 +37,28 @@ def translate(image, x, y):
     return shifted
 
 
+cascade_path = os.path.abspath(
+    '../Facenet-Test/model/cv2/haarcascade_frontalface_alt2.xml')
+
+
 def addPaceImge(DIR):
+    cascade = cv2.CascadeClassifier(cascade_path)
     file_list = os.listdir(DIR)
     lengthOfFile = len(file_list)
     imges = []
+    image_size = 160
+    margin = 0
     if(len(file_list)) < 10:
         for i in range(10 - lengthOfFile):
             img = cv2.imread(DIR+"/"+file_list[i % lengthOfFile])
+            faces = cascade.detectMultiScale(img,
+                                         scaleFactor=1.1,
+                                         minNeighbors=3)
+            (x, y, w, h) = faces[0]
+            if(w != 0):
+                cropped = img[y-margin//2:y+h+margin//2,
+                            x-margin//2:x+w+margin//2, :]
+            img = cv2.resize(cropped, (image_size, image_size))
             if i < 2:
                 img = translate(img, 0, 10)
             elif i < 5:
@@ -51,13 +66,25 @@ def addPaceImge(DIR):
             else:
                 img = translate(img, 10, 0)
 
-            img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
+            # img = img.astype('float32')
+            # img = cv2.resize(img, (160, 160), interpolation = cv2.INTER_LINEAR)
+            # img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
             img = np.expand_dims(img, axis=0)
             imges.append(img)
             # cv2.imwrite("./"+DIR+"/add"+str(i)+'.jpg',img)
     for i in range(lengthOfFile):
             img = cv2.imread(DIR+"/"+file_list[i])
-            img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
+            faces = cascade.detectMultiScale(img,
+                                         scaleFactor=1.1,
+                                         minNeighbors=3)
+            (x, y, w, h) = faces[0]
+            if(w != 0):
+                cropped = img[y-margin//2:y+h+margin//2,
+                            x-margin//2:x+w+margin//2, :]
+            img = cv2.resize(cropped, (image_size, image_size))
+            # img = img.astype('float32')
+            # img = cv2.resize(img, (160, 160), interpolation = cv2.INTER_LINEAR)
+            # img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
             img = np.expand_dims(img, axis=0)
             imges.append(img)
     return imges
@@ -69,7 +96,7 @@ def interactive_get_image(img_file_path):
     while True:
         try:
             img = addPaceImge(img_file_path)
-            label = img_file_path.split('/')[1]
+            label = img_file_path.split('/')[2]
             break
         except:
             logging.info('Image {} does not exist'.format(img_file_path))
@@ -108,6 +135,7 @@ def main():
             # Training new face
             for path in os.listdir('test_images/lfw_face_dataset'):
                 img, label = interactive_get_image('test_images/lfw_face_dataset/'+path)
+                print(label)
                 for i in range(10):
                     new_work = PictureMsg(req_id, ReqType.NEW, img[i], label)
                     zmq_serdes.send_zipped_pickle(work_sender, new_work)
