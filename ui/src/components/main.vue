@@ -1,11 +1,15 @@
 <template>
-  <div ref="arGesture" :class="{'arGesture':true}">
+  <div ref="arGesture" :class="{ arGesture: true }">
     <toolbar></toolbar>
     <div class="lightbox">
       <div class="blackbg"></div>
       <router-view name="lightBox" />
     </div>
-    <ar class="ar" v-bind:tap-coordinate="this.tapCoordinate" v-on:open="openUrl"></ar>
+    <ar
+      class="ar"
+      v-bind:tap-coordinate="this.tapCoordinate"
+      v-on:open="openUrl"
+    ></ar>
     <friendList v-if="isShowFriendList" v-on:open="openUrl"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
   </div>
@@ -13,12 +17,14 @@
 
 
 <script>
-import Toolbar from "./toolbar.vue";
-import AR from "./ar.vue";
-import Gesture from "./main_gesture.vue";
-import FriendList from "./friend_list_around.vue";
-import TimeLine from "./timeline.vue";
 import * as Hammer from "hammerjs";
+
+// Lazy loading components
+const Toolbar = () => import("./toolbar.vue");
+const AR = () => import("./ar.vue");
+const Gesture = () => import("./main_gesture.vue");
+const FriendList = () => import("./friend_list_around.vue");
+const TimeLine = () => import("./timeline.vue");
 
 const oneDay = 86400000; //Timestamp coresponding to one day.
 // var Content = "none";
@@ -30,7 +36,7 @@ export default {
       isShowTimeLine: false,
       canDoPan: true, //防止pinch之後會偵測到pan
       timestamp: +Date.now(), //時間軸的時間 預設為現在
-      tapCoordinate: { x: NaN, y: NaN } //點擊時的座標位置
+      tapCoordinate: { x: NaN, y: NaN }, //點擊時的座標位置
       // tapped: false,
       // swipedUp: false,
       // swiped: false,
@@ -42,7 +48,7 @@ export default {
     ar: AR,
     gesture: Gesture,
     friendList: FriendList,
-    timeLine: TimeLine
+    timeLine: TimeLine,
   },
   mounted() {
     var direction;
@@ -53,7 +59,7 @@ export default {
     // var count = 0
     var tap = new Hammer.Tap({
       taps: 1,
-      pointers: 1
+      pointers: 1,
     });
     //點擊展開文章
     manager.add(tap);
@@ -63,7 +69,7 @@ export default {
     //上滑發文
     var swipe = new Hammer.Swipe({
       direction: Hammer.DIRECTION_ALL,
-      pointers: 1
+      pointers: 1,
     });
 
     manager.add(swipe);
@@ -81,7 +87,7 @@ export default {
     //左右滑動跳出時間軸
     var pan = new Hammer.Pan({
       direction: Hammer.DIRECTION_ALL,
-      pointers: 1
+      pointers: 1,
     });
     manager.add(pan);
     manager.on("panleft", this.panLeft.bind());
@@ -110,7 +116,7 @@ export default {
     //縮小手勢將文章聚合
     var pinch = new Hammer.Pinch({
       direction: Hammer.DIRECTION_ALL,
-      pointers: 2
+      pointers: 2,
     });
     manager.add(pinch);
     manager.on("pinchend", this.pinch.bind(this));
@@ -197,8 +203,8 @@ export default {
     setNotDoPan() {
       //console.log("setNotDoPan");
       this.canDoPan = false;
-    }
-  }
+    },
+  },
 };
 </script>
 

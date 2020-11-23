@@ -10,6 +10,7 @@
     <div id="overlay">
       <font-awesome-icon
         icon="play-circle"
+        class="play-btn"
         size="5x"
         inverse
         ref="start"
@@ -21,6 +22,10 @@
         <font-awesome-icon icon="plus" size="lg" transform="down-5" inverse />
       </font-awesome-layers>-->
     </div>
+    <div class="loading-wrapper" v-if="lossLocation">
+      <loading :scale="0.3" :stickToBottom="true"></loading>
+      <div class="text">Searching GPS...</div>
+    </div>
   </div>
 </template>
 <script>
@@ -28,8 +33,12 @@
 import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import convertGeolocation from "../lib/geolocation_converter.js";
-import Camera from "@/components/camera";
 import axios from "axios";
+import screenfull from "screenfull";
+
+// Lazy-loading components
+const Camera = () => import("./camera.vue");
+const Loading = () => import("./loading.vue");
 
 export default {
   name: "AR_view",
@@ -52,6 +61,7 @@ export default {
     videoWidth: 0,
     videoHeight: 0,
     articles: new Set([]),
+    lossLocation: false,
   }),
   mounted() {
     this.renderer = new THREE.WebGLRenderer({
@@ -60,14 +70,14 @@ export default {
       alpha: true,
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(screen.availWidth, screen.availHeight);
   },
   watch: {
     tapCoordinate: function (newCoord, oldCoord) {
       //Normalize the coordinate to (-1, 1)
       let { x, y } = newCoord;
-      x = (x / window.innerWidth) * 2 - 1;
-      y = -(y / window.innerHeight) * 2 + 1;
+      x = (x / screen.availWidth) * 2 - 1;
+      y = -(y / screen.availHeight) * 2 + 1;
 
       let tapCoord = new THREE.Vector2(x, y);
       let ray = new THREE.Raycaster();
@@ -96,6 +106,10 @@ export default {
     initAR: function () {
       this.started = true;
 
+      if (screenfull.isEnabled) {
+        screenfull.request();
+      }
+
       //===============Camera and Control================
       //                                                |
       // This camera is expect to have the same FoV,    |
@@ -110,7 +124,7 @@ export default {
 
       // Three.js only sets the vertical FoV.
       // How much video had been croped in height.
-      let scale = window.innerHeight / this.videoHeight;
+      let scale = screen.availHeight / this.videoHeight;
 
       // Full-frame CCD (36mm)
       let refCCDSize = 36;
@@ -130,7 +144,7 @@ export default {
       //Make a camera that have equivlent FoV of device's camera
       this.camera = new THREE.PerspectiveCamera(
         cameraFoV, //Calcualted FoV.
-        window.innerWidth / window.innerHeight, //Aspect ratio
+        screen.availWidth / screen.availHeight, //Aspect ratio
         0.5, //Near plate
         1100 //Far plate
       );
@@ -184,8 +198,7 @@ export default {
       this.axesHelper.position.set(0, 0, 0);
       this.scene.add(this.axesHelper);
 
-      //Periodicly load article from server
-      setInterval(this.loadArticles, 5000);
+      this.loadArticles();
 
       this.animate();
     },
@@ -217,8 +230,18 @@ export default {
     // Fetch articles near by the user.
     // Including id, thumbnail, lontitude and latitude.
     loadArticles: function () {
+      //Periodicly load article from server
+      setTimeout(this.loadArticles, 5000);
+
       // Get current position
-      let { longitude, latitude } = this.controls.getCurrentPosition();
+      let {
+        longitude,
+        latitude,
+        accuracy,
+      } = this.controls.getCurrentPosition();
+
+      // If accuracy is too low, display lost GPS signal.
+      this.lossLocation = accuracy > 15;
 
       // Refresh the article thumbnail
       axios
@@ -300,6 +323,7 @@ export default {
   },
   components: {
     camera: Camera,
+    loading: Loading,
   },
 };
 </script>
@@ -329,6 +353,44 @@ export default {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+}
+
+.play-btn {
+  color: #45818e;
+  background: #b4a7d6;
+  border-radius: 50%;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.loading-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  color: white;
+  align-items: flex-end;
+}
+
+.loading-wrapper .text {
+  height: 75px;
+  margin-left: -0.5em;
+  display: flex;
+  align-items: center;
+  font-family: 'Audiowide', cursive;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 100%;
+  }
+
+  50% {
+    opacity: 50%;
+  }
+
+  100% {
+    opacity: 100%;
+  }
 }
 
 /* Make video to at least 100% wide and tall */

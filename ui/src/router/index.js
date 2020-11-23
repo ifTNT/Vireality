@@ -20,6 +20,7 @@ import TestTimeLine from "@/components/test_timeline";
 import TestFriendListAround from "@/components/test_friend_list_around";
 import Registration from "@/components/registration";
 import Login from "@/components/login";
+import Loading from "@/components/loading";
 
 Vue.use(Router);
 
@@ -153,6 +154,11 @@ let router = new Router({
       path: "/test_friend_list_around",
       name: "Test Friend List Around",
       component: TestFriendListAround
+    },
+    {
+      path: "/loading",
+      name: "Loading",
+      component: Loading
     }
     //=======end test===============
   ]

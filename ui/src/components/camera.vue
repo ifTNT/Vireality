@@ -57,8 +57,8 @@ export default {
     markImgReady: false,
     cascadeReady: false,
 
-    canvasWidth: window.innerWidth,
-    canvasHeight: window.innerHeight,
+    canvasWidth: screen.availWidth,
+    canvasHeight: screen.availHeight,
 
     //Parameters for drawing video
     drawParameter: {
@@ -104,7 +104,7 @@ export default {
             `[Face Detection] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
           );
           console.log(
-            `[Face Detection] CanvasWidth: ${window.innerWidth}, CanvasHeight: ${window.innerHeight}`
+            `[Face Detection] CanvasWidth: ${screen.availWidth}, CanvasHeight: ${screen.availHeight}`
           );
           //==========Scale video to fit canvas============
 
@@ -134,7 +134,7 @@ export default {
           this.updatePico();
           window.setInterval(() => {
             this.updateId();
-          },1000);
+          }, 1000);
         },
         false
       );
@@ -290,7 +290,11 @@ export default {
         // ctx.strokeStyle = "blue";
         ctx.rect(element.position[0], element.position[1], 80, 80);
         ctx.font = "30px Arial";
-        ctx.fillText(element.faceDeviceID, element.position[0], element.position[1]);
+        ctx.fillText(
+          element.faceDeviceID,
+          element.position[0],
+          element.position[1]
+        );
         ctx.fillText(
           element.times,
           element.position[0],
@@ -298,7 +302,6 @@ export default {
         );
         ctx.stroke();
 
-        
         // confiDelete++
       });
       // return this.confiTable.length;
@@ -366,16 +369,16 @@ export default {
           let fY = Math.round(face[0]);
           let fW = Math.round(face[2]);
 
-          let faceX = Math.round(fX - fW/2) * 0.90;
-          let faceY = Math.round(fY - fW/2) * 0.90;
-          let faceW = fW * 1.20;
+          let faceX = Math.round(fX - fW / 2) * 0.9;
+          let faceY = Math.round(fY - fW / 2) * 0.9;
+          let faceW = fW * 1.2;
           // console.log(faceX);
           // console.log(faceY);
           // console.log(faceW);
 
           ctx.beginPath();
-          ctx.lineWidth = '3';
-          ctx.strokeStyle = 'blue';
+          ctx.lineWidth = "3";
+          ctx.strokeStyle = "blue";
           ctx.strokeRect(faceX, faceY, faceW, faceW);
           ctx.stroke();
 
@@ -388,7 +391,7 @@ export default {
       }
       this.confidenceTable(ctx);
     },
-    updateId: function(){
+    updateId: function () {
       let ctx = this.$refs.canvas.getContext("2d");
       // ctx.fillText("test", 100, 30);
       for (var i = 0; i < this.confiTable.length; i++){
@@ -401,19 +404,20 @@ export default {
           // Exponential back-off
           currConfi.retryCnt += 1;
           currConfi.fetchCountDown = Math.pow(2, currConfi.retryCnt);
-          
+
           this.fetchIdbyFace(
             ctx.getImageData(
               currConfi.position[0],
               currConfi.position[1],
               currConfi.position[2],
-              currConfi.position[2])
-            ,
-            currConfi.faceDeviceID);
+              currConfi.position[2]
+            ),
+            currConfi.faceDeviceID
+          );
         }
       }
     },
-    fetchIdbyFace: function(img,faceDevID){
+    fetchIdbyFace: function (img, faceDevID) {
       // this.confiTable.userID
     },
   },

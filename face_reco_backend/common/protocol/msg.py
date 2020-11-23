@@ -4,10 +4,11 @@ import numpy as np
 
 # The enumerate of response states
 class ResState(Enum):
-  OK = 'ok'           # Success without error
-  REJECT = 'reject'   # The invaild request has been rejected
-  PENDING = 'pending' # The request is pending
-  ERROR = 'error'     # Have trouble
+  OK = 'ok'            # Success without error
+  REJECT = 'reject'    # The invaild request has been rejected
+  PENDING = 'pending'  # The request is pending
+  ERROR = 'error'      # Have trouble
+  NOTFOUND = 'notfound'# There's no user match that face
 
 # The enumerate of request type
 class ReqType(Enum):

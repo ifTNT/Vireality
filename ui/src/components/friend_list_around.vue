@@ -43,7 +43,7 @@ export default {
     // this.show();
 
     // Set the width of friend list to the width of window.
-    this.widthDisplay = window.innerWidth;
+    this.widthDisplay = screen.availWidth;
   },
   methods: {
     openProfile(id) {

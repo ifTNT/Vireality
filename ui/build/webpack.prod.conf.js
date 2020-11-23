@@ -7,10 +7,13 @@ const merge = require("webpack-merge");
 const baseWebpackConfig = require("./webpack.base.conf");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 const { GenerateSW } = require("workbox-webpack-plugin");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const OptimizeCSSPlugin = require("optimize-css-assets-webpack-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+  .BundleAnalyzerPlugin;
 
 const env = require("../config/prod.env");
 
@@ -65,6 +68,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     new HtmlWebpackPlugin({
       filename: config.build.index,
       template: "index.html",
+      favicon: "favicon.ico",
       inject: true,
       minify: {
         removeComments: true,
@@ -76,6 +80,10 @@ const webpackConfig = merge(baseWebpackConfig, {
       // necessary to consistently work with multiple chunks via CommonsChunkPlugin
       chunksSortMode: "dependency"
     }),
+    new ScriptExtHtmlWebpackPlugin({
+      module: ["app"],
+      defaultAttribute: "defer"
+    }),
     new GenerateSW(),
     // keep module.id stable when vendor modules does not change
     new webpack.HashedModuleIdsPlugin(),
@@ -84,6 +92,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // split vendor js into its own file
     new webpack.optimize.CommonsChunkPlugin({
       name: "vendor",
+      chunk: ["app"],
       minChunks(module) {
         // any required modules inside node_modules are extracted to vendor
         return (
@@ -116,7 +125,11 @@ const webpackConfig = merge(baseWebpackConfig, {
         to: config.build.assetsSubDirectory,
         ignore: [".*", "workbox_debug.js"]
       }
-    ])
+    ]),
+
+    // The analyzer of bundle.
+    // In order to check which source takes too much spaces.
+    new BundleAnalyzerPlugin()
   ]
 });
 
