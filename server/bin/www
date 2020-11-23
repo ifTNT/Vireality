@@ -118,7 +118,7 @@ function onListening() {
  */
 function handleRecogReq(client) {
   return (data) => {
-    console.log(`Received recognition request from ${client.id}`);
-    console.log(JSON.stringify(data));
+    let req_id = client.id + ";" + data.faceDeviceID;
+    console.log(`Received recognition request. req_id=${req_id}`);
   };
 }

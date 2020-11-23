@@ -77,6 +77,8 @@ export default {
 
     // The websocket connection of backend.
     recogBackendWS: {},
+    // The pending queue of backend.
+    recogPending: new Set([]),
   }),
   mounted() {
     this.initCamera();
@@ -107,10 +109,10 @@ export default {
           let width = this.$refs.capture.videoWidth;
           let height = this.$refs.capture.videoHeight;
           this.cameraReady = true;
-          console.log(
+          console.re.log(
             `[Face Detection] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
           );
-          console.log(
+          console.re.log(
             `[Face Detection] CanvasWidth: ${this.canvasWidth}, CanvasHeight: ${this.canvasHeight}`
           );
           //==========Scale video to fit canvas============
@@ -130,7 +132,7 @@ export default {
             width: width * scale,
             height: height * scale,
           };
-          console.log(
+          console.re.log(
             `[Face Detection] Scaled Video Width: ${width * scale} Height: ${
               height * scale
             }`
@@ -153,7 +155,7 @@ export default {
       );
 
       if (navigator.mediaDevices.getUserMedia) {
-        console.log(`[Face Detection] Facing Mode:${this.facingMode}`);
+        console.re.log(`[Face Detection] Facing Mode:${this.facingMode}`);
         navigator.mediaDevices
           .getUserMedia({
             video: {
@@ -164,11 +166,11 @@ export default {
             },
           })
           .then((stream) => {
-            console.log("Setting stream");
+            console.re.log("[Face Detection] Setting stream");
             this.$refs.capture.srcObject = stream;
           })
           .catch((error) => {
-            console.log(`[Face Detection] Get webcam error`, error);
+            console.re.log(`[Face Detection] Get webcam error`, error);
           });
       }
     },
@@ -180,12 +182,12 @@ export default {
           let bytes = new Int8Array(buffer);
           this.facefinderClassifyRegion = pico.unpack_cascade(bytes);
           this.cascadeReady = true;
-          console.log("[Face Detection] facefinder loaded");
+          console.re.log("[Face Detection] facefinder loaded");
         });
     },
     initMarkImage: function () {
       this.markImg.addEventListener("load", () => {
-        console.log("[Face Detection] marker loaded");
+        console.re.log("[Face Detection] marker loaded");
         this.markImgReady = true;
       });
       this.markImg.src = "/static/media/placeholder.png";
@@ -197,16 +199,16 @@ export default {
 
       // The common event handler of websockets
       ws.on("connect", () => {
-        console.log("[Recog-backend WS] Connection opened");
+        console.re.log("[Recog-backend WS] Connection opened");
       });
 
       ws.on("disconnect", () => {
-        console.log("[Recog-backend WS] Connection closed");
+        console.re.log("[Recog-backend WS] Connection closed");
       });
 
       // The event which will be triggred while receive data from server
       ws.on("res", (data) => {
-        console.log("[Recog-backend WS] Message res received.", data);
+        console.re.log("[Recog-backend WS] Message res received.", data);
         this.onRecogBackendWSRes(data);
       });
 
@@ -228,7 +230,7 @@ export default {
 
       for (let face of this.dets) {
         if (face[3] > 50.0) {
-          console.log(face);
+          //console.log(face);
           // add all face in wayLength
           wayLength[faceI][2] = face[1] - face[2] / 2;
           wayLength[faceI][3] = face[0] - face[2] / 2;
@@ -273,7 +275,7 @@ export default {
           // console.log("test: " + j);
           this.confiTable.push({
             faceDeviceID: String(Date.now()) + String(j),
-            userID: NaN,
+            userID: undefined,
             confidence: 16,
             position: [wayLength[j][2], wayLength[j][3], wayLength[j][4]],
             times: 0,
@@ -290,6 +292,7 @@ export default {
           this.confiTable[wayLength[j][0]].position = [
             wayLength[j][2],
             wayLength[j][3],
+            wayLength[j][4],
           ];
           this.confiTable[wayLength[j][0]].times++;
         }
@@ -431,8 +434,7 @@ export default {
       // ctx.fillText("test", 100, 30);
       for (var i = 0; i < this.confiTable.length; i++) {
         let currConfi = this.confiTable[i];
-        console.log(`[Face] ${JSON.stringify(currConfi)}`);
-        if (currConfi.userID === null) {
+        if (currConfi.userID === undefined) {
           if (currConfi.fetchCountDown > 0) {
             currConfi.fetchCountDown--;
             continue;
@@ -440,7 +442,8 @@ export default {
           // Exponential back-off
           currConfi.retryCnt += 1;
           currConfi.fetchCountDown = Math.pow(2, currConfi.retryCnt);
-          // [TODO] Uncaught TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': Value is not of type 'long'.
+
+          // Request faces from server
           this.fetchIdbyFace(
             ctx.getImageData(
               currConfi.position[0],
@@ -454,13 +457,21 @@ export default {
       }
     },
     fetchIdbyFace: function (img, faceDeviceID) {
-      console.log(`Fetching face with faceDeviceID=${faceDeviceID}`);
+      // Abort when there existed a pending request.
+      if (this.recogPending.has(faceDeviceID)) return;
+
+      // Append to pending list.
+      this.recogPending.add(faceDeviceID);
+
+      console.re.log(
+        `[Recog-backend WS] Fetching face with faceDeviceID=${faceDeviceID}`
+      );
 
       // Encode the images with base64
       let dummy_canvas = document.createElement("canvas");
       let ctx = dummy_canvas.getContext("2d");
-      ctx.putImageDate(img);
-      let encoded_img = ctx.toDataURL();
+      ctx.putImageData(img, 0, 0);
+      let encoded_img = dummy_canvas.toDataURL();
 
       // Send recognize request to backend.
       let recog_msg_payload = {
@@ -477,7 +488,7 @@ export default {
     // Otherwise, nothing will happend.
     onRecogBackendWSRes(data) {
       // Get the faceDeviceID and state from response.
-      console.log(`[Recog-backend WS] Received response. ${event.data}`);
+      console.re.log(`[Recog-backend WS] Received response. ${event.data}`);
       let res = data;
 
       // Linearly searching the confiTable entity cooresponsed to faceDeviceID
@@ -490,6 +501,9 @@ export default {
           break;
         }
       }
+
+      // Remove job from pending list.
+      this.recogPending.delete(res.faceDeviceID);
 
       return;
     },

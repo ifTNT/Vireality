@@ -95,7 +95,7 @@ export default {
     onCameraReady(videoWidth, videoHeight) {
       this.videoWidth = videoWidth;
       this.videoHeight = videoHeight;
-      console.log(
+      console.re.log(
         `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
       );
     },
@@ -139,7 +139,7 @@ export default {
         (180 / Math.PI) *
         2 *
         Math.atan(((refCCDSize / 2) * scale) / refFocalLength);
-      console.log(`[AR] FoV of Virtual Camera: ${cameraFoV}`);
+      console.re.log(`[AR] FoV of Virtual Camera: ${cameraFoV}`);
 
       //Make a camera that have equivlent FoV of device's camera
       this.camera = new THREE.PerspectiveCamera(
@@ -252,10 +252,10 @@ export default {
           },
         })
         .then((res) => {
-          console.log(res);
+          console.re.log(`[AR] Article list fetched.`);
           res = res.data;
           if (res.ok !== "true") {
-            console.log("[AR] Get article list failed.");
+            console.re.log("[AR] Get article list failed.");
           } else {
             // Iterate the articles
             res.result.forEach(async (article) => {
@@ -283,10 +283,6 @@ export default {
         });
     },
     addArticle: function (x, y, material, id) {
-      console.log(`Added new article (${x},${y})`);
-      console.log(
-        `Camera coordinate (${this.camera.position.x},${this.camera.position.y})`
-      );
       //let { x, y } = this.camera.position;
       const geometry = new THREE.BoxGeometry(0.01, 1, 1); // Article cube
       let newArticle = new THREE.Mesh(geometry, material);
