@@ -6,6 +6,7 @@
   >
     <video autoplay ref="capture"></video>
     <canvas ref="canvas"></canvas>
+    <canvas ref="raw_canvas" style="display: none"></canvas>
   </div>
 </template>
 
@@ -85,6 +86,8 @@ export default {
     this.initPico();
     this.initMarkImage();
     this.initRecogBackendWS();
+    this.$refs.raw_canvas.width = this.canvasWidth;
+    this.$refs.raw_canvas.height = this.canvasHeight;
     this.$refs.canvas.width = this.canvasWidth;
     this.$refs.canvas.height = this.canvasHeight;
   },
@@ -232,9 +235,10 @@ export default {
         if (face[3] > 50.0) {
           //console.log(face);
           // add all face in wayLength
-          wayLength[faceI][2] = face[1] - face[2] / 2;
-          wayLength[faceI][3] = face[0] - face[2] / 2;
-          wayLength[faceI][4] = face[2];
+          const scale_factor = 1.2;
+          wayLength[faceI][2] = face[1] - (face[2] * scale_factor) / 2;
+          wayLength[faceI][3] = face[0] - (face[2] * scale_factor) / 2;
+          wayLength[faceI][4] = face[2] * scale_factor;
           if (this.confiTable[0] == undefined) {
             faceI++;
             continue;
@@ -326,7 +330,12 @@ export default {
           ctx.strokeStyle = "orange";
         }
         // ctx.strokeStyle = "blue";
-        ctx.rect(element.position[0], element.position[1], 80, 80);
+        ctx.rect(
+          element.position[0],
+          element.position[1],
+          element.position[2],
+          element.position[2]
+        );
         ctx.font = "30px Arial";
         ctx.fillText(
           element.faceDeviceID,
@@ -352,18 +361,22 @@ export default {
       if (!this.markImgReady || !this.cascadeReady) return;
 
       let ctx = this.$refs.canvas.getContext("2d");
+      let raw_ctx = this.$refs.raw_canvas.getContext("2d");
 
       let width = this.canvasWidth;
       let height = this.canvasHeight;
 
-      //Draw video to canvas
-      ctx.drawImage(
+      //Draw video to raw canvas
+      raw_ctx.drawImage(
         this.$refs.capture,
         this.drawParameter.x,
         this.drawParameter.y,
         this.drawParameter.width,
         this.drawParameter.height
       );
+
+      //Clone data from raw canvas to standard canvas
+      ctx.drawImage(this.$refs.raw_canvas, 0, 0);
 
       var rgba = ctx.getImageData(0, 0, width, height).data;
       // prepare input to `run_cascade`
@@ -406,10 +419,11 @@ export default {
           let fX = Math.round(face[1]);
           let fY = Math.round(face[0]);
           let fW = Math.round(face[2]);
+          fW = fW * 1.2;
 
-          let faceX = Math.round(fX - fW / 2) * 0.9;
-          let faceY = Math.round(fY - fW / 2) * 0.9;
-          let faceW = fW * 1.2;
+          let faceX = Math.round(fX - fW / 2);
+          let faceY = Math.round(fY - fW / 2);
+          let faceW = fW;
           // console.log(faceX);
           // console.log(faceY);
           // console.log(faceW);
@@ -443,20 +457,37 @@ export default {
           currConfi.retryCnt += 1;
           currConfi.fetchCountDown = Math.pow(2, currConfi.retryCnt);
 
+          // Clone raw image from camera
+          let crop_x = currConfi.position[0];
+          let crop_y = currConfi.position[1];
+          let crop_diameter = currConfi.position[2];
+          let target_diameter = 160;
+          let dummy_canvas = document.createElement("canvas");
+          dummy_canvas.width = target_diameter;
+          dummy_canvas.height = target_diameter;
+
+          let dummy_ctx = dummy_canvas.getContext("2d");
+          dummy_ctx.drawImage(
+            this.$refs.raw_canvas,
+            crop_x,
+            crop_y,
+            crop_diameter,
+            crop_diameter,
+            0,
+            0,
+            target_diameter,
+            target_diameter
+          );
+
           // Request faces from server
           this.fetchIdbyFace(
-            ctx.getImageData(
-              currConfi.position[0],
-              currConfi.position[1],
-              currConfi.position[2],
-              currConfi.position[2]
-            ),
+            dummy_canvas.toDataURL("image/jpeg", 1.0),
             currConfi.faceDeviceID
           );
         }
       }
     },
-    fetchIdbyFace: function (img, faceDeviceID) {
+    fetchIdbyFace: function (encoded_img, faceDeviceID) {
       // Abort when there existed a pending request.
       if (this.recogPending.has(faceDeviceID)) return;
 
@@ -466,12 +497,6 @@ export default {
       console.re.log(
         `[Recog-backend WS] Fetching face with faceDeviceID=${faceDeviceID}`
       );
-
-      // Encode the images with base64
-      let dummy_canvas = document.createElement("canvas");
-      let ctx = dummy_canvas.getContext("2d");
-      ctx.putImageData(img, 0, 0);
-      let encoded_img = dummy_canvas.toDataURL();
 
       // Send recognize request to backend.
       let recog_msg_payload = {
