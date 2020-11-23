@@ -12,5 +12,8 @@ module.exports = {
       console.log(`Invalid server API endpoint: ${path}`);
       return "";
     }
+  },
+  recogBackendUrl: function() {
+    return `wss://${window.location.hostname}:3000`;
   }
 };

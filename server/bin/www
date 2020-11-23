@@ -9,6 +9,7 @@ var debug = require("debug")("server:server");
 var fs = require("fs");
 var http = require("http");
 var https = require("https");
+var socketio = require("socket.io");
 
 /**
  * Get port from environment and store in Express.
@@ -30,6 +31,22 @@ var httpsOptions = { key: privateKey, cert: certificate };
 
 //var server = http.createServer(app);
 var server = https.createServer(httpsOptions, app);
+
+/**
+ * Bind websocket(socket.io) to http/https server
+ */
+var io = socketio(server, {
+  cors: {
+    origin: "*",
+  },
+});
+io.on("connection", (client) => {
+  console.log(`[Recog-Backend WS] Client ${client.id} connected.`);
+  client.on("disconnect", () => {
+    console.log(`[Recog-Backend WS] Client ${client.id} disconnected.`);
+  });
+  client.on("recog", handleRecogReq(client));
+});
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -93,4 +110,15 @@ function onListening() {
   var addr = server.address();
   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);
+}
+
+/**
+ * [Face recognition]
+ * Handler of recognize request
+ */
+function handleRecogReq(client) {
+  return (data) => {
+    console.log(`Received recognition request from ${client.id}`);
+    console.log(JSON.stringify(data));
+  };
 }

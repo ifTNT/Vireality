@@ -11,6 +11,9 @@
 
 <script>
 import pico from "../lib/pico.js";
+import Axios from "axios";
+import io from "socket.io-client";
+
 export default {
   name: "camera",
   props: {
@@ -71,11 +74,15 @@ export default {
     // Place to store detected faces
     dets: [],
     confiTable: [],
+
+    // The websocket connection of backend.
+    recogBackendWS: {},
   }),
   mounted() {
     this.initCamera();
     this.initPico();
     this.initMarkImage();
+    this.initRecogBackendWS();
     this.$refs.canvas.width = this.canvasWidth;
     this.$refs.canvas.height = this.canvasHeight;
   },
@@ -176,7 +183,7 @@ export default {
           console.log("[Face Detection] facefinder loaded");
         });
     },
-    initMarkImage() {
+    initMarkImage: function () {
       this.markImg.addEventListener("load", () => {
         console.log("[Face Detection] marker loaded");
         this.markImgReady = true;
@@ -184,10 +191,32 @@ export default {
       this.markImg.src = "/static/media/placeholder.png";
     },
 
+    // Initialize the websocket connection to backend.
+    initRecogBackendWS: function () {
+      let ws = io(server.recogBackendUrl());
+
+      // The common event handler of websockets
+      ws.on("connect", () => {
+        console.log("[Recog-backend WS] Connection opened");
+      });
+
+      ws.on("disconnect", () => {
+        console.log("[Recog-backend WS] Connection closed");
+      });
+
+      // The event which will be triggred while receive data from server
+      ws.on("res", (data) => {
+        console.log("[Recog-backend WS] Message res received.", data);
+        this.onRecogBackendWSRes(data);
+      });
+
+      this.recogBackendWS = ws;
+    },
+
     /* Detection Queue of picojs */
     updateMemory: pico.instantiate_detection_memory(5),
 
-    confidenceTable: function (ctx) {
+    updateConfidenceTable: function (ctx) {
       var wayLength = [];
       for (let face of this.dets) {
         if (face[3] > 50.0) {
@@ -395,22 +424,23 @@ export default {
           ctx.drawImage(this.markImg, _x, _y, _width, _height);
         }
       }
-      this.confidenceTable(ctx);
+      this.updateConfidenceTable(ctx);
     },
     updateId: function () {
       let ctx = this.$refs.canvas.getContext("2d");
       // ctx.fillText("test", 100, 30);
-      for (var i = 0; i < this.confiTable.length; i++){
+      for (var i = 0; i < this.confiTable.length; i++) {
         let currConfi = this.confiTable[i];
-        if(currConfi.userID == NaN){
-          if(currConfi.fetchCountDown > 0){
+        console.log(`[Face] ${JSON.stringify(currConfi)}`);
+        if (currConfi.userID === null) {
+          if (currConfi.fetchCountDown > 0) {
             currConfi.fetchCountDown--;
             continue;
           }
           // Exponential back-off
           currConfi.retryCnt += 1;
           currConfi.fetchCountDown = Math.pow(2, currConfi.retryCnt);
-
+          // [TODO] Uncaught TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': Value is not of type 'long'.
           this.fetchIdbyFace(
             ctx.getImageData(
               currConfi.position[0],
@@ -423,8 +453,45 @@ export default {
         }
       }
     },
-    fetchIdbyFace: function (img, faceDevID) {
-      // this.confiTable.userID
+    fetchIdbyFace: function (img, faceDeviceID) {
+      console.log(`Fetching face with faceDeviceID=${faceDeviceID}`);
+
+      // Encode the images with base64
+      let dummy_canvas = document.createElement("canvas");
+      let ctx = dummy_canvas.getContext("2d");
+      ctx.putImageDate(img);
+      let encoded_img = ctx.toDataURL();
+
+      // Send recognize request to backend.
+      let recog_msg_payload = {
+        faceDeviceID,
+        img: encoded_img,
+      };
+
+      this.recogBackendWS.emit("recog", recog_msg_payload);
+    },
+
+    // This function will be called while received response from backend.
+    // If the response is user founded,
+    // it will update entity in confiTable accroding to given job.
+    // Otherwise, nothing will happend.
+    onRecogBackendWSRes(data) {
+      // Get the faceDeviceID and state from response.
+      console.log(`[Recog-backend WS] Received response. ${event.data}`);
+      let res = data;
+
+      // Linearly searching the confiTable entity cooresponsed to faceDeviceID
+      for (let i = 0; i < this.confiTable.length; i++) {
+        let face = this.confiTable[i];
+
+        // Update the cooresponsed entity with responsed userID
+        if (face.faceDeviceID === res.faceDeviceID) {
+          face.userID = res.userID;
+          break;
+        }
+      }
+
+      return;
     },
   },
 };

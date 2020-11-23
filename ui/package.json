@@ -25,6 +25,7 @@
     "ngeohash": "^0.6.3",
     "picojs": "^1.0.0",
     "screenfull": "^5.0.2",
+    "socket.io-client": "^3.0.3",
     "svg-progress-bar": "^0.1.17",
     "three": "^0.114.0",
     "vue": "^2.5.2",

@@ -166,8 +166,6 @@
       // DOMContentLoaded will be called while the domtree is loaded.
       // At the same time, the default splash-screen will gone.
       document.addEventListener("DOMContentLoaded", () => {
-        console.log("loaded");
-        console.log(screen.availWidth, screen.availHeight);
         height = screen.availHeight;
         width = screen.availWidth;
         document.querySelector(".loader").style.width = width + "px";
