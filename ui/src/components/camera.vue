@@ -104,7 +104,7 @@ export default {
             `[Face Detection] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
           );
           console.log(
-            `[Face Detection] CanvasWidth: ${screen.availWidth}, CanvasHeight: ${screen.availHeight}`
+            `[Face Detection] CanvasWidth: ${this.canvasWidth}, CanvasHeight: ${this.canvasHeight}`
           );
           //==========Scale video to fit canvas============
 
@@ -130,8 +130,14 @@ export default {
           );
           //=============================================
 
+          // Inform upper-layer component that camera stream is ready
           this.$emit("camera-ready", width * scale, height * scale);
+
+          // Update the pico face detector every frame.
           this.updatePico();
+
+          // Perodicly check whether faces has assigned userID.
+          // If not, send a recognize request to backend.
           window.setInterval(() => {
             this.updateId();
           }, 1000);
