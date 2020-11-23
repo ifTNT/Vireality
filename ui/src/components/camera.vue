@@ -400,10 +400,10 @@ export default {
     updateId: function () {
       let ctx = this.$refs.canvas.getContext("2d");
       // ctx.fillText("test", 100, 30);
-      for (var i = 0; i < this.confiTable.length; i++) {
-        let currConfi = this.confidenceTable[i];
-        if (currConfi.userID == NaN) {
-          if (currConfi.fetchCountDown > 0) {
+      for (var i = 0; i < this.confiTable.length; i++){
+        let currConfi = this.confiTable[i];
+        if(currConfi.userID == NaN){
+          if(currConfi.fetchCountDown > 0){
             currConfi.fetchCountDown--;
             continue;
           }
