@@ -210,8 +210,7 @@ export default {
       });
 
       // The event which will be triggred while receive data from server
-      ws.on("res", (data) => {
-        console.re.log("[Recog-backend WS] Message res received.", data);
+      ws.on("recog_res", (data) => {
         this.onRecogBackendWSRes(data);
       });
 
@@ -337,11 +336,19 @@ export default {
           element.position[2]
         );
         ctx.font = "30px Arial";
-        ctx.fillText(
-          element.faceDeviceID,
-          element.position[0],
-          element.position[1]
-        );
+        if (element.userID !== undefined) {
+          ctx.fillText(
+            `UID: ${element.userID}`,
+            element.position[0],
+            element.position[1]
+          );
+        } else {
+          ctx.fillText(
+            element.faceDeviceID,
+            element.position[0],
+            element.position[1]
+          );
+        }
         ctx.fillText(
           element.times,
           element.position[0],
@@ -511,10 +518,14 @@ export default {
     // If the response is user founded,
     // it will update entity in confiTable accroding to given job.
     // Otherwise, nothing will happend.
-    onRecogBackendWSRes(data) {
-      // Get the faceDeviceID and state from response.
-      console.re.log(`[Recog-backend WS] Received response. ${event.data}`);
-      let res = data;
+    onRecogBackendWSRes(res) {
+      // Remove job from pending list.
+      this.recogPending.delete(res.faceDeviceID);
+
+      // If not found the face in database, do nothing.
+      if (!res["found"]) return;
+
+      console.re.log(`[Recog-backend WS] ${res.faceDeviceID} is ${res.userID}`);
 
       // Linearly searching the confiTable entity cooresponsed to faceDeviceID
       for (let i = 0; i < this.confiTable.length; i++) {
@@ -526,9 +537,6 @@ export default {
           break;
         }
       }
-
-      // Remove job from pending list.
-      this.recogPending.delete(res.faceDeviceID);
 
       return;
     },

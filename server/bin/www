@@ -11,6 +11,7 @@ var http = require("http");
 var https = require("https");
 var socketio = require("socket.io");
 var zmq = require("zeromq");
+const { isPrimitive } = require("util");
 
 /**
  * Get port from environment and store in Express.
@@ -51,10 +52,13 @@ var io = socketio(server, {
     origin: "*",
   },
 });
+io.connected = {};
 io.on("connection", (client) => {
+  io.connected[client.id] = client;
   console.log(`[Recog-Backend WS] Client ${client.id} connected.`);
   client.on("disconnect", () => {
     console.log(`[Recog-Backend WS] Client ${client.id} disconnected.`);
+    delete io.connected[client.id];
   });
   client.on("recog", handleRecogReq(client));
 });
@@ -147,7 +151,21 @@ function handleRecogReq(client) {
  */
 function handleRecogRes(data) {
   data = JSON.parse(data.toString());
-  console.log(
-    `Received recognition response. content: ${JSON.stringify(data)}`
-  );
+  console.log(`Received recognition response. req_id=${data["req_id"]}`);
+  let client_id = data["req_id"].split(";")[0];
+  let face_device_id = data["req_id"].split(";")[1];
+  let client = io.connected[client_id];
+
+  // Ignore any disconnected client.
+  if (client === undefined) return;
+
+  let found = data["res_state"] === "ok";
+
+  console.log(`Send response to client ${client.id}`);
+  // Send back the response to client
+  client.emit("recog_res", {
+    faceDeviceID: face_device_id, // The ID of client requests
+    found: found, // Indicate whether the face had been recognized in database
+    userID: data["user_id"], // Should be ignored if found is false
+  });
 }
