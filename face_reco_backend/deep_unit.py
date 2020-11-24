@@ -99,8 +99,6 @@ def main():
     work = zmq_serdes.recv_zipped_pickle(work_recv)
     
     logging.info('Received a work from front-end-server (req_id={})'.format(work.req_id))
-
-    # [TODO] Convert incoming image from dataurl to numpy
     
     # Find the face from given image
     faces = cascade.detectMultiScale(work.img[0],
@@ -112,11 +110,21 @@ def main():
       logging.info('[req_id={}] No face found, rejected. Image size={}'.format(work.req_id, work.img.shape))
       result = FeatureMsg(work.req_id, work.req_type, ResState.REJECT, "", "")
     else:
+      print(faces)
+
       # Crop and resize the image to fit the input shape of CNN
       (x, y, w, h) = faces[0]
-      cropped_img = work.img[0][y-margin//2:y+h+margin//2,
-                    x-margin//2:x+w+margin//2, :]
+      cropped_img = work.img[0][max(y-margin//2, 0):y+h+margin//2,
+                    max(x-margin//2,0):x+w+margin//2, :]
+      
       aligned_img = resize(cropped_img, (IMAGE_SIZE(), IMAGE_SIZE()), mode='reflect')
+
+      # [DEBUG] Display aligned images
+      disp_img = np.array(aligned_img, dtype=np.float32)
+      disp_img = cv2.cvtColor(disp_img, cv2.COLOR_RGB2BGR)
+      cv2.imshow('Aligned image', disp_img)
+      cv2.waitKey(1)
+
       aligned_img = np.array([aligned_img])
     
       # Recognize the face
@@ -126,6 +134,9 @@ def main():
       #logging.debug('Feature: \n{}'.format(result.face_id))
 
     zmq_serdes.send_zipped_pickle(result_sender, result)
+  
+  # [DEBUG] Distroy window of image showing
+  cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()

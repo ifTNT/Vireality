@@ -16,10 +16,17 @@ TRAIN_PUBLISH_PORT = lambda: ('tcp', '5559')
 # The port that belong to front-end-server to receive the result of recognition
 FRONT_RECV_PORT = lambda: ('tcp', '5560')
 
+# The port that belong to express web server to issue the works
+EXPRESS_ISSUE_PORT = lambda: ('tcp', '5010')
+
+# The port that belong to express web server to receive the results
+EXPRESS_RECV_PORT = lambda: ('tcp', '5011')
+
 # The IP address of front-end-server, reco-scheduler and training unit
 FRONT_IP = lambda: "127.0.0.1"
 RECOG_SCHED_IP = lambda: "127.0.0.1"
 TRAIN_IP = lambda: "127.0.0.1"
+EXPRESS_IP = lambda: "127.0.0.1"
 
 def get_zmq_uri(ip, port):
   return "{}://{}:{}".format(port[0], ip, port[1])

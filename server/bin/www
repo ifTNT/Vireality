@@ -10,6 +10,7 @@ var fs = require("fs");
 var http = require("http");
 var https = require("https");
 var socketio = require("socket.io");
+var zmq = require("zeromq");
 
 /**
  * Get port from environment and store in Express.
@@ -31,6 +32,16 @@ var httpsOptions = { key: privateKey, cert: certificate };
 
 //var server = http.createServer(app);
 var server = https.createServer(httpsOptions, app);
+
+/**
+ * Create two ZeroMQ sockets to communicate with face-recog-backend
+ */
+var face_recog_issue_sock = zmq.socket("push");
+var face_recog_recv_sock = zmq.socket("pull");
+face_recog_issue_sock.bindSync("tcp://127.0.0.1:5010");
+face_recog_recv_sock.bindSync("tcp://127.0.0.1:5011");
+console.log(`[Face recog backend] Sockets created with port 5010 and 5011.`);
+face_recog_recv_sock.on("message", handleRecogRes);
 
 /**
  * Bind websocket(socket.io) to http/https server
@@ -120,5 +131,23 @@ function handleRecogReq(client) {
   return (data) => {
     let req_id = client.id + ";" + data.faceDeviceID;
     console.log(`Received recognition request. req_id=${req_id}`);
+    work_json = JSON.stringify({
+      req_id: req_id,
+      type: "recog",
+      img: data.img,
+    });
+    face_recog_issue_sock.send(work_json);
+    console.log("Sent to backend");
   };
+}
+
+/**
+ * [Face recognition]
+ * Handler for recognize response
+ */
+function handleRecogRes(data) {
+  data = JSON.parse(data.toString());
+  console.log(
+    `Received recognition response. content: ${JSON.stringify(data)}`
+  );
 }
