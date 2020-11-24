@@ -2,6 +2,8 @@ from collections import namedtuple
 from enum import Enum
 import numpy as np
 
+# [TODO] Convert PictureMsg and UsitMsg from namedtuple to JSON
+
 # The enumerate of response states
 class ResState(Enum):
   OK = 'ok'            # Success without error

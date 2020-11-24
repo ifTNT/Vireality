@@ -1,5 +1,5 @@
 """
-facenet.py
+deep_unit.py
 The main script of deep-unit of face recognition backend.
 """
 
@@ -10,6 +10,8 @@ import numpy as np
 np.set_printoptions(threshold=sys.maxsize)
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+import cv2
+from skimage.transform import resize
 
 from keras.models import load_model
 from keras.models import Model
@@ -18,7 +20,7 @@ import logging
 from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
-from common.protocol.constant import DEEP_INPUT_SHAPE, FEATURE_SHAPE
+from common.protocol.constant import IMAGE_SIZE, DEEP_INPUT_SHAPE, FEATURE_SHAPE
 
 class Facenet():
   def __init__(self, inception_resnet_v1_path, img_size):
@@ -77,7 +79,10 @@ def main():
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
   model_path = 'models/Inception_ResNet_v1_MS_Celeb_1M.h5'
+  cascade_path = os.path.abspath('./models/haarcascade_frontalface_alt2.xml')
   logging.info('I am a deep-unit')
+  cascade = cv2.CascadeClassifier(cascade_path)
+  logging.info('Haar cascade classifier loaded.')
   facenet = Facenet(model_path, DEEP_INPUT_SHAPE()[1])
   
   context = zmq.Context()
@@ -94,14 +99,28 @@ def main():
     work = zmq_serdes.recv_zipped_pickle(work_recv)
     
     logging.info('Received a work from front-end-server (req_id={})'.format(work.req_id))
+
+    # [TODO] Convert incoming image from dataurl to numpy
     
-    if(work.img.shape!=DEEP_INPUT_SHAPE()):
-      #If image size dosen't match, reject it.
-      logging.info('[req_id={}] Image size mismatch, rejected. Image size={}'.format(work.req_id, work.img.shape))
+    # Find the face from given image
+    faces = cascade.detectMultiScale(work.img[0],
+                                      scaleFactor=1.1,
+                                      minNeighbors=3)
+    margin = 10
+    # If there is no face found, reject it
+    if len(faces) == 0:
+      logging.info('[req_id={}] No face found, rejected. Image size={}'.format(work.req_id, work.img.shape))
       result = FeatureMsg(work.req_id, work.req_type, ResState.REJECT, "", "")
     else:
-      #Recognize the face
-      face_id = facenet.calc_embs(work.img)
+      # Crop and resize the image to fit the input shape of CNN
+      (x, y, w, h) = faces[0]
+      cropped_img = work.img[0][y-margin//2:y+h+margin//2,
+                    x-margin//2:x+w+margin//2, :]
+      aligned_img = resize(cropped_img, (IMAGE_SIZE(), IMAGE_SIZE()), mode='reflect')
+      aligned_img = np.array([aligned_img])
+    
+      # Recognize the face
+      face_id = facenet.calc_embs(aligned_img)
       result = FeatureMsg(work.req_id, work.req_type, ResState.OK, face_id, work.label)
       logging.info('[req_id={}] Feature caculated!. Shape of feature = {}'.format(work.req_id, result.face_id.shape))
       #logging.debug('Feature: \n{}'.format(result.face_id))

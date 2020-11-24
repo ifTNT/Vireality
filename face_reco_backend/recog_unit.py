@@ -202,8 +202,8 @@ def main():
   try: 
     db_client = MongoClient(db_uri)
     db_database = db_client['vireality_face_recog_backend']
-    logging.info("Connected to database")
     db_client.server_info()
+    logging.info("Connected to database")
   except:
     logging.critical("Connect to database failed. Check if mongoDB alive.")
 
