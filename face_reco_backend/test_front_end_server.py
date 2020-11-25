@@ -31,8 +31,9 @@ def load_image(name):
   img_path = os.path.abspath(img_dir+name)
   img = cv2.imread(img_path)
 
-  # Scale image to proper size
-  img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
+  # Transform the color to proper order
+  img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
   img = np.expand_dims(img, axis=0)
 
   return img

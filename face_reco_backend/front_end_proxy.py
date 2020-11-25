@@ -105,7 +105,7 @@ class WorkSender(threading.Thread):
     return np_img
 
 def main():
-  LOG_FORMAT = '%(asctime)s [front-end-server]: [%(levelname)s] %(message)s'
+  LOG_FORMAT = '%(asctime)s [front-end-proxy]: [%(levelname)s] %(message)s'
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
   context = zmq.Context()

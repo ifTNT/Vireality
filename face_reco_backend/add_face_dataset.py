@@ -15,9 +15,11 @@ import random
 import cv2
 import os
 
+# Shared counter between sender and receiver
+issued_label = {}
+mutex = threading.Lock()
+
 # The thread to receive result from socket
-
-
 class ResultReceiver(threading.Thread):
     def __init__(self, socket):
         threading.Thread.__init__(self)
@@ -30,81 +32,81 @@ class ResultReceiver(threading.Thread):
             logging.info('[req_id={}] Received a result from backend.\n\tres_state={}\n\tuser_id={}'.format(
                 result.req_id, result.res_state, result.user_id))
 
+class WorkSender(threading.Thread):
+    def __init__(self, socket):
+        threading.Thread.__init__(self)
+        self.socket = socket
 
-def translate(image, x, y):
-    M = np.float32([[1, 0, x], [0, 1, y]])
-    shifted = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]))
-    return shifted
+    def run(self):
+        logging.info('Begin send work to backend')
+        req_id = 0
+        new_work = ()
+        base_dir = 'test_images/lfw_face_dataset'
+        # Training new face
+        for sub_dir in os.listdir(base_dir):
+            label = sub_dir
+            imgs = self.get_images(base_dir, sub_dir)
+            print(label)
+            for img in imgs:
+                
+                # Show the images to be send
+                disp_img = np.array(img[0])
+                disp_img = cv2.cvtColor(disp_img, cv2.COLOR_RGB2BGR)
+                cv2.imshow('Sample image', disp_img)
+                cv2.waitKey(1)
 
+                new_work = PictureMsg(req_id, ReqType.NEW, img, label)
+                zmq_serdes.send_zipped_pickle(self.socket, new_work)
+                logging.info('Send works with req_id={}, label={} to backend'.format(req_id, new_work.label))
+                req_id+=1
 
-cascade_path = os.path.abspath(
-    '../Facenet-Test/model/cv2/haarcascade_frontalface_alt2.xml')
+    def get_images(self, base_dir, sub_dir):
+        imgs_dir = base_dir+"/"+sub_dir
+        imgs = self.generate_random_sample(imgs_dir)
+        return imgs
 
-
-def addPaceImge(DIR):
-    cascade = cv2.CascadeClassifier(cascade_path)
-    file_list = os.listdir(DIR)
-    lengthOfFile = len(file_list)
-    imges = []
-    image_size = 160
-    margin = 0
-    if(len(file_list)) < 10:
-        for i in range(10 - lengthOfFile):
-            img = cv2.imread(DIR+"/"+file_list[i % lengthOfFile])
-            faces = cascade.detectMultiScale(img,
-                                         scaleFactor=1.1,
-                                         minNeighbors=3)
-            (x, y, w, h) = faces[0]
-            if(w != 0):
-                cropped = img[y-margin//2:y+h+margin//2,
-                            x-margin//2:x+w+margin//2, :]
-            img = cv2.resize(cropped, (image_size, image_size))
-            if i < 2:
-                img = translate(img, 0, 10)
-            elif i < 5:
-                img = translate(img, 5, -5)
+    def generate_random_sample(self, dir):
+        cascade_path = os.path.abspath('./models/haarcascade_frontalface_alt2.xml')
+        cascade = cv2.CascadeClassifier(cascade_path)
+        file_list = os.listdir(dir)
+        
+        images = []
+        random_range = 10 # The random range of rotation
+        accepted_cnt = 0
+        while accepted_cnt < 10:
+            img = cv2.imread(dir+"/"+file_list[accepted_cnt % len(file_list)])
+            # The angle of rotation, in degree
+            rotate_angle = random.uniform(-random_range, random_range)
+            random_img = self.rotate(img, rotate_angle)
+            # Find the face from given image
+            faces = cascade.detectMultiScale(random_img,
+                                            scaleFactor=1.1,
+                                            minNeighbors=3)
+            margin = 10
+            # If there is no face found, try again
+            if len(faces) == 0:
+                continue
             else:
-                img = translate(img, 10, 0)
+                random_img = cv2.cvtColor(random_img, cv2.COLOR_BGR2RGB)
+                random_img = np.expand_dims(random_img, axis=0)
+                images.append(random_img)
+                accepted_cnt += 1
+                
+        return images
 
-            # img = img.astype('float32')
-            # img = cv2.resize(img, (160, 160), interpolation = cv2.INTER_LINEAR)
-            # img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
-            img = np.expand_dims(img, axis=0)
-            imges.append(img)
-            # cv2.imwrite("./"+DIR+"/add"+str(i)+'.jpg',img)
-    for i in range(lengthOfFile):
-            img = cv2.imread(DIR+"/"+file_list[i])
-            faces = cascade.detectMultiScale(img,
-                                         scaleFactor=1.1,
-                                         minNeighbors=3)
-            (x, y, w, h) = faces[0]
-            if(w != 0):
-                cropped = img[y-margin//2:y+h+margin//2,
-                            x-margin//2:x+w+margin//2, :]
-            img = cv2.resize(cropped, (image_size, image_size))
-            # img = img.astype('float32')
-            # img = cv2.resize(img, (160, 160), interpolation = cv2.INTER_LINEAR)
-            # img = cv2.resize(img, DEEP_INPUT_SHAPE()[1:3])
-            img = np.expand_dims(img, axis=0)
-            imges.append(img)
-    return imges
+    def rotate(self, image, angle, center=None, scale=1.0):
+        (h, w) = image.shape[:2]
+    
+        if center is None:
+            center = (w / 2, h / 2)
 
+        M = cv2.getRotationMatrix2D(center, angle, scale)
+        rotated = cv2.warpAffine(image, M, (w, h))
 
-def interactive_get_image(img_file_path):
-    img = ()
-    label = ()
-    while True:
-        try:
-            img = addPaceImge(img_file_path)
-            label = img_file_path.split('/')[2]
-            break
-        except:
-            logging.info('Image {} does not exist'.format(img_file_path))
-    return (img, label)
-
+        return rotated
 
 def main():
-    LOG_FORMAT = '%(asctime)s [front-end-server]: [%(levelname)s] %(message)s'
+    LOG_FORMAT = '%(asctime)s [add-face-dataset]: [%(levelname)s] %(message)s'
     logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
     context = zmq.Context()
@@ -122,40 +124,12 @@ def main():
     result_recv_thread = ResultReceiver(result_recv)
     result_recv_thread.start()
 
-    req_id = 0
-    while True:
-
-        # Get the operation from interactive stdin
-        cmd = input("Please input operation [a]dd/[r]ecognize: ")
-        if cmd != "a" and cmd != "r":
-            continue
-
-        new_work = ()
-        if cmd == "a":
-            # Training new face
-            for path in os.listdir('test_images/lfw_face_dataset'):
-                img, label = interactive_get_image('test_images/lfw_face_dataset/'+path)
-                print(label)
-                for i in range(10):
-                    new_work = PictureMsg(req_id, ReqType.NEW, img[i], label)
-                    zmq_serdes.send_zipped_pickle(work_sender, new_work)
-                    logging.info('Send works with req_id={}, label={} to backend'.format(
-            req_id, new_work.label))
-            
-        else:
-            # Recognize the face
-            new_work = PictureMsg(req_id, ReqType.RECOG, img, "")
-            zmq_serdes.send_zipped_pickle(work_sender, new_work)
-            logging.info('Send works with req_id={}, label={} to backend'.format(
-            req_id, new_work.label))
-
-
-        
-
-        # Monotonic increase the request id
-        req_id += 1
+    # Start work sender thread
+    work_send_thread = WorkSender(work_sender)
+    work_send_thread.start()
 
     # Wait the result receiver thread to be done
+    work_send_thread.join()
     result_recv_thread.join()
 
 
