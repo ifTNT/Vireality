@@ -19,3 +19,4 @@ __pycache__
 .ipynb_checkpoints
 models/faceDB.json
 test_images/lfw_face_dataset
+train_history

@@ -11,6 +11,7 @@ from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
 from common.protocol.constant import *
+from common.neural_network import create_base_network
 import codecs, json 
 import random
 from pymongo import MongoClient
@@ -35,24 +36,6 @@ import tensorflow as tf
 
 # Packages for approximate nearest neighbor
 from annoy import AnnoyIndex
-
-# This network defination must same as that be used in train-unit
-def create_base_network(image_input_shape=NN_INPUT_SHAPE(), embedding_size=64):
-    """
-    Base network to be shared (eq. to feature extraction).
-    """
-    input_image = Input(shape=image_input_shape)
-
-    #x = Flatten()(input_image)
-    x = Dropout(0.1)(input_image)
-    x = Dense(512, activation='sigmoid')(x)
-    x = Dropout(0.1)(x)
-    x = Dense(embedding_size)(x)
-    x = Lambda(lambda x :nn.l2_normalize(x, axis=1, epsilon=1e-10))(x)
-
-    base_network = Model(inputs=input_image, outputs=x)
-
-    return base_network
 
 def fetch_weight_from_mongodb(db):
     # Selection collection from database
