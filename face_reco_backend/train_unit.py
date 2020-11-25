@@ -16,6 +16,7 @@ import random
 from pymongo import MongoClient
 import pickle
 from bson.binary import Binary
+import threading
 
 ## for Model definition/training
 from keras.models import Model, load_model
@@ -113,13 +114,15 @@ def masked_minimum(data, mask, dim=1):
     return masked_minimums
 
 def triplet_loss_adapted_from_tf(y_true, y_pred):
+    # The y_true value is dummy and useless
     del y_true
     margin = 1.
-    labels = y_pred[:, :1]
 
- 
+    # The label of embeddings
+    labels = y_pred[:, :1]
     labels = tf.cast(labels, dtype='int32')
 
+    # The embeddings
     embeddings = y_pred[:, 1:]
 
     ### Code from Tensorflow function [tf.contrib.losses.metric_learning.triplet_semihard_loss] starts here:
@@ -193,8 +196,8 @@ def create_base_network(image_input_shape, embedding_size):
     """
     input_image = Input(shape=image_input_shape)
 
-    x = Flatten()(input_image)
-    x = Dropout(0.1)(x)
+    #x = Flatten()(input_image)
+    x = Dropout(0.1)(input_image)
     x = Dense(512, activation='sigmoid')(x)
     x = Dropout(0.1)(x)
     x = Dense(embedding_size)(x)
@@ -204,145 +207,196 @@ def create_base_network(image_input_shape, embedding_size):
 
     return base_network
 
-# if __name__ == "__main__":
-def train_main(x_train, y_train):
-    # in case this scriot is called from another file, let's make sure it doesn't start training the network...
-    x_train = np.reshape(x_train,(len(x_train)//1792, 1, 1792))
-    x_train = np.array(x_train,dtype='float32')
-    user_id = copy.deepcopy(y_train)
-    y_train = np.array([i for i in range(len(y_train))])
-    
-    x_train_all = copy.deepcopy(x_train)
+# Use given list of features and user_ids to train a new model
+# Returns the new model and the calculated embeddings
+def train_main(features, user_ids):
+    # Ensure the type of feature.
+    features = np.array(features,dtype='float32')
 
-    batch_size = 256
-    epochs = 25
+    # Convert user_id to integer in order to train neural network
+    y_data_cnt = 0
+    user_id_map = {}
+    y_data = []
+    for user_id in user_ids:
+        if user_id in user_id_map:
+            y_data.append(user_id_map[user_id])
+        else:
+            y_data.append(y_data_cnt)
+            user_id_map[user_id] = y_data_cnt
+            y_data_cnt+=1
+    del y_data_cnt
+    del user_id_map
 
-    embedding_size = 64
+    # Prepared dataset for training and vaildation
+    y_data = np.array(y_data)
+    x_data = copy.deepcopy(features)
+    print(x_data.shape, y_data.shape)
 
-    step = 10
-
-    x_test = []
-    x_test = np.array(x_test)
-    path_xTrain = copy.deepcopy(x_train)
-    x_train = np.array([],dtype=x_train.dtype)
-    for i in range(int(len(path_xTrain)/10)):
-        np.random.shuffle(path_xTrain[i * 10 : (i + 1) * 10])
-        x_test = np.append(x_test, path_xTrain[i * 10 + 8 : (i + 1) * 10])
-        x_train = np.append(x_train, path_xTrain[i * 10 : (i + 1) * 10 -2])
-    x_train = np.reshape(x_train,(len(x_train)// 1792, 1, 1792))
-    x_test = np.reshape(x_test,(len(x_test)// 1792, 1, 1792))
-
-    y_test = []
-    input_image_shape = FEATURE_SHAPE()
-    x_val = x_test
+    # Prepare the space of training set and vaildation set
+    x_train = []
+    y_train = []
+    x_val = []
     y_val = []
-    for i in y_train:
-        for j in range(8):
-            y_test.append(i)
-        for j in range(2):
-            y_val.append(i)
-    y_test = np.array(y_test)
+
+    # Counting how many samples in training set and initialize it.
+    cnt_train = {}
+    for y in y_data:
+        cnt_train[y] = 0
+    
+    # Partition the data into training set and vaildation set
+    # Randomly assign 8 samples of data to training set.
+    # Assign rest of data to vaildation set.
+    for x,y in zip(x_data, y_data):
+        # If there is no space left in training set,
+        # put into the vaildation set
+        if cnt_train[y]==8:
+            x_val.append(x)
+            y_val.append(y)
+        else:
+            # Flip the coin. Assigne to random data set.
+            # If assigned to training set, increase the counter.
+            if random.randint(0, 1)==0:
+                x_train.append(x)
+                y_train.append(y)
+                cnt_train[y] += 1
+            else:
+                x_val.append(x)
+                y_val.append(y)
+
+    # x_test = []
+    # x_test = np.array(x_test)
+    # path_xTrain = copy.deepcopy(x_train)
+    # x_train = np.array([],dtype=x_train.dtype)
+    # for i in range(int(len(path_xTrain)/10)):
+    #     np.random.shuffle(path_xTrain[i * 10 : (i + 1) * 10])
+    #     x_test = np.append(x_test, path_xTrain[i * 10 + 8 : (i + 1) * 10])
+    #     x_train = np.append(x_train, path_xTrain[i * 10 : (i + 1) * 10 -2])
+    # x_train = np.reshape(x_train,(len(x_train)// 1792, 1, 1792))
+    # x_test = np.reshape(x_test,(len(x_test)// 1792, 1, 1792))
+
+    # y_test = []
+    # input_image_shape = 
+    # x_val = x_test
+    # y_val = []
+    # for i in y_train:
+    #     for j in range(8):
+    #         y_test.append(i)
+    #     for j in range(2):
+    #         y_val.append(i)
+    # y_test = np.array(y_test)
+    # y_val = np.array(y_val)
+
+    # Convert the training set and vaildation set to numpy array.
+    # So that we can feed them into keras.
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+    x_val = np.array(x_val)
     y_val = np.array(y_val)
 
-    # Network training...
-    base_network = create_base_network(input_image_shape, embedding_size)
+    print(x_train.shape, y_train.shape, x_val.shape, y_val.shape)
 
-    input_faceId = Input(shape=input_image_shape, name='input_faceId') # input layer for images
-    input_labels = Input(shape=(1,), name='input_label')    # input layer for labels
-    embeddings = base_network([input_faceId])               # output of network -> embeddings
-    labels_plus_embeddings = concatenate([input_labels, embeddings])  # concatenating the labels + embeddings
+    # The constants of training and the neural network
+    batch_size = 256
+    epochs = 30
+    embedding_size = 64
 
+    # Define the architecture of training neural network
+    base_network = create_base_network(NN_INPUT_SHAPE(), embedding_size)
+    # input layer for images
+    input_faceId = Input(shape=NN_INPUT_SHAPE(), name='input_faceId')
+     # input layer for labels
+    input_labels = Input(shape=(1,), name='input_label')
+    # output of network -> embeddings
+    embeddings = base_network([input_faceId])               
+    # concatenating the labels + embeddings
+    labels_plus_embeddings = concatenate([input_labels, embeddings])
     # Defining a model with inputs (images, labels) and outputs (labels_plus_embeddings)
     model = Model(inputs=[input_faceId, input_labels],
                     outputs=labels_plus_embeddings)
-
+    # Output the architecture of training model
     model.summary()
-    # train session
-    opt = Adam(lr=0.001)  # choose optimiser. RMS is good too!
 
+    # The optimiser. RMS is good too!
+    opt = Adam(lr=0.001)
+    # Construct the training model withe custom triplet loss function
     model.compile(loss=triplet_loss_adapted_from_tf, optimizer=opt)
 
     # Uses 'dummy' embeddings + dummy gt labels. Will be removed as soon as loaded, to free memory
     dummy_gt_train = np.zeros((len(x_train), embedding_size + 1))
     dummy_gt_val = np.zeros((len(x_val), embedding_size + 1))
     
+    # Train the model.
+    # It's noticeable that x_train and y_train are both feed into x.
+    # The reason is that triplet-loss need the distance between training labels,
+    # not distatnce between predicted label and true label.
     H = model.fit(
-        x=[x_train,y_test],
+        x=[x_train,y_train],
         y=dummy_gt_train,
         batch_size=batch_size,
         epochs=epochs,
         validation_data=([x_val, y_val], dummy_gt_val))
 
+    # Remove the dummy data to save the memory
+    del dummy_gt_train
+    del dummy_gt_val
+
     # creating an empty network
-    testing_embeddings = create_base_network(input_image_shape, embedding_size=embedding_size)
+    testing_model = create_base_network(NN_INPUT_SHAPE(), embedding_size)
+
     # Grabbing the weights from the trained network
-    for layer_target, layer_source in zip(testing_embeddings.layers, model.layers[2].layers):
+    for layer_target, layer_source in zip(testing_model.layers, model.layers[2].layers):
         weights = layer_source.get_weights()
         layer_target.set_weights(weights)
         del weights
 
-    x_embeddings = testing_embeddings.predict(np.reshape(x_train_all, (len(x_train_all), 1, 1792)))
+    print("Training is done")
+    return testing_model
 
-    # Group 10 samples of x_train together
-    num_x = x_train_all.shape[0]//10
-    reshaped_feature = np.reshape(x_train_all,(num_x, 10, 1792))
+def gen_user_id_embs(model, features, user_ids):
+    # Ensure the shape of input features
+    if features.shape[1] != FEATURE_SIZE():
+        logging.error(
+            "Shape mismatch {} != (*,{})".format(
+                features.shape,
+                FEATURE_SIZE()
+            )
+        )
+        return []
 
-    # Label: the index of y_train
-    user_label = range(len(y_train))
+    embeddings = model.predict(features)
 
-    # Group 10 samples of x_embeddings together
-    num_x = x_embeddings.shape[0]//10
-    reshaped_embs = np.reshape(x_embeddings,(num_x, 10, 64))
+    # Group all of the data to database
+    grouped_db = zip(user_ids, embeddings)
 
-    # Write the database to file
-    grouped_db = zip(user_id, reshaped_feature, user_label, reshaped_embs)
+    return grouped_db
 
-    print("done train")
-    return (testing_embeddings, grouped_db)
-
-class NumPyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        else:
-            return super(MyEncoder, self).default(obj)
-
-def readUseridTable(face_id, label, file_path):
-    x_faceId = []
-    y_label = []
-    x_faceId = np.array(x_faceId)
-    y_label = np.array(y_label)
-    try:
-        obj_text = codecs.open(file_path, 'r', encoding='utf-8').read()
-        userIdFeatureTable = np.array(json.loads(obj_text))        
-        for index in userIdFeatureTable:
-            y_label = np.append(y_label,index['user_id'])
-            x_faceId = np.append(x_faceId,index['faceId'])
-        x_faceId = x_faceId.reshape(int(x_faceId.size / 17920),10,1792)    
-    except Exception:
-        print("read file filed")
-    
-    x_faceId = np.append(x_faceId,face_id.reshape(10,1792))
-    y_label = np.append(y_label,label)
-    
-    return (x_faceId, y_label)
-
-def fetchTrainingFaceFromMongo(db):
+def addTrainSampleToMongoDB(db, user_id, features):
     # Select the collection from db
-    face_id_collection = db['face_id']
+    train_collection = db['train']
+
+    # Construct the new training data by flatten the training requests
+    new_train_data = [
+        {
+            'user_id': user_id,
+            'feature': feature.tolist()
+        } for feature in features
+    ]
+
+    # Save to MongoDB
+    train_collection.insert_many(new_train_data)
+
+def fetchTrainSampleFromMongo(db):
+    # Select the collection from db
+    train_collection = db['train']
 
     # The value that stored the faceID and the label
     x_faceId = []
     y_label = []
 
     # Enumerate all of the faces
-    for faces in face_id_collection.find():
-        y_label = np.append(y_label,faces['user_id'])
-        x_faceId = np.append(x_faceId,faces['feature'])
+    for sample in train_collection.find():
+        y_label.append(sample['user_id'])
+        x_faceId.append(sample['feature'])
 
     # Convert to numpy array
     x_faceId = np.array(x_faceId)
@@ -361,30 +415,55 @@ def saveWeightToMongoDB(db, weight):
     weight_collection.drop()
     weight_collection.insert({'model': bin_weight})
 
-def saveFaceIdDatabaseToMongoDB(db, new_database):
+def saveEmbeddingToMongoDB(db, new_database):
     # Select the collection from db
-    face_id_collection = db['face_id']
+    embedding_collection = db['face_id']
 
     # Remove the old datas.
     # Due to all of the data will be modified when training new model. 
-    face_id_collection.drop()
+    embedding_collection.drop()
 
-    new_documents = []
-    for user_id, x, label, embedding in new_database:
-        new_documents.append({
+    new_documents = [{
             'user_id': user_id,
-            'feature': x.tolist(),
-            'label': label,
             'embedding': embedding.tolist()
-        })
+        } for user_id, embedding in new_database]
 
     # Save to MongoDB
-    face_id_collection.insert_many(new_documents)
+    embedding_collection.insert_many(new_documents)
 
-def saveAnnToMongoDB(db):
-    pass
+# The mutex to protect database between feature receiver and trainer
+mutex = threading.Lock()
+
+# This flag is also shared between feature receiver and trainer.
+# Since assignment of boolean in python is threadsafe,
+# no additional mutex is needed.
+need_train = False
+
+# The thread to receive result from socket
+class FeatureReceiver(threading.Thread):
+    def __init__(self, socket, db):
+        threading.Thread.__init__(self)
+        self.socket = socket
+        self.db = db
+
+    def run(self):
+        global mutex
+        global need_train
+
+        logging.info('Begin receive feature from recog-sched')
+        while True:
+            work = zmq_serdes.recv_zipped_pickle(self.socket)
+            logging.info('Received a work from recog-sched (label={})'.format(work.label))
+
+            # Critical Section (database)
+            mutex.acquire()
+            addTrainSampleToMongoDB(self.db, work.label, work.face_id)
+            need_train = True
+            mutex.release()
 
 def main():
+  global mutex
+  global need_train
   LOG_FORMAT = '%(asctime)s [train-unit]: [%(levelname)s] %(message)s'
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
@@ -395,8 +474,8 @@ def main():
   try: 
     db_client = MongoClient(db_uri)
     db_database = db_client['vireality_face_recog_backend']
+    db_client.server_info()
     logging.info("Connected to database")
-    logging.debug(db_client.server_info())
   except:
     logging.critical("Connect to database failed. Check if mongoDB alive.")
 
@@ -408,42 +487,45 @@ def main():
   result_sender = context.socket(zmq.PUSH)
   result_sender.bind(get_zmq_uri(TRAIN_IP(), TRAIN_PUBLISH_PORT()))
 
-  logging.info('Begin receive works from recog-sched')
+  # Start result receiver thread
+  feature_recv_thread = FeatureReceiver(work_recv, db_database)
+  feature_recv_thread.start()
 
   while True:
-    work = zmq_serdes.recv_zipped_pickle(work_recv)
+    # If there is no training job, goto sleep and check later.
+    if(not need_train):
+        time.sleep(1)
+        continue
     
-    logging.info('Received a work from recog-sched (label={})'.format(work.label))
+    logging.info('Begin training')
 
-    # Read faceID DB from MongoDB.
-    x_faceId, y_label = fetchTrainingFaceFromMongo(db_database)
-    x_faceId = np.append(x_faceId, work.face_id)
-    y_label = np.append(y_label, work.label)
+    # Critical section: Read faceID DB from MongoDB.
+    mutex.acquire()
+    need_train = False
+    x_faceId, y_label = fetchTrainSampleFromMongo(db_database)
+    mutex.release()
+
     # Training new model with incoming faces.
-    # Write the user-id, raw feature and embeddings to face_db_file
-    #face_db_path = './models/faceDB.json'
-    #x_faceId, y_label = readUseridTable(work.face_id, work.label, face_db_path)
-    outPutModel, new_database = train_main(x_faceId, y_label)
+    new_model = train_main(x_faceId, y_label)
+    new_user_id_embs = gen_user_id_embs(new_model, x_faceId, y_label)
 
     # Extract the weights and biases form new-trained model.
     # Only extract the weight of fully connected layer.
-    outPutWeight = []
-    for i in outPutModel.layers:
-        outPutWeight.append(i.get_weights())
-    #outPutWeight.append(outPutModel.layers[2].get_weights())
+    output_weight = []
+    for i in new_model.layers:
+        output_weight.append(i.get_weights())
 
-    # Calculate Approximate Nearest Neighbors.
-    # And save to file.
-
-    # Save weights, faceID DB, ANN to MongoDB.
-    saveWeightToMongoDB(db_database, outPutWeight)
-    saveFaceIdDatabaseToMongoDB(db_database, new_database)
-    saveAnnToMongoDB(db_database)
+    # Save weights and embeddings to MongoDB.
+    saveWeightToMongoDB(db_database, output_weight)
+    saveEmbeddingToMongoDB(db_database, new_user_id_embs)
 
     # Issue deploy message to recog-units
     deploy_msg = DeployModelMsg(int(datetime.now().timestamp()*1000))
     zmq_serdes.send_zipped_pickle(result_sender, deploy_msg)
     logging.info("Published model deploing message with serial={}.".format(deploy_msg.serial))
+  
+  # Wait the children thread to be done
+  feature_recv_thread.join()
 
 if __name__ == "__main__":
     main()

@@ -20,7 +20,7 @@ import logging
 from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
-from common.protocol.constant import IMAGE_SIZE, DEEP_INPUT_SHAPE, FEATURE_SHAPE
+from common.protocol.constant import IMAGE_SIZE, DEEP_INPUT_SHAPE
 
 class Facenet():
   def __init__(self, inception_resnet_v1_path, img_size):

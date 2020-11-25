@@ -37,14 +37,14 @@ import tensorflow as tf
 from annoy import AnnoyIndex
 
 # This network defination must same as that be used in train-unit
-def create_base_network(image_input_shape=FEATURE_SHAPE(), embedding_size=64):
+def create_base_network(image_input_shape=NN_INPUT_SHAPE(), embedding_size=64):
     """
     Base network to be shared (eq. to feature extraction).
     """
     input_image = Input(shape=image_input_shape)
 
-    x = Flatten()(input_image)
-    x = Dropout(0.1)(x)
+    #x = Flatten()(input_image)
+    x = Dropout(0.1)(input_image)
     x = Dense(512, activation='sigmoid')(x)
     x = Dropout(0.1)(x)
     x = Dense(embedding_size)(x)
@@ -99,10 +99,9 @@ def construct_ann_from_mongodb(db):
     # Load all of the faces form MongoDB
     i=0
     for user in face_id_db_collection.find():
-        for embedding in user['embedding']:
-            ann_map[i] = user['user_id']
-            ann.add_item(i, embedding)
-            i+=1
+        ann_map[i] = user['user_id']
+        ann.add_item(i, user['embedding'])
+        i+=1
     del i
 
     logging.info("Loaded user_id and embeddings from MongoDB successfully.")

@@ -128,7 +128,7 @@ def main():
     work_send_thread = WorkSender(work_sender)
     work_send_thread.start()
 
-    # Wait the result receiver thread to be done
+    # Wait the children thread to be done
     work_send_thread.join()
     result_recv_thread.join()
 
