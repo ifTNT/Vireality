@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import os
+import io
 from datetime import datetime
 import copy
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -125,7 +126,6 @@ def train_main(features, user_ids):
     
     logging.info("Begin trainiing")
     if use_pso:
-        # [TODO] Use modidied PSO
         # Instantiate optimizer with model, loss function, and hyperparameters
         pso = PSOptimizer(
             model=model,
@@ -230,6 +230,14 @@ def gen_user_id_embs(model, features, user_ids):
         return []
 
     embeddings = model.predict(features)
+
+    # Save test embeddings for visualization in projector
+    np.savetxt("visualization/vecs.tsv", embeddings, delimiter='\t')
+
+    out_m = io.open('visualization/meta.tsv', 'w', encoding='utf-8')
+    for label in user_ids:
+        out_m.write(str(label) + "\n")
+    out_m.close()
 
     # Group all of the data to database
     grouped_db = zip(user_ids, embeddings)

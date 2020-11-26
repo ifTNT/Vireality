@@ -11,7 +11,7 @@ def create_base_network(input_shape=NN_INPUT_SHAPE(), embedding_size=EMBEDDING_S
     x = Dropout(0.1)(input_feature)
     x = Dense(512, activation='sigmoid')(x)
     x = Dropout(0.1)(x)
-    x = Dense(embedding_size)(x)
+    x = Dense(embedding_size, activation=None)(x)
     x = Lambda(lambda x :nn.l2_normalize(x, axis=1, epsilon=1e-10))(x)
 
     base_network = Model(inputs=input_feature, outputs=x)

@@ -80,6 +80,8 @@ export default {
     recogBackendWS: {},
     // The pending queue of backend.
     recogPending: new Set([]),
+
+    debug: false,
   }),
   mounted() {
     this.initCamera();
@@ -249,7 +251,7 @@ export default {
             const yDist =
               face[0] - face[2] / 2 - this.confiTable[j].position[1];
             var target = Math.pow(xDist, 2) + Math.pow(yDist, 2);
-            if (wayLength[faceI][1] > target && target < 1000) {
+            if (wayLength[faceI][1] > target && target < 3000) {
               wayLength[faceI][0] = j;
               wayLength[faceI][1] = target;
             }
@@ -322,45 +324,99 @@ export default {
       // console.log("====== test end ====\n");
 
       this.confiTable.forEach((element) => {
-        ctx.beginPath();
-        ctx.lineWidth = "2";
-        if (element.times == 0) ctx.strokeStyle = "blue";
-        else {
-          ctx.strokeStyle = "orange";
-        }
-        // ctx.strokeStyle = "blue";
-        ctx.rect(
-          element.position[0],
-          element.position[1],
-          element.position[2],
-          element.position[2]
-        );
-        ctx.font = "30px Arial";
-        if (element.userID !== undefined) {
-          ctx.fillText(
-            `UID: ${element.userID}`,
+        if (this.debug) {
+          ctx.beginPath();
+          ctx.lineWidth = "2";
+          if (element.times == 0) ctx.strokeStyle = "blue";
+          else {
+            ctx.strokeStyle = "orange";
+          }
+          // ctx.strokeStyle = "blue";
+          ctx.rect(
             element.position[0],
-            element.position[1]
+            element.position[1],
+            element.position[2],
+            element.position[2]
           );
-        } else {
+          ctx.font = "30px Arial";
+          if (element.userID !== undefined) {
+            ctx.fillText(
+              `UID: ${element.userID}`,
+              element.position[0],
+              element.position[1]
+            );
+          } else {
+            ctx.fillText(
+              element.faceDeviceID,
+              element.position[0],
+              element.position[1]
+            );
+          }
           ctx.fillText(
-            element.faceDeviceID,
+            element.times,
             element.position[0],
-            element.position[1]
+            element.position[1] + 30
           );
-        }
-        ctx.fillText(
-          element.times,
-          element.position[0],
-          element.position[1] + 30
-        );
-        ctx.stroke();
+          ctx.stroke();
 
-        // confiDelete++
+          // confiDelete++
+        } else {
+          // The position information of current face.
+          let face_x = element.position[0];
+          let face_y = element.position[1];
+          let face_width = element.position[2];
+          let face_height = face_width;
+          let font_size = 30;
+          ctx.font = `${font_size}px Roboto,微軟正黑體,Microsoft JhengHei,sans-serif`;
+          // The margin of user ID box, in pixels.
+          let margin = 10;
+
+          //Draw the marker of detected face
+          const aspect_ratio = 0.5;
+          let marker_height = face_height * aspect_ratio;
+          let marker_width = face_width * aspect_ratio;
+          //Calculate offset. Negative is ok.
+          let marker_y =
+            element.userID === undefined
+              ? face_y - marker_height
+              : face_y - marker_height - font_size - 2 * margin;
+          let marker_x = face_x + marker_width / 2;
+          ctx.drawImage(
+            this.markImg,
+            marker_x,
+            marker_y,
+            marker_width,
+            marker_height
+          );
+
+          if (element.userID !== undefined) {
+            // The height and width calculated by given user id.
+            let user_id_height = font_size;
+
+            let user_id_width = ctx.measureText(element.userID).width;
+            let user_id_x = face_x + face_width / 2 - user_id_width / 2;
+            let user_id_y = face_y - margin;
+
+            // The drawing position of background rectangle
+            let rect_width = user_id_width + 2 * margin;
+            let rect_height = user_id_height + 2 * margin;
+            let rect_x = user_id_x - margin;
+            let rect_y = user_id_y - user_id_height - margin;
+
+            // Draw the background box
+            ctx.fillStyle = "#76a5afaa";
+            ctx.fillRect(rect_x, rect_y, rect_width, rect_height);
+
+            ctx.fillStyle = "white";
+            ctx.fillText(`${element.userID}`, user_id_x, user_id_y);
+          }
+        }
       });
-      // return this.confiTable.length;
-      ctx.font = "30px Arial";
-      ctx.fillText(this.confiTable.length, 200, 30);
+      if (this.debug) {
+        // return this.confiTable.length;
+        ctx.font = "30px Arial";
+        ctx.fillText(this.confiTable.length, 200, 30);
+      }
     },
 
     updatePico: function () {
@@ -435,17 +491,13 @@ export default {
           // console.log(faceY);
           // console.log(faceW);
 
-          ctx.beginPath();
-          ctx.lineWidth = "3";
-          ctx.strokeStyle = "blue";
-          ctx.strokeRect(faceX, faceY, faceW, faceW);
-          ctx.stroke();
-
-          //Draw box of detected face
-          const aspect_ratio = 1;
-          let _height = _width * aspect_ratio;
-          _y -= _height * 1.8; //Calculate offset. Negative is ok.
-          ctx.drawImage(this.markImg, _x, _y, _width, _height);
+          if (this.debug) {
+            ctx.beginPath();
+            ctx.lineWidth = "3";
+            ctx.strokeStyle = "blue";
+            ctx.strokeRect(faceX, faceY, faceW, faceW);
+            ctx.stroke();
+          }
         }
       }
       this.updateConfidenceTable(ctx);
