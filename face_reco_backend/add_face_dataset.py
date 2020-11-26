@@ -41,12 +41,13 @@ class WorkSender(threading.Thread):
         logging.info('Begin send work to backend')
         req_id = 0
         new_work = ()
-        base_dir = 'test_images/lfw_face_dataset'
+        base_dir = 'test_images/'
+        n_sub_dir = len(os.listdir(base_dir))
         # Training new face
-        for sub_dir in os.listdir(base_dir):
+        for i, sub_dir in enumerate(os.listdir(base_dir)):
             label = sub_dir
             imgs = self.get_images(base_dir, sub_dir)
-            print(label)
+            logging.info('{}/{} {}'.format(i+1, n_sub_dir, label))
             for img in imgs:
                 
                 # Show the images to be send
@@ -57,7 +58,6 @@ class WorkSender(threading.Thread):
 
                 new_work = PictureMsg(req_id, ReqType.NEW, img, label)
                 zmq_serdes.send_zipped_pickle(self.socket, new_work)
-                logging.info('Send works with req_id={}, label={} to backend'.format(req_id, new_work.label))
                 req_id+=1
 
     def get_images(self, base_dir, sub_dir):
@@ -73,7 +73,8 @@ class WorkSender(threading.Thread):
         images = []
         random_range = 10 # The random range of rotation
         accepted_cnt = 0
-        while accepted_cnt < 10:
+        rejected_cnt = 0
+        while accepted_cnt < 10 and rejected_cnt < 100:
             img = cv2.imread(dir+"/"+file_list[accepted_cnt % len(file_list)])
             # The angle of rotation, in degree
             rotate_angle = random.uniform(-random_range, random_range)
@@ -85,6 +86,7 @@ class WorkSender(threading.Thread):
             margin = 10
             # If there is no face found, try again
             if len(faces) == 0:
+                rejected_cnt += 1
                 continue
             else:
                 random_img = cv2.cvtColor(random_img, cv2.COLOR_BGR2RGB)

@@ -33,6 +33,12 @@ mpl_logger.setLevel(logging.WARNING)
 
 from libs.triplet_loss import triplet_loss_adapted_from_tf
 
+# Unison shuffle two munpy array
+def unison_shuffled_copies(a, b):
+    assert len(a) == len(b)
+    p = np.random.permutation(len(a))
+    return a[p], b[p]
+
 # Use given list of features and user_ids to train a new model
 # Returns the new model and the calculated embeddings
 def train_main(features, user_ids):
@@ -56,7 +62,9 @@ def train_main(features, user_ids):
     # Prepared dataset for training and vaildation
     y_data = np.array(y_data)
     x_data = copy.deepcopy(features)
-    print(x_data.shape, y_data.shape)
+    
+    # Shuffle the dataset
+    x_data, y_data = unison_shuffled_copies(x_data, y_data)
 
     # Prepare the space of training set and vaildation set
     x_train = []
@@ -64,30 +72,22 @@ def train_main(features, user_ids):
     x_val = []
     y_val = []
 
-    # Counting how many samples in training set and initialize it.
-    cnt_train = {}
-    for y in y_data:
-        cnt_train[y] = 0
+    # Counter of samples in training data. Initialize to zero.
+    train_cnt = {}
+    for i in y_data:
+        train_cnt[i] = 0
     
     # Partition the data into training set and vaildation set
-    # Randomly assign 8 samples of data to training set.
+    # Assign first 8 shuffled samples to training data. 
     # Assign rest of data to vaildation set.
     for x,y in zip(x_data, y_data):
-        # If there is no space left in training set,
-        # put into the vaildation set
-        if cnt_train[y]==8:
+        if train_cnt[y] < 8:
+            x_train.append(x)
+            y_train.append(y)
+            train_cnt[y] += 1
+        else:
             x_val.append(x)
             y_val.append(y)
-        else:
-            # Flip the coin. Assigne to random data set.
-            # If assigned to training set, increase the counter.
-            if random.randint(0, 1)==0:
-                x_train.append(x)
-                y_train.append(y)
-                cnt_train[y] += 1
-            else:
-                x_val.append(x)
-                y_val.append(y)
 
     # Convert the training set and vaildation set to numpy array.
     # So that we can feed them into keras.
@@ -204,6 +204,7 @@ def train_main(features, user_ids):
         plt.savefig('train_history/{}.png'.format(
             int(datetime.now().timestamp()*1000)
         ))
+        plt.close('all')
 
     # creating an empty network
     testing_model = create_base_network(NN_INPUT_SHAPE(), embedding_size)

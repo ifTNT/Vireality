@@ -20,3 +20,4 @@ __pycache__
 models/faceDB.json
 test_images/lfw_face_dataset
 train_history
+test_images

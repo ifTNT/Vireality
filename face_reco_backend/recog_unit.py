@@ -108,7 +108,7 @@ def face_recog_proc(sock, db, model, ann_map, ann):
     logging.info('Received a work from recog-sched (req_id={})'.format(work.req_id))
 
     # Calculate embeddings from model
-    embedding = model.predict(np.array([work.face_id]))[0]
+    embedding = model.predict(work.face_id)[0]
     logging.debug("Embedding calculated")
 
     # Perform ANN and send result to front-end-server
@@ -121,26 +121,35 @@ def face_recog_proc(sock, db, model, ann_map, ann):
     #    The number of neighbors that satisfied cond#1 is greater than cnt_thld
     # If there existed mor than one lables satisfied the above two conditions,
     # return user not found.
-    dist_thld = 0.2
+    dist_thld = 0.6
     cnt_thld = 2
-    ids, dists = ann.get_nns_by_vector(embedding, 10, include_distances=True)
+    ids, dists = ann.get_nns_by_vector(embedding, 20, include_distances=True)
+
+    logging.info("Candidates")
     # Check which neighbors satisfied cond#1
     near_enough_neighbor = {}
     for id, dist in zip(ids, dists):
         user_id = ann_map[id]
         if dist <= dist_thld:
+            print('User ID: {} {}'.format(user_id, dist))
             if user_id in near_enough_neighbor.keys():
                 near_enough_neighbor[user_id] += 1
             else:
                 near_enough_neighbor[user_id] = 1
 
-    # Check which neighbor satisfied cond#2
     result_cnt = 0
-    result_user_id = -1
-    for user_id in near_enough_neighbor:
-        if near_enough_neighbor[user_id] > cnt_thld:
-            result_cnt += 1
-            result_user_id = user_id
+    # If there is exately one person satisfied cond#1, output it.
+    if len(near_enough_neighbor)==1:
+        result_cnt = 1
+        user_id_list = list(near_enough_neighbor.keys())
+        result_user_id = user_id_list[0]
+    else:
+        # Check which neighbor satisfied cond#2
+        result_user_id = -1
+        for user_id in near_enough_neighbor:
+            if near_enough_neighbor[user_id] > cnt_thld:
+                result_cnt += 1
+                result_user_id = user_id
     # If there are exately one lable satisfied the two conditions,
     # return it. Otherwise, return user not found.
     result_msg = {}
