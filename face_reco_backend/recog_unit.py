@@ -76,8 +76,7 @@ def construct_ann_from_mongodb(db):
     # Prepare the mapping from ANN index to user_id
     # and the ANN instance.
     ann_map = {}
-    embedding_size = 64
-    ann = AnnoyIndex(embedding_size, 'euclidean')
+    ann = AnnoyIndex(EMBEDDING_SIZE(), 'euclidean')
     
     # Load all of the faces form MongoDB
     i=0

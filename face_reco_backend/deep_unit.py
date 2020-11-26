@@ -69,11 +69,6 @@ class Facenet():
     y = (x - mean) / std_adj
     return y
 
-  # L2 normalize to produce embeddings
-  def __l2_normalize(self, x, epsilon=1e-10):
-    output = x / np.sqrt(np.maximum(np.sum(np.square(x), keepdims=True), epsilon))
-    return output
-
 def main():
   LOG_FORMAT = '%(asctime)s [deep-unit]: [%(levelname)s] %(message)s'
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)

@@ -20,4 +20,4 @@ NN_INPUT_SHAPE = lambda: (FEATURE_SIZE(), )
 TRAIN_INPUT_SHAPE = lambda: (10, FEATURE_SIZE())
 
 # The size of calculated embedding
-EMBEDDING_SIZE = lambda: 64
+EMBEDDING_SIZE = lambda: 128

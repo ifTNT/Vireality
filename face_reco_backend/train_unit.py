@@ -23,6 +23,7 @@ import threading
 from keras.models import Model, load_model
 from keras.layers import Input, Flatten, Dense, concatenate,  Dropout, Lambda
 from keras.optimizers import Adam
+from libs.PSOkeras.psokeras import Optimizer as PSOptimizer
 
 from keras.utils import plot_model
 from keras.callbacks import ModelCheckpoint
@@ -88,29 +89,6 @@ def train_main(features, user_ids):
                 x_val.append(x)
                 y_val.append(y)
 
-    # x_test = []
-    # x_test = np.array(x_test)
-    # path_xTrain = copy.deepcopy(x_train)
-    # x_train = np.array([],dtype=x_train.dtype)
-    # for i in range(int(len(path_xTrain)/10)):
-    #     np.random.shuffle(path_xTrain[i * 10 : (i + 1) * 10])
-    #     x_test = np.append(x_test, path_xTrain[i * 10 + 8 : (i + 1) * 10])
-    #     x_train = np.append(x_train, path_xTrain[i * 10 : (i + 1) * 10 -2])
-    # x_train = np.reshape(x_train,(len(x_train)// 1792, 1, 1792))
-    # x_test = np.reshape(x_test,(len(x_test)// 1792, 1, 1792))
-
-    # y_test = []
-    # input_image_shape = 
-    # x_val = x_test
-    # y_val = []
-    # for i in y_train:
-    #     for j in range(8):
-    #         y_test.append(i)
-    #     for j in range(2):
-    #         y_val.append(i)
-    # y_test = np.array(y_test)
-    # y_val = np.array(y_val)
-
     # Convert the training set and vaildation set to numpy array.
     # So that we can feed them into keras.
     x_train = np.array(x_train)
@@ -125,6 +103,7 @@ def train_main(features, user_ids):
     epochs = 30
     learning_rate = 0.01
     embedding_size = EMBEDDING_SIZE()
+    use_pso = False
 
     # Define the architecture of training neural network
     base_network = create_base_network(NN_INPUT_SHAPE(), embedding_size)
@@ -139,52 +118,92 @@ def train_main(features, user_ids):
     # Defining a model with inputs (images, labels) and outputs (labels_plus_embeddings)
     model = Model(inputs=[input_faceId, input_labels],
                     outputs=labels_plus_embeddings)
-    # Output the architecture of training model
-    model.summary()
-
-    # The optimiser. RMS is good too!
-    opt = Adam(lr=learning_rate)
-    # Construct the training model withe custom triplet loss function
-    model.compile(loss=triplet_loss_adapted_from_tf, optimizer=opt)
 
     # Uses 'dummy' embeddings + dummy gt labels. Will be removed as soon as loaded, to free memory
     dummy_gt_train = np.zeros((len(x_train), embedding_size + 1))
     dummy_gt_val = np.zeros((len(x_val), embedding_size + 1))
     
-    # Train the model.
-    # It's noticeable that x_train and y_train are both feed into x.
-    # The reason is that triplet-loss need the distance between training labels,
-    # not distatnce between predicted label and true label.
-    history = model.fit(
-        x=[x_train,y_train],
-        y=dummy_gt_train,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=([x_val, y_val], dummy_gt_val))
+    logging.info("Begin trainiing")
+    if use_pso:
+        # [TODO] Use modidied PSO
+        # Instantiate optimizer with model, loss function, and hyperparameters
+        pso = PSOptimizer(
+            model=model,
+            loss=triplet_loss_adapted_from_tf,
+            n=30,  # Number of particles
+            acceleration=1.0,  # Contribution of recursive particle velocity (acceleration)
+            local_rate=0.6,    # Contribution of locally best weights to new velocity
+            global_rate=0.4   # Contribution of globally best weights to new velocity
+        )
+        # Train model on provided data
+        pso.fit(
+            [x_train, y_train],
+            dummy_gt_train,
+            steps=20,
+            batch_size=batch_size
+        )
 
-    # Remove the dummy data to save the memory
-    del dummy_gt_train
-    del dummy_gt_val
+        # Get a copy of the model with the globally best weights
+        model = pso.get_best_model()
 
-    # Training history visualization
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('Model loss (lr={}, n_train={}, n_val={})'.format(
-        learning_rate,
-        x_train.shape[0],
-        x_val.shape[0]
-    ))
-    plt.grid(True)
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    axes = plt.gca()
-    axes.set_ylim([0, 1])
-    plt.xticks([i for i in range(epochs)])
-    plt.legend(['Train', 'Val'], loc='upper left')
-    # Save history to file
-    plt.savefig('train_history/{}.png'.format(
-        int(datetime.now().timestamp()*1000)
-    ))
+        # Display the loss of selected model
+        train_loss = model.evaluate(
+            [x_train, y_train],
+            dummy_gt_train,
+            batch_size=batch_size,
+            verbose=0
+        )
+        val_loss = model.evaluate(
+            [x_val, y_val],
+            dummy_gt_val,
+            batch_size=batch_size,
+            verbose=0
+        )
+        logging.info(
+            "Model loss with PSO -- train: {:.4f}  test: {:.4f}".format(train_loss, val_loss)
+        )
+    else:
+        # The optimiser. RMS is good too!
+        opt = Adam(lr=learning_rate)
+        # Construct the training model withe custom triplet loss function
+        model.compile(loss=triplet_loss_adapted_from_tf, optimizer=opt)
+
+        # Train the model.
+        # It's noticeable that x_train and y_train are both feed into x.
+        # The reason is that triplet-loss need the distance between training labels,
+        # not distatnce between predicted label and true label.
+        history = model.fit(
+            x=[x_train,y_train],
+            y=dummy_gt_train,
+            batch_size=batch_size,
+            epochs=epochs,
+            validation_data=([x_val, y_val], dummy_gt_val))
+
+        # Remove the dummy data to save the memory
+        del dummy_gt_train
+        del dummy_gt_val
+
+        # Training history visualization
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('Model loss (lr={}, n_train={}, n_val={})'.format(
+            learning_rate,
+            x_train.shape[0],
+            x_val.shape[0]
+        ))
+        plt.grid(True)
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        fig = plt.gcf()
+        fig.set_size_inches(20, 10)
+        axes = plt.gca()
+        axes.set_ylim([0, 1])
+        plt.xticks([i for i in range(epochs)])
+        plt.legend(['Train', 'Val'], loc='upper left')
+        # Save history to file
+        plt.savefig('train_history/{}.png'.format(
+            int(datetime.now().timestamp()*1000)
+        ))
 
     # creating an empty network
     testing_model = create_base_network(NN_INPUT_SHAPE(), embedding_size)
@@ -195,7 +214,7 @@ def train_main(features, user_ids):
         layer_target.set_weights(weights)
         del weights
 
-    print("Training is done")
+    logging.info("Training is done")
     return testing_model
 
 def gen_user_id_embs(model, features, user_ids):
@@ -342,8 +361,6 @@ def main():
     if(not need_train):
         time.sleep(1)
         continue
-    
-    logging.info('Begin training')
 
     # Critical section: Read faceID DB from MongoDB.
     mutex.acquire()
