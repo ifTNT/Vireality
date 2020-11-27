@@ -189,8 +189,8 @@ router.post("/login", function(req, res, next) {
         return;
       } 
       console.log("Result :\n", user)
-      console.log(typeof(hashPW))
-      console.log(typeof(user[0].password))
+      // console.log(typeof(hashPW))
+      // console.log(typeof(user[0].password))
       if (user.length !== 0 && hashPW===user[0].password) {
         console.log("IN DB!")
         req.session.user_id = req.body.uid
