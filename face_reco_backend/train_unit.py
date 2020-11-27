@@ -1,6 +1,8 @@
 import time
 import numpy as np
 import os
+import io
+from pathlib import Path
 from datetime import datetime
 import copy
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -125,7 +127,6 @@ def train_main(features, user_ids):
     
     logging.info("Begin trainiing")
     if use_pso:
-        # [TODO] Use modidied PSO
         # Instantiate optimizer with model, loss function, and hyperparameters
         pso = PSOptimizer(
             model=model,
@@ -231,6 +232,16 @@ def gen_user_id_embs(model, features, user_ids):
 
     embeddings = model.predict(features)
 
+    # Save test embeddings for visualization in projector
+    vecs_path = Path('visualization/vecs.tsv')
+    np.savetxt(str(vecs_path), embeddings, delimiter='\t')
+
+    meta_path = Path('visualization/meta.tsv')
+    out_m = io.open(str(meta_path), 'w', encoding='utf-8')
+    for label in user_ids:
+        out_m.write(str(label) + "\n")
+    out_m.close()
+
     # Group all of the data to database
     grouped_db = zip(user_ids, embeddings)
 
@@ -303,7 +314,7 @@ mutex = threading.Lock()
 # This flag is also shared between feature receiver and trainer.
 # Since assignment of boolean in python is threadsafe,
 # no additional mutex is needed.
-need_train = True
+need_train = False
 
 # The thread to receive result from socket
 class FeatureReceiver(threading.Thread):

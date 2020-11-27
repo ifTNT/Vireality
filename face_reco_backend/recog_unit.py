@@ -90,9 +90,9 @@ def construct_ann_from_mongodb(db):
     logging.info("Constructing ANN searching trees.")
 
     # Construct the ANN searching tree
-    # Fixed to 10 trees.
+    # Fixed to 1024 trees.
     # [TODO] Adaptive tree number accroding to faces
-    ann.build(10)
+    ann.build(1024)
 
     logging.info("ANN searching tree constructed.")
 
