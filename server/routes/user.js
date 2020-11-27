@@ -261,7 +261,7 @@ router.post("/createAccount",async function(req, res, next) {
     insertObj["nickname"] = req.body.nickname
   }
 
-  if(req.body.avator!=="https://i.imgur.com/oPYT6RD.png"){
+  if(req.body.avator!=="https://i.imgur.com/WinIC3F.png"){
       options = {
         'method': 'POST',
         'url': 'https://api.imgur.com/3/image',

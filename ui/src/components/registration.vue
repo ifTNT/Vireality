@@ -1,54 +1,69 @@
 <template>
   <div class="registration">
     <div class="profile" v-if="pageState === 0">
-      <label class="uploadPicButton">
-        {{ upLoadPicName }}
-        <!-- 選擇檔案按鈕 但因為需要美化 因此直接display none -->
-        <input
-          type="file"
-          accept="image/jpg, image/jpeg, image/png, image/gif"
-          @change="changeImage"
-          style="display: none"
-        />
-      </label>
-      <img class="pic" :src="img" />
+      <div class="uploadPic">
+        <img :src="img"  class="pic"/>
+
+        <img class="uploadBtn" src="/static/media/camera_g.png"/>
+        <input type="file" 
+               accept="image/*" 
+               @change="changeImage"
+               class="customPicInput"   
+          />
+          <!-- <img class="uploadPicButton" for="customPicInput" src="/static/media/camera.png">
+            <input
+              type="file"
+              accept="image/jpg, image/jpeg, image/png, image/gif"
+              @change="changeImage"
+              style="opacity: 0;background-image: '/static/media/camera.png';"
+              id="customPicInput"
+            />
+          
+          <img class="pic" :src="img" /> -->
+      </div>
       <form class="inputProfile">
-        <div>
-          <label for="feedback-user">帳號</label>
-          <input v-model="userId" id="feedback-user" />
-          <p>介於1~20個字元{{ errAccount }}</p>
-          <label for="password">密碼</label>
-          <input v-model="password" type="password" id="password" />
-          <p>介於4~20個字元</p>
-        </div>
-        <div>
-          <label for="checkPassword">確認密碼</label>
-          <input v-model="checkPassword" type="password" id="checkPassword" />
-          <p v-if="correctPassword">一樣了~</p>
-          <p v-else>密碼不一樣</p>
-        </div>
-        <div>
-          <label for="nickname">暱稱</label>
-          <input v-model="nickname" type="text" id="nickname" />
-        </div>
-        <div>
-          <label for="birthday">生日</label>
-          <input v-model="birthday" id="birthday" type="date" />
-        </div>
-        <div>
-          <label for="interest">興趣</label>
-          <input v-model="interest" id="interest" type="text" />
-        </div>
-        <div>
-          <label for="intro">形容自己的一句話</label>
-          <input v-model="intro" id="intro" type="text" />
-        </div>
+          <div class="accountArea">
+            <label for="account">帳號</label>
+            <span style="color: #76a5af">介於1~20個字元{{ errAccount }}</span>
+            <div><input v-model="userId" id="account" /></div>
+          </div>
+          <div class="passwordArea">
+            <label for="password">密碼</label>
+            <span style="color: #76a5af">介於4~20個字元</span>
+            <div><input v-model="password" type="password" id="password" /></div>
+          </div>
+          <div class="checkPasswordArea">
+            <label for="checkPassword">確認密碼</label>
+            <span v-if="correctPassword" style="color: #b4a7d6;">一樣了~</span>
+            <span v-else style="color: #76a5af">密碼不一樣</span>
+            <div><input v-model="checkPassword" type="password" id="checkPassword" /></div>
+          </div>
+          <div class="nicknameArea">
+            <label for="nickname">暱稱</label>
+            <span style="color: #b4a7d6;">非必填</span>
+            <div><input v-model="nickname" type="text" id="nickname" /></div>
+          </div>
+          <div  class="birthdayArea">
+            <label for="birthday">生日</label>
+            <span style="color: #b4a7d6;">非必填</span>
+            <div><input v-model="birthday" id="birthday" type="date" /></div>
+          </div>
+          <div  class="interestArea">
+            <label for="interest">興趣</label>
+            <span style="color: #b4a7d6;">非必填</span>
+            <div><input v-model="interest" id="interest" type="text" /></div>
+          </div>
+          <div class="introArea">
+            <label for="intro">形容自己的一句話</label>
+            <span style="color: #b4a7d6;">非必填</span>
+            <div><input v-model="intro" id="intro" type="text" /></div>
+          </div>
       </form>
-      <p>{{ errMessage }}</p>
+      <p  style="color: #76a5af">{{ errMessage }}</p>
       <img
-        class="nextPage"
-        src="/static/media/rightarrow.png"
-        @click="nextPage"
+        class="nextPageImg"
+        src="/static/media/rightarrow_green.png"
+        @click="nextPageConsent"
       />
     </div>
     <div class="consentForm" v-if="pageState === 1">
@@ -59,8 +74,8 @@
       <div>
         {{ errNotAgree }}
         <img
-          class="nextPage"
-          src="/static/media/rightarrow.png"
+          class="nextPageImg"
+          src="/static/media/rightarrow_green.png"
           @click="nextFaceFeature"
         />
       </div>
@@ -89,8 +104,8 @@
       </div>
       <div>
         <img
-          class="nextPage"
-          src="/static/media/rightarrow.png"
+          class="nextPageImg"
+          src="/static/media/rightarrow_green.png"
           @click="finish"
         />
       </div>
@@ -108,7 +123,7 @@ export default {
       userId: "",
       upLoadPicName: "上傳照片",
       hasUploadPic: false,
-      img: "https://i.imgur.com/oPYT6RD.png",
+      img: "https://i.imgur.com/WinIC3F.png",
       file: "",
       errAccount: "",
       errMessage: "",
@@ -172,7 +187,7 @@ export default {
       this.birthday = year + "-" + month + "-" + date;
       field.value = year + "-" + month + "-" + date;
     },
-    nextPage() {
+    nextPageConsent() {
       console.log("想要下一頁");
       this.errMessage = "";
       this.errAccount = "";
@@ -193,7 +208,7 @@ export default {
                 console.log("NEXT");
                 this.pageState = 1;
               } else {
-                this.errAccount = "已存在此帳號";
+                this.errAccount = ",已存在此帳號";
               }
             }.bind(this)
           )
@@ -201,7 +216,7 @@ export default {
             console.log(error);
           });
       } else {
-        this.errMessage = "帳號密碼錯誤";
+        this.errMessage = "帳號密碼輸入格式錯誤";
       }
     },
     nextFaceFeature() {
@@ -241,6 +256,66 @@ export default {
 };
 </script>
 <style scoped>
+.uploadPic {
+    position: relative;
+    margin-bottom: 4vh;
+}
+/*customPicInput uploadBtn 修改時要同時修改*/
+.customPicInput{
+    position: absolute;
+    /* top: 0; */
+    bottom: 0;
+    /* left: 0; */
+    right: 0;
+    opacity: 0;
+    display: block;
+    width: 6vw;
+    height: 6vw;
+    clear: both;
+    margin-top: 10vw;
+    /* margin-bottom: 10vw; */
+}
+.uploadBtn{
+  width: 6vw;
+  height: 6vw;
+  margin-top: 10vw;
+  /* border-radius: 100%; */
+  /* margin-bottom: 10vw; */
+  /* margin-left: -7vw; */
+}
+.pic {
+  width: 45vw;
+  height: 45vw;
+  margin-top: 15vw;
+  border-radius: 100%;
+  /* margin-bottom: 5vw; */
+}
+.profile{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.inputProfile input{
+    border: 1px solid #45818e;
+    border-radius: 4px;
+    outline:none; 
+} 
+#account,#password,#checkPassword,#nickname,#birthday,#interest,#intro{
+    width:80vw;
+    margin:1vh  0 ;
+}
+.nextPageImg {
+  width: 10vw;
+  height: 10vw;
+  margin-top: 1vh;
+}
+.inputProfile span{
+    font-size: 0.7em;
+
+}
+.inputProfile label{
+  color: #45818e
+}
 .uploadPicButton {
   width: 45vw;
   height: 45vw;
@@ -259,21 +334,8 @@ export default {
     margin-left: -7vw;
     margin-top: -10vh; */
 }
-.pic {
-  width: 45vw;
-  height: 45vw;
-  /* position: fixed;
-    top: 5vw; */
-  margin-top: 15vw;
-  /* margin-left: 23vw; */
-  border-radius: 100%;
-  /* background-color: brown; */
-  margin-bottom: 5vw;
-}
-.nextPage {
-  width: 10vw;
-  height: 10vw;
-}
+
+
 .consentContent {
   resize: none;
   width: 80vw;
