@@ -14,6 +14,7 @@ import numpy as np
 import random
 import cv2
 import os
+from pathlib import Path
 
 # Shared counter between sender and receiver
 issued_label = {}
@@ -41,7 +42,7 @@ class WorkSender(threading.Thread):
         logging.info('Begin send work to backend')
         req_id = 0
         new_work = ()
-        base_dir = 'test_images/'
+        base_dir = Path('test_images/')
         n_sub_dir = len(os.listdir(base_dir))
         # Training new face
         for i, sub_dir in enumerate(os.listdir(base_dir)):
@@ -61,21 +62,23 @@ class WorkSender(threading.Thread):
                 req_id+=1
 
     def get_images(self, base_dir, sub_dir):
-        imgs_dir = base_dir+"/"+sub_dir
+        imgs_dir = base_dir / sub_dir
         imgs = self.generate_random_sample(imgs_dir)
         return imgs
 
-    def generate_random_sample(self, dir):
-        cascade_path = os.path.abspath('./models/haarcascade_frontalface_alt2.xml')
-        cascade = cv2.CascadeClassifier(cascade_path)
-        file_list = os.listdir(dir)
+    def generate_random_sample(self, directory):
+        cascade_path = Path('./models/haarcascade_frontalface_alt2.xml')
+        cascade_path = cascade_path.resolve()
+        cascade = cv2.CascadeClassifier(str(cascade_path))
+        file_list = os.listdir(directory)
         
         images = []
         random_range = 10 # The random range of rotation
         accepted_cnt = 0
         rejected_cnt = 0
         while accepted_cnt < 10 and rejected_cnt < 100:
-            img = cv2.imread(dir+"/"+file_list[accepted_cnt % len(file_list)])
+            img_path = directory / file_list[accepted_cnt % len(file_list)]
+            img = cv2.imread(str(img_path))
             # The angle of rotation, in degree
             rotate_angle = random.uniform(-random_range, random_range)
             random_img = self.rotate(img, rotate_angle)

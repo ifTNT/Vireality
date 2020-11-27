@@ -12,6 +12,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import cv2
 from skimage.transform import resize
+from pathlib import Path
 
 from keras.models import load_model
 from keras.models import Model
@@ -28,7 +29,7 @@ class Facenet():
 
     logging.info(f'Loading facenet model...')
     start = time.time()
-    model_path = os.path.abspath(inception_resnet_v1_path)
+    model_path = str(inception_resnet_v1_path.resolve())
     inception_resnet_v1 = load_model(model_path, compile=False)
 
     # Remove the dropout layer, full-connected layer
@@ -73,10 +74,11 @@ def main():
   LOG_FORMAT = '%(asctime)s [deep-unit]: [%(levelname)s] %(message)s'
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
-  model_path = 'models/Inception_ResNet_v1_MS_Celeb_1M.h5'
-  cascade_path = os.path.abspath('./models/haarcascade_frontalface_alt2.xml')
+  model_path = Path('models/Inception_ResNet_v1_MS_Celeb_1M.h5')
+  cascade_path = Path('./models/haarcascade_frontalface_alt2.xml')
+  cascade_path = cascade_path.resolve()
   logging.info('I am a deep-unit')
-  cascade = cv2.CascadeClassifier(cascade_path)
+  cascade = cv2.CascadeClassifier(str(cascade_path))
   logging.info('Haar cascade classifier loaded.')
   facenet = Facenet(model_path, DEEP_INPUT_SHAPE()[1])
   
