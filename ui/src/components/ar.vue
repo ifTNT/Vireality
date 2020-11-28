@@ -60,7 +60,8 @@ export default {
     started: false,
     videoWidth: 0,
     videoHeight: 0,
-    articles: new Set([]),
+    article_list,
+    loaded_article_id: new Set([]),
     lossLocation: false,
   }),
   mounted() {
@@ -268,7 +269,7 @@ export default {
             // Iterate the articles
             res.result.forEach(async (article) => {
               // If there existed same article, do not append.
-              if (this.articles.has(article.id)) return;
+              if (this.loaded_article_id.has(article.id)) return;
 
               // Fetch the texture from external website.
               const texture = await this.loadTexture(article.thumbnail);
@@ -285,7 +286,8 @@ export default {
 
               // Append article
               this.addArticle(x, y, articleMaterial, article.id);
-              this.articles.add(article.id);
+              this.loaded_article_id.add(article.id);
+              this.$store.commit('add_article', {article})
             });
           }
         });
@@ -323,6 +325,7 @@ export default {
       faceOnCamera();
 
       this.scene.add(newArticle);
+      this.article_list.push(newArticle);
     },
   },
   components: {
