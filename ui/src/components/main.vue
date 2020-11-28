@@ -169,7 +169,9 @@ export default {
   },
   methods: {
     openUrl(url) {
-      this.$router.push(url);
+      var urlSlit = url.split("/");
+      var urlSend = `${urlSlit[0]}/${urlSlit[1]}/${urlSlit[2]}?articleId=${urlSlit[3]}`;
+      this.$router.push(urlSend);
     },
     click(event) {
       if (this.disableGesture) return;

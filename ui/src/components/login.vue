@@ -6,7 +6,7 @@
             <div class="accountArea">
                 <label for="account">帳號</label>
                 <span v-if="state" class="noticeAccountErr">
-                    介於1~20個字元
+                    介於1~20個字元{{errMassageAC}}
                 </span>
                 <span v-else class="noticeAccountOK">
                     OK!
@@ -19,9 +19,9 @@
             <div class="passwordArea">
                 <label for="password">密碼</label>
                 <span class="noticePassword" v-bind:style="{ color: errColor}">
-                    介於4~20個字元{{errMassage}}
+                    介於4~20個字元{{errMassagePW}}
                 </span>
-                <input type="password" id="password" />
+                <input  type="password" id="password" />
             </div>   
             
         </form>
@@ -46,7 +46,8 @@ export default {
     return {
         userId: '',
         state:true,
-        errMassage:"",
+        errMassagePW:"",
+        errMassageAC:"",
         errColor: '#76a5af',
 
     };
@@ -68,8 +69,10 @@ export default {
        },
        login(){
            console.log("登入")
+           this.errMassagePW = ""
+           this.errMassageAC=""
            const password = document.querySelector("#password").value
-           if(!this.state && (password.length > 3 && password.length < 21)){
+           if(!this.state && (password.length >=4  && password.length <=20 )){
             console.log("OKLOGIN")
             axios.post(server.apiUrl("/user/login"),
             {
@@ -80,11 +83,16 @@ export default {
                 function(response) {
                     console.log(response.data);
                     if(response.data.ok==='true'){
-                    this.errMassage = ""
-                    document.location.href = "/#/main"
+                        document.location.href = "/#/main"
                     }
                     else{
-                        this.errMassage = ",密碼錯誤"
+                        if(response.data.result==="帳號錯誤"){
+                            this.state = true
+                            this.errMassageAC=",帳號錯誤"
+                        }
+                        else{
+                            this.errMassagePW = ",密碼錯誤"
+                        }
                         //this.errColor = "red"
                     }
                 }.bind(this)
