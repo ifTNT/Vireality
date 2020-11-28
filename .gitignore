@@ -16,3 +16,4 @@ dist/
 
 # Token
 server/routes/token.js
+ui/package-lock.json

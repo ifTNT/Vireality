@@ -1,4 +1,5 @@
 <template>
+<!-- [TODO]:bottom加一點高度 生日的部分會灰底 -->
   <div class="registration">
     <div class="profile" v-if="pageState === 0">
       <div class="uploadPic">
@@ -9,7 +10,7 @@
                accept="image/*" 
                @change="changeImage"
                class="customPicInput"   
-          />
+        />
           <!-- <img class="uploadPicButton" for="customPicInput" src="/static/media/camera.png">
             <input
               type="file"
@@ -56,7 +57,7 @@
           <div class="introArea">
             <label for="intro">形容自己的一句話</label>
             <span style="color: #b4a7d6;">非必填</span>
-            <div><input v-model="intro" id="intro" type="text" /></div>
+            <div><input  v-model="intro" id="intro" type="text" /></div>
           </div>
       </form>
       <p  style="color: #76a5af">{{ errMessage }}</p>
@@ -67,12 +68,17 @@
       />
     </div>
     <div class="consentForm" v-if="pageState === 1">
-      <h2>即將開啟鏡頭</h2>
-      <p>我們即將開啓您的前鏡頭拍攝您的臉部請同意以下事項</p>
-      <textarea v-model="content" class="consentContent"></textarea>
-      <input v-model="agreeConsent" type="checkbox" /> 我同意<br />
+      <div class="openCameraTitle">即將開啟鏡頭</div>
+      <!-- <div class="openCameraNoticeMessage">我們即將開啓您的前鏡頭拍攝您的臉部請同意以下事項</div> -->
+      <textarea v-model="content" readonly="readonly" class="consentContent"></textarea>
+      <div class="agreeArea">
+          <input v-model="agreeConsent" type="checkbox" id="agreeCheckBox"/> 
+          <label for="agreeCheckBox"></label>
+          我同意
+          <span style="color: #76a5af"> {{ errNotAgree }} </span>
+      </div>
+      
       <div>
-        {{ errNotAgree }}
         <img
           class="nextPageImg"
           src="/static/media/rightarrow_green.png"
@@ -81,25 +87,36 @@
       </div>
     </div>
     <div class="camera" v-if="pageState === 2">
+      <camera
+        class="fullScreen"
+        facingMode="user"
+      />
       <div class="firstFaceDetection">
         <!-- 告訴使用者要如何偵測 -->
         <div class="teachDescription">{{ teachMessage }}</div>
         <!-- 偵測不到臉部的時候需要顯示什麼 正常時不顯示-->
-        <div class="warningNoDetection" v-if="showWarningMessage">
+        <!-- <div class="warningNoDetection" v-if="showWarningMessage">
           <img class="warningImg" src="/static/media/warning.png" />
           <span class="warningMessage">{{ warningMessage }}</span>
-        </div>
+        </div> -->
         <!-- 顯示進度圈圈 -->
-        <img
+        <!-- <img
           v-if="showProgress"
           class="progressFaceDetection"
           src="/static/media/loader.png"
-        />
+        /> -->
         <!-- 完成之後會顯示此圖 未完成時不出現 -->
-        <img
+        <!-- <img
           v-else
           class="compeleteFaceDetection"
           src="/static/media/compelete.png"
+        /> -->
+        <loading-progress
+          :progress="progressValue"
+          size="110"
+          rotate
+          fillDuration="2"
+          rotationDuration="1"
         />
       </div>
       <div>
@@ -107,17 +124,27 @@
           class="nextPageImg"
           src="/static/media/rightarrow_green.png"
           @click="finish"
+          style="opacity: 0.8;"
         />
       </div>
     </div>
+
   </div>
 </template>
 <script>
 import axios from "axios";
+import 'vue-progress-path/dist/vue-progress-path.css'
+import VueProgress from 'vue-progress-path'
+import Vue from 'vue' 
+Vue.use(VueProgress)
+
+
 const consentContent = require("./consent");
+const Camera = () => import("./camera.vue");
 
 export default {
   name: "register",
+
   data() {
     return {
       userId: "",
@@ -145,7 +172,14 @@ export default {
       content: consentContent.content,
       agreeConsent: false,
       errNotAgree: "",
+      progressValue:0.0,
+      timer: null,
+
     };
+  },
+  components: {
+    camera: Camera,
+    // Progress,
   },
   watch: {
     checkPassword: function () {
@@ -159,8 +193,23 @@ export default {
   },
   mounted() {
     this.MaxChooseDate();
+    /* ------- Progress Test -------- */
+    this.timer=setInterval(this.countdown, 5000);
   },
   methods: {
+    /* ------- Progress Test Start -------- */
+    countdown() {
+        this.progressValue =  Math.round(this.progressValue * 10 + 1) / 10 
+        console.log(this.progressValue)
+        if(this.progressValue>=1){
+           clearInterval(this.timer)
+         }
+    },
+    beforeDestroy() {
+      clearInterval(this.timer);
+    },
+    /* ------- Progress Test End -------- */
+
     changeImage(e) {
       const file = event.target.files.item(0); //取得File物件
       const reader = new FileReader(); //建立FileReader 監聽 Load 事件
@@ -225,7 +274,7 @@ export default {
       if (this.agreeConsent) {
         this.pageState = 2;
       } else {
-        this.errNotAgree = "還沒同意哦!";
+        this.errNotAgree = ",還沒同意哦!";
       }
     },
     finish() {
@@ -256,6 +305,11 @@ export default {
 };
 </script>
 <style scoped>
+.vue-progress-path{
+  z-index: 111111;
+  margin-top: 40vw;
+}
+
 .uploadPic {
     position: relative;
     margin-bottom: 4vh;
@@ -304,50 +358,109 @@ export default {
     width:80vw;
     margin:1vh  0 ;
 }
-.nextPageImg {
-  width: 10vw;
-  height: 10vw;
-  margin-top: 1vh;
+#birthday{
+  background-color: white;
 }
 .inputProfile span{
     font-size: 0.7em;
-
+}
+input[type="checkbox"] {
+    display:none;
+}
+input[type="checkbox"] + label {
+    display:inline-block;
+    width:4vw;
+    height:4vw;
+    background-image:url("/static/media/checkbox_no.png");
+    background-repeat:  no-repeat;
+    background-size:contain;
+}
+input[type="checkbox"]:checked + label {
+    background-image:url("/static/media/checkbox_yes.png");
+}
+.nextPageImg {
+  width: 8vw;
+  height: 8vw;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  z-index: 1111;
 }
 .inputProfile label{
   color: #45818e
 }
-.uploadPicButton {
+.consentForm{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #45818e;
+}
+.openCameraTitle{
+  font-size: 6vw;
+  font-weight:bold;
+  margin-top:8vh;
+}
+/* .openCameraNoticeMessage{
+  font-size: 4vw;
+  margin-top:1vh;
+  width: 80vw;
+} */
+.consentContent {
+  resize: none;
+  width: 80vw;
+  height: 80vw;
+  margin-top:1vh;
+  color:#8F8F8F;
+  font-size: 4vw;
+  padding: 1.5vw 1.5vw;
+  border: 1px solid #45818e;
+
+}
+.agreeArea{
+  vertical-align:middle;	
+  margin-top:1vh;
+  margin-bottom:1vh;
+  font-size: 4vw;
+}
+
+/* .uploadPicButton {
   width: 45vw;
-  height: 45vw;
+  height: 45vw;*/
   /* line-height: 2em; */
   /* text-align: center; */
-  border: 0;
+  /* border: 0;
   border-radius: 10px;
   background-color: pink;
   font-size: 10px;
   margin-top: 15vw;
   border-radius: 100%;
-  margin-bottom: 5vw;
+  margin-bottom: 5vw; */
   /*position: fixed;
      top: 50vh;
     left: 50vw;
     margin-left: -7vw;
     margin-top: -10vh; */
-}
+/*}*/
 
 
-.consentContent {
-  resize: none;
-  width: 80vw;
-  height: 80vw;
-}
-
-.camera {
-  height: 155vw; /*34.5em*/
+.fullScreen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
   width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+/* .camera { */
+  /* height: 155vw; 34.5em */
+  /* width: 100vw; */
   /*以下純測試用 加入相機後可以刪除的部分*/
-  background-image: url("/static/media/testPic.jpg");
-  background-size: cover;
+  /* background-image: url("/static/media/testPic.jpg"); */
+  /* background-size: cover; */
+/* }  */
+
+camera{
+  position: absolute;
+  z-index: -19999;
 }
 
 .firstFaceDetection {
@@ -357,7 +470,6 @@ export default {
   /*justify-content: center;*/
   flex-direction: column;
   align-items: center;
-  font-family: "Microsoft JhengHei", Verdana;
 }
 
 .teachDescription {
@@ -370,6 +482,7 @@ export default {
   line-height: 5vh;
   border-radius: 10px;
   margin-top: 2vh;
+  z-index: 1111;
 }
 
 .warningNoDetection {
@@ -377,15 +490,23 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* opacity: 0.8; */
+  z-index: 1111;
+
 }
 
 .warningImg {
   width: 9vw;
   height: auto;
+  z-index: 1111;
+
 }
 
 .warningMessage {
   font-size: xx-large;
+  z-index: 1111;
+  color: red;
+
 }
 
 /* 下面兩個class設定都要一樣 一個是進度條 一個是完成圖*/
@@ -399,6 +520,8 @@ export default {
   margin-left: -15vw;
   margin-top: -15vw; */
   margin-top: 40vw;
+  z-index: 1111;
+
 }
 
 /* 以下為響應式的設定 */

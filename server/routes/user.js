@@ -191,6 +191,9 @@ router.post("/login", function(req, res, next) {
       console.log("Result :\n", user)
       // console.log(typeof(hashPW))
       // console.log(typeof(user[0].password))
+      if(user.length === 0){
+        return res.json({ ok: "false" ,result: "帳號錯誤"});
+      }
       if (user.length !== 0 && hashPW===user[0].password) {
         console.log("IN DB!")
         req.session.user_id = req.body.uid
@@ -202,7 +205,7 @@ router.post("/login", function(req, res, next) {
         });
       }
       else{
-        return res.json({ ok: "false" ,result: []});
+        return res.json({ ok: "false" ,result: "密碼錯誤"});
         
       }
     });
