@@ -366,21 +366,18 @@ export default {
           let face_y = element.position[1];
           let face_width = element.position[2];
           let face_height = face_width;
-          let font_size = 30;
+          let font_size = Math.floor(face_height / 4);
           ctx.font = `${font_size}px Roboto,微軟正黑體,Microsoft JhengHei,sans-serif`;
           // The margin of user ID box, in pixels.
           let margin = 10;
 
           //Draw the marker of detected face
-          const aspect_ratio = 0.5;
+          const aspect_ratio = element.userID === undefined ? 0.5 : 0.25;
           let marker_height = face_height * aspect_ratio;
           let marker_width = face_width * aspect_ratio;
           //Calculate offset. Negative is ok.
-          let marker_y =
-            element.userID === undefined
-              ? face_y - marker_height
-              : face_y - marker_height - font_size - 2 * margin;
-          let marker_x = face_x + marker_width / 2;
+          let marker_y = face_y - marker_height;
+          let marker_x = face_x + face_width / 2 - marker_width / 2;
           ctx.drawImage(
             this.markImg,
             marker_x,
@@ -395,7 +392,7 @@ export default {
 
             let user_id_width = ctx.measureText(element.userID).width;
             let user_id_x = face_x + face_width / 2 - user_id_width / 2;
-            let user_id_y = face_y - margin;
+            let user_id_y = marker_y - margin;
 
             // The drawing position of background rectangle
             let rect_width = user_id_width + 2 * margin;
@@ -404,7 +401,7 @@ export default {
             let rect_y = user_id_y - user_id_height - margin;
 
             // Draw the background box
-            ctx.fillStyle = "#76a5afaa";
+            ctx.fillStyle = "#000000aa";
             ctx.fillRect(rect_x, rect_y, rect_width, rect_height);
 
             ctx.fillStyle = "white";

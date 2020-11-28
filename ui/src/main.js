@@ -10,6 +10,9 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons/faPlayCircle";
 import { faUser } from "@fortawesome/free-solid-svg-icons/faUser";
 import { faCommentAlt } from "@fortawesome/free-solid-svg-icons/faCommentAlt";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
+import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
 // Not used libraries of font-awesone
 //import { fas } from '@fortawesome/free-solid-svg-icons'
 //import { far } from '@fortawesome/free-regular-svg-icons'
@@ -20,6 +23,9 @@ export function init() {
   library.add(faPlayCircle);
   library.add(faUser);
   library.add(faCommentAlt);
+  library.add(faChevronLeft);
+  library.add(faUpload);
+  library.add(faTimesCircle);
   Vue.component("font-awesome-icon", FontAwesomeIcon);
   Vue.config.productionTip = false;
 

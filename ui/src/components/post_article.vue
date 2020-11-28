@@ -1,60 +1,69 @@
  <template>
   <!-- [TODO]: 高度修改(畫面 地圖大小 上傳圖片) -->
   <!-- 個人文章還沒抓到個人定位 -->
-  <div class="post">
-    <header>
-      <nav class="backAndNextButton">
-        <img
-          src="static/media/back.svg"
-          @click.prevent="handleBack(fromRoute)"
-        />
-        <div
-          class="nextButton"
-          v-if="choosePicAndContent && this.img != null"
-          @click="nextSetPage"
-        >
-          {{ nextButtonName }}
-        </div>
-        <div
-          class="postButton"
-          @click="post"
-          v-if="(chooseLocation || placeOrPersonal) && geolocationReady"
-        >
-          {{ postButtonName }}
-        </div>
-        <div
-          class="nextButton"
-          @click="nextSetLocationPage"
-          v-if="choseTypeAndPrivacy && !placeOrPersonal"
-        >
-          {{ nextButtonName }}
-        </div>
-      </nav>
-      <nav></nav>
-    </header>
+  <div>
+    <nav class="backAndNextButton">
+      <font-awesome-icon
+        icon="chevron-left"
+        class="backButton"
+        size="2x"
+        @click.prevent="handleBack(fromRoute)"
+      />
+      <div
+        class="btn"
+        v-if="choosePicAndContent && this.img != null"
+        @click="nextSetPage"
+      >
+        {{ nextButtonName }}
+      </div>
+      <div
+        class="btn"
+        @click="post"
+        v-if="(chooseLocation || placeOrPersonal) && geolocationReady"
+      >
+        {{ postButtonName }}
+      </div>
+      <div
+        class="btn"
+        @click="nextSetLocationPage"
+        v-if="choseTypeAndPrivacy && !placeOrPersonal"
+      >
+        {{ nextButtonName }}
+      </div>
+    </nav>
 
     <div class="postArticleBody" v-if="choosePicAndContent">
       <div class="picture">
-        <label class="uploadPicButton">
-          {{ upLoadPicName }}
+        <label for="article-file">
+          <div class="uploadPicButton" v-if="!hasUploadPic">
+            <font-awesome-icon icon="upload" class="backButton" size="3x" />
+          </div>
+          <div class="imgContainer" v-if="hasUploadPic">
+            <img class="pic" :src="img" />
+          </div>
           <!-- 選擇檔案按鈕 但因為需要美化 因此直接display none -->
-          <input
-            type="file"
-            accept="image/jpg, image/jpeg, image/png, image/gif"
-            @change="changeImage"
-            multiple
-            style="display: none"
-          />
         </label>
-        <img class="pic" v-if="hasUploadPic" :src="img" />
+        <input
+          id="article-file"
+          type="file"
+          accept="image/jpg, image/jpeg, image/png, image/gif"
+          @change="changeImage"
+          multiple
+          style="display: none"
+        />
+        <!-- <div
+          @click="hasUploadPic = false"
+          v-if="hasUploadPic"
+          class="cancelButton"
+        >
+          <font-awesome-icon icon="times-circle" size="2x" />
+        </div> -->
       </div>
-      <div class="textArea">
-        <textarea
-          placeholder="輸入文章內容"
-          class="inputContent"
-          v-model="content"
-        ></textarea>
-      </div>
+      <textarea
+        placeholder="輸入文章內容"
+        class="inputContent"
+        v-model="content"
+      ></textarea>
     </div>
 
     <div class="TypeAndPrivacy" v-if="choseTypeAndPrivacy">
@@ -80,8 +89,8 @@
     <mapbox
       v-on:childByValue="childByValue"
       class="map"
-      mapWidth="100vw"
-      mapHeight="70vh"
+      mapWidth="100%"
+      mapHeight="calc(80vh - 3rem)"
       v-if="chooseLocation"
     ></mapbox>
     <!-- <div class="map" id="googleMap" v-if="chooseLocation" ></div> -->
@@ -151,9 +160,7 @@ export default {
       this.hasUploadPic = true;
 
       // Enter full screen again
-      if (screenfull.isEnabled) {
-        screenfull.request();
-      }
+      screenfull.request();
     },
 
     handleBack(fallback) {
@@ -200,148 +207,126 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-      document.location.href = "/#/main";
+      // Go back to main
+      this.$router.back();
     },
   },
 };
 </script>
 
 <style scoped lang="stylus">
-.post {
-  background-color: rgba(0, 0, 0, 0.4);
-  font-family: Microsoft JhengHei, 'Roboto Slab', serif;
-  height: 100vh;
-  width: 100vw;
-}
+.backAndNextButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+  height: 3em;
+  background: rgba(255, 255, 255, 0.8);
+  box-sizing: border-box;
 
-header {
-  .backAndNextButton {
-    display: flex;
-    Justify-content: space-between;
-    align-items: center;
-    padding: 1vh 1vw;
-
-    img {
-      height: 1.5em;
-    }
-
-    .nextButton {
-      width: 12vw;
-      height: 1.5em;
-      text-align: center;
-      border: 0;
-      border-radius: 10px;
-      background-color: white;
-      font-size: 25px;
-      line-height: 1.5em;
-    }
-
-    .nextButton:active {
-      background-color: white; // 可更改
-    }
+  .btn {
+    height: 2em;
+    padding: 0.5em;
+    box-sizing: border-box;
+    text-align: center;
+    border: solid 1px black;
+    border-radius: 10px;
+    font-size: 0.9rem;
   }
 
-  nav {
-    padding: 1vh 1vw;
-    display: flex;
-    justify-content: flex-end;
-
-    .postButton {
-      width: 12vw;
-      height: 1.5em;
-      text-align: center;
-      border: 0;
-      border-radius: 10px;
-      background-color: white;
-      font-size: 25px;
-      line-height: 1.5em;
-    }
+  .btn:active {
+    background-color: black;
+    color: white;
   }
 }
 
 .postArticleBody {
-  margin: 1vh 0;
-  height: 91vh;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: calc(80vh - 3rem);
+  overflow-y: scroll;
 
   .picture {
-    padding: 0 2.5vw;
-    width: 90vw;
-    height: 90vw;
+    // Aspect-ratio: 1:1
+    width: 80vw;
+    height: 80vw;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     .uploadPicButton {
-      width: 15vw;
-      height: 2em;
-      line-height: 2em;
+      padding: 1em;
+      width: 5em;
+      height: 5em;
+      box-sizing: border-box;
       text-align: center;
       border: 0;
-      border-radius: 10px;
-      background-color: white;
-      font-size: 30px;
-      position: fixed;
-      top: 50vh;
-      left: 50vw;
-      margin-left: -7vw;
-      margin-top: -10vh;
+      border-radius: 50%;
+      background-color: #76a5af;
+      color: white;
     }
 
     .uploadPicButton:active {
-      background-color: white; // 可更改
+      background-color: #45818e;
     }
 
     img {
-      width: 90vw;
-      height: 90vw;
-      display: inline;
-      margin-right: 2.5vw;
-      margin-left: 2.5vw;
+      width: 80vw;
+      height: 80vw;
+      object-fit: cover;
+      // display: inline;
+      // margin-right: 2.5vw;
+      // margin-left: 2.5vw;
+    }
+
+    .cancelButton {
+      height: 100%;
+      display: flex;
+      justify-conetnt: flex-start;
     }
   }
 
-  .textArea {
-    margin: 1vh auto;
-    width: 100vw;
-    padding: 0 5vw;
-    box-sizing: border-box;
-
-    .inputContent {
-      width: 87 vw;
-      padding: 1vh;
-      background: white;
-      min-height: 10em;
-      font-size: 3vw;
-      resize: none;
-    }
+  .inputContent {
+    width: 80%;
+    margin: 2em 0;
+    background: white;
+    min-height: 10em;
+    resize: none;
   }
 }
 
 // MAP
 .map {
-  // background-color: rgb(255, 255, 255, );
-  height: 70vh;
-  width: 100vw;
-  margin-top: 3vh;
-  animation-name: slideUp;
+  animation-name: fadein;
   animation-duration: 1s;
 }
 
 // MAP
 .remind {
-  font-size: 5vw;
-  text-align: center;
-  margin-top: 2vh;
+  position: relative;
+  top: -3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 4rem;
+  box-sizing: border-box;
+  background: #ffffffaa;
   animation-name: slideUp;
   animation-duration: 1s;
+  z-index: 999;
 }
 
 // MAP
-@keyframes slideUp {
+@keyframes fadin {
   from {
-    margin-top: 100vh;
+    opacity: 0;
   }
 
   to {
-    margin-top: 3vh;
+    opacity: 1;
   }
 }
 
@@ -356,76 +341,6 @@ header {
 
   .privacy, .type {
     margin: 3vh 0;
-  }
-}
-
-@media screen and (min-width: 500px) and (max-width: 900px) {
-  .postArticleBody {
-    .picture {
-      .uploadPicButton {
-        font-size: 25px;
-        width: 15vw;
-      }
-    }
-  }
-}
-
-@media screen and (min-width: 300px) and (max-width: 695px) {
-  header {
-    .backAndNextButton {
-      .nextButton {
-        width: 14vw;
-        font-size: 13px;
-      }
-    }
-
-    // MAP
-    nav {
-      .postButton {
-        font-size: 13px;
-        width: 14vw;
-      }
-    }
-  }
-
-  .postArticleBody {
-    .picture {
-      .uploadPicButton {
-        width: 25vw;
-        font-size: 15px;
-        margin-left: -12vw;
-        margin-top: -18vh;
-      }
-    }
-  }
-
-  .postArticleBody {
-    .textArea {
-      .inputContent {
-        min-height: 10em;
-        font-size: 3vw;
-      }
-    }
-  }
-
-  @media screen and (min-height: 750px) and (max-height: 900px) {
-    .postArticleBody {
-      .textArea {
-        .inputContent {
-          min-height: 10em;
-          font-size: 3vw;
-        }
-      }
-    }
-
-    .postArticleBody {
-      .picture {
-        .uploadPicButton {
-          margin-left: -12vw;
-          margin-top: -23vh;
-        }
-      }
-    }
   }
 }
 </style>

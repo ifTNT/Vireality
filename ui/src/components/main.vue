@@ -1,10 +1,6 @@
 <template>
-  <div ref="arGesture" :class="{ arGesture: true }">
-    <toolbar></toolbar>
-    <div class="lightbox">
-      <div class="blackbg"></div>
-      <router-view name="lightBox" />
-    </div>
+  <div ref="arGesture" class="arGesture">
+    <toolbar style="position: fixed; width: 100vw; z-index: -999"></toolbar>
     <ar
       class="ar"
       v-bind:tap-coordinate="this.tapCoordinate"
@@ -12,6 +8,12 @@
     ></ar>
     <friendList v-if="isShowFriendList" v-on:open="openUrl"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
+    <div class="blackbg" v-if="showLightBox"></div>
+    <div class="lightbox" v-show="showLightBox">
+      <div class="container">
+        <router-view name="lightBox" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -35,6 +37,8 @@ export default {
       isShowFriendList: true,
       isShowTimeLine: false,
       canDoPan: true, //防止pinch之後會偵測到pan
+      disableGesture: false,
+      showLightBox: false,
       timestamp: +Date.now(), //時間軸的時間 預設為現在
       tapCoordinate: { x: NaN, y: NaN }, //點擊時的座標位置
       // tapped: false,
@@ -50,11 +54,23 @@ export default {
     friendList: FriendList,
     timeLine: TimeLine,
   },
+  watch: {
+    $route: function (to, from) {
+      // Prevent gesture recognition in sub-pages
+      if (to.name !== "Main") {
+        this.disableGesture = true;
+        this.showLightBox = true;
+      } else {
+        this.disableGesture = false;
+        this.showLightBox = false;
+      }
+    },
+  },
   mounted() {
     var direction;
     var testElement = this.$refs.arGesture;
     var manager = new Hammer.Manager(testElement);
-    var Test = document.getElementsByClassName("arGesture")[0];
+    var Test = this.$refs.arGesture;
 
     // var count = 0
     var tap = new Hammer.Tap({
@@ -149,22 +165,26 @@ export default {
     //             this.isShowTimeLine = !this.isShowTimeLine;
     //         Test.style.backgroundColor  = "purple";
     //     }));
+    window.addEventListener("resize", this.onWindowResize.bind(this));
   },
   methods: {
     openUrl(url) {
       this.$router.push(url);
     },
     click(event) {
+      if (this.disableGesture) return;
       let { x, y } = event.center; //Get the tapping point
       this.tapCoordinate = { x, y };
-      if (this.isShowTimeLine) this.isShowTimeLine = !this.isShowTimeLine;
+      this.isShowTimeLine = false;
     },
     swipeUp(event) {
+      if (this.disableGesture) return;
       console.log("swipeup");
-      if (this.isShowTimeLine) this.isShowTimeLine = !this.isShowTimeLine;
+      this.isShowTimeLine = false;
       this.openUrl("/main/post");
     },
     panLeft(event) {
+      if (this.disableGesture) return;
       if (this.canDoPan) {
         console.log("panleft");
         if (this.$route.name == "Main") {
@@ -174,6 +194,7 @@ export default {
       }
     },
     panRight(event) {
+      if (this.disableGesture) return;
       if (this.canDoPan) {
         console.log("panright");
         if (this.$route.name == "Main") {
@@ -183,6 +204,7 @@ export default {
       }
     },
     pinch(event) {
+      if (this.disableGesture) return;
       this.setNotDoPan();
       if (!this.canDoPan) {
         this.timer = setTimeout(this.setDoPan.bind(this), 1000);
@@ -204,17 +226,25 @@ export default {
       //console.log("setNotDoPan");
       this.canDoPan = false;
     },
+    onWindowResize() {
+      // Handle the virtual keyboard collapse event on mobile
+      //if (!(document.activeElement instanceof HTMLInputElement)) {
+      // Scroll to top
+      window.scrollTo(0, 0);
+      //}
+    },
   },
 };
 </script>
 
-<style scoped>
+<style lang="stylus" scoped>
 toolbar {
   position: absolute;
   left: 0px;
   top: 0px;
   z-index: 3;
 }
+
 .ar {
   height: 100vh !important;
   width: 100vw;
@@ -223,43 +253,73 @@ toolbar {
   top: 0vh !important;
   z-index: -19999;
 }
+
 /* .gesture{
-        height: 95vh !important;
-        position:absolute;
-        left:0px;
-        top:5vh;
-        z-index:-99999999;
-       
-    } */
+    height: 95vh !important;
+    position:absolute;
+    left:0px;
+    top:5vh;
+    z-index:-99999999;
+   
+} */
 .arGesture {
   width: 100vw;
   height: 100vh;
-
   position: absolute;
   left: 0px;
   top: 0vh !important;
   background-color: black;
   transition: transform 300ms ease-out;
   z-index: -99999999;
+  overflow: hidden;
 }
+
+.blackbg {
+  background-color: #000000aa;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -990;
+}
+
+.lightbox {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -40vw;
+  margin-top: -45vh;
+  background-color: white;
+  font-family: Microsoft JhengHei, 'Roboto', sans-serif;
+  height: 80vh;
+  width: 80vw;
+  border-radius: 10px;
+  overflow: hidden;
+
+  .container {
+    position: relative;
+  }
+}
+
 /* .expand{
-        transform: scale(2.5);
-      
-    }
-    .post{
-        width:80%;
-        height: 80%;
-        position:fixed;
-        left:0vw;
-        top:0vh;
-        background-color:silver;
-    }
-    .timeLine{
-        width:80%;
-        height:5%;
-        position:fixed;
-        left:10vw;
-        top: 5vh;
-        background-color: blue;
-    } */
+    transform: scale(2.5);
+  
+}
+.post{
+    width:80%;
+    height: 80%;
+    position:fixed;
+    left:0vw;
+    top:0vh;
+    background-color:silver;
+}
+.timeLine{
+    width:80%;
+    height:5%;
+    position:fixed;
+    left:10vw;
+    top: 5vh;
+    background-color: blue;
+} */
 </style>
