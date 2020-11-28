@@ -152,12 +152,15 @@ export default {
   },
   methods: {
     openUrl(url) {
-      this.$router.push(url);
+      var urlSlit = url.split("/");
+      var urlSend = `${urlSlit[0]}/${urlSlit[1]}/${urlSlit[2]}?articleId=${urlSlit[3]}`;
+      this.$router.push(urlSend);
     },
     click(event) {
       let { x, y } = event.center; //Get the tapping point
       this.tapCoordinate = { x, y };
       if (this.isShowTimeLine) this.isShowTimeLine = !this.isShowTimeLine;
+      // this.openUrl("/main/article/");
     },
     swipeUp(event) {
       console.log("swipeup");

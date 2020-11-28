@@ -2,21 +2,24 @@
   <div class="app">
     <header>
       <nav class="goBackBtn">
-        <img src="static/media/back.svg" @click.prevent="handleBack(fromRoute)"/>
+        <img
+          src="static/media/back.svg"
+          @click.prevent="handleBack(fromRoute)"
+        />
       </nav>
     </header>
     <div class="articleBody">
       <div class="articleHeader">
         <nav class="articleAuthor">
           <!-- 前者是要丟給child(profile_picture) props的參數名稱 後者是在parent(article) data區域之參數名稱 -->
-          <proPic :diameter="parentDiameter" :Id=authorName></proPic>
+          <proPic :diameter="parentDiameter" :Id="authorName"></proPic>
           <p>{{ authorName }}</p>
         </nav>
-        <nav class="articleTime">{{postTime}}</nav>
+        <nav class="articleTime">{{ postTime }}</nav>
       </div>
       <div id="articlePictures" class="articlePictures">
         <img
-          v-for="(src,index) in articlPicture"
+          v-for="(src, index) in articlPicture"
           :key="index"
           :src="src"
           @touchstart="touchstart"
@@ -24,13 +27,19 @@
         />
       </div>
       <ul>
-        <li v-for="(src,index) in articlPicture" :key="index">
-          <span v-if="nowSelect==index" :style="{color: 'rgba(0,0,0,0.6)'}">●</span>
-          <span v-if="nowSelect!=index" :style="{color: 'rgba(40,40,40,0.6)'}">●</span>
+        <li v-for="(src, index) in articlPicture" :key="index">
+          <span v-if="nowSelect == index" :style="{ color: 'rgba(0,0,0,0.6)' }"
+            >●</span
+          >
+          <span
+            v-if="nowSelect != index"
+            :style="{ color: 'rgba(40,40,40,0.6)' }"
+            >●</span
+          >
         </li>
       </ul>
       <div class="articleText">
-        <p style="width:300px;height:100px;">{{articleTexts}}</p>
+        <p style="width: 300px; height: 100px">{{ articleTexts }}</p>
       </div>
       <div class="articleRespondBlock">
         <div class="wrapInput">
@@ -49,7 +58,7 @@ import axios from "axios";
 import ProPic from "./profile_picture.vue";
 
 export default {
-  // name: "",
+  name: "Article",
 
   data() {
     return {
@@ -65,46 +74,45 @@ export default {
       startPointX: 0,
       changePointX: 0,
       showIndex: 0,
-      nowSelect: 0
+      nowSelect: 0,
+      articleId: "",
     };
   },
   beforeRouteEnter(to, from, next) {
-    next(vm => {
+    next((vm) => {
       vm.fromRoute = from; //放上一頁參數
     });
   },
   components: {
     // 新增大頭照的components tag命名為proPic
-    proPic: ProPic
+    proPic: ProPic,
   },
   mounted() {
     this.getArticleDetail();
   },
   methods: {
     getArticleDetail() {
-      const articleId = location.href.split("/").pop();
-      /* [TODO]:article_id 還沒帶進來 */
-      console.log(articleId);
+      this.articleId = this.$route.query.articleId;
       axios
-        // .get(server.apiUrl("/article/"+ articleId))
-        .get(server.apiUrl("/article/" + "a2")) // test
+        .get(server.apiUrl("/article/" + this.articleId))
+        // .get(server.apiUrl("/article/" + "a2")) // test
         .then(
-          function(response) {
-            console.log(response.data)
+          function (response) {
+            console.log(response.data);
             if (response.data.ok === "true") {
               this.articlPicture = response.data.thumbnail;
               this.articleTexts = response.data.text;
               this.authorName = response.data.author;
               this.isPublic = response.data.isPublic;
-              console.log("=====test=====")
-              console.log(Date.now())
-              console.log(Date.now()-parseInt(response.data.postTime))
-              console.log("=====test=====")
+              console.log("=====test=====");
+              console.log(Date.now());
+              console.log(Date.now() - parseInt(response.data.postTime));
+              console.log("=====test=====");
               if (Date.now() - parseInt(response.data.postTime) < 86400000) {
                 const pathTime =
                   (Date.now() - parseInt(response.data.postTime)) / 1000;
                 if (pathTime < 60)
-                  this.postTime = "".concat(pathTime, " sec ago");
+                  this.postTime = "".concat(parseInt(pathTime), " sec ago");
                 else if (pathTime < 3600)
                   this.postTime = "".concat(
                     parseInt(pathTime / 60),
@@ -134,29 +142,28 @@ export default {
         .then(() => {
           this.articleImage();
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
           window.location.herf = window.history;
         });
     },
-    sendRespondMessage: function() {
-      this.message;
-      // const articleId = location.href.split("/").pop();
-      const articleId = 5623;//test
-
-      axios.
-      post(server.apiUrl("/chat/" + articleId + "/response"),null,
-      { params:{articleId:22525,
-      uid:523654,
-      message:"loren%20alfedv%20efef"}})
-      .then(
-        function(response) {
-          console.log(response)
-        }.bind(this)
-      )
-      .catch(error => {
-        console.log(error);
-      });
+    sendRespondMessage: function () {
+      axios
+        .post(server.apiUrl("/chat/" + this.articleId + "/response"), null, {
+          params: {
+            articleId: this.articleId,
+            uid: 523654,
+            message: this.message,
+          },
+        })
+        .then(
+          function (response) {
+            console.log(response);
+          }.bind(this)
+        )
+        .catch((error) => {
+          console.log(error);
+        });
     },
     show(index) {
       this.changePointX = this.startPointX;
@@ -186,15 +193,14 @@ export default {
       } else {
         this.$router.back();
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped lang="stylus">
-
 .app {
-  background-color: gray;
+  background: rgba(0,0,0,0.6);
   color: white;
 }
 
@@ -209,6 +215,8 @@ header {
 }
 
 .articleBody {
+  opacity: 1;
+
   margin: 1vh 0;
   height: 92vh;
   position: relative;
@@ -217,16 +225,20 @@ header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin: 0.5em 2.5vw;
 
     .articleAuthor {
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
+      padding: 0 0.8em;
+
 
       proPic {
         display: inline-block;
         width: 2em;
         height: 2em;
+        text-align: center;
       }
 
       p {
@@ -236,6 +248,10 @@ header {
         text-align: center;
       }
     }
+    .articleTime{
+      padding: 0.5em 0.8em;
+    }
+
   }
 
   .articlePictures {
@@ -254,20 +270,20 @@ header {
 
   ul {
     z-index: 100;
-    margin-right 30vw
-    margin-left 30vw
-    margin-top -3vh
-    margin-bottom 3vh
-    width 40vw
-    display flex
-    justify-content center
+    margin-right: 30vw;
+    margin-left: 30vw;
+    margin-top: -3vh;
+    margin-bottom: 3vh;
+    width: 40vw;
+    display: flex;
+    justify-content: center;
 
     // margin-left
     li {
       display: inline-block;
       width: 2em;
       height: 2em;
-      text-align center
+      text-align: center;
     }
   }
 
