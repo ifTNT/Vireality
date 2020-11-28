@@ -283,14 +283,17 @@ export default {
                 latitude: lat,
               });
 
+              // change time to time 00:00 of that date(same as timeline).
+              const postTime = parseInt(article.post_time/86400000)
+
               // Append article
-              this.addArticle(x, y, articleMaterial, article.id);
+              this.addArticle(x, y, articleMaterial, article.id, postTime);
               this.articles.add(article.id);
             });
           }
         });
     },
-    addArticle: function (x, y, material, id) {
+    addArticle: function (x, y, material, id, postTime) {
       //let { x, y } = this.camera.position;
       const geometry = new THREE.BoxGeometry(0.01, 1, 1); // Article cube
       let newArticle = new THREE.Mesh(geometry, material);
@@ -310,6 +313,7 @@ export default {
       //Set the custom data
       newArticle.userData = {
         link: `/main/article/${id}`,
+        postTime: postTime
       };
 
       //Let the article facing to camera

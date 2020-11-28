@@ -104,6 +104,7 @@ router.get("/geolocation", async function (req, res, next) {
           lon: target.location.longitude,
           lat: target.location.latitude,
           author: target.author,
+          post_time: target.post_time,
         });
     });
     res.json({
