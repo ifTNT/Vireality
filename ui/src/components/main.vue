@@ -8,7 +8,11 @@
     ></ar>
     <friendList v-if="isShowFriendList" v-on:open="openUrl"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
-    <div class="blackbg" v-if="showLightBox" @click.prevent="$router.back()"></div>
+    <div
+      class="blackbg"
+      v-if="showLightBox"
+      @click.prevent="$router.back()"
+    ></div>
     <div class="lightbox" v-show="showLightBox">
       <div class="container">
         <router-view name="lightBox" />
@@ -40,6 +44,7 @@ export default {
       disableGesture: false,
       showLightBox: false,
       timestamp: +Date.now(), //時間軸的時間 預設為現在
+      swipeDeadZone: 1, // Unit: ms
       tapCoordinate: { x: NaN, y: NaN }, //點擊時的座標位置
       // tapped: false,
       // swipedUp: false,
@@ -178,11 +183,13 @@ export default {
       let { x, y } = event.center; //Get the tapping point
       this.tapCoordinate = { x, y };
       this.isShowTimeLine = false;
+      this.$store.commit("show_all_articles");
     },
     swipeUp(event) {
       if (this.disableGesture) return;
       console.log("swipeup");
       this.isShowTimeLine = false;
+      this.$store.commit("show_all_articles");
       this.openUrl("/main/post");
     },
     panLeft(event) {
@@ -193,6 +200,10 @@ export default {
           this.isShowTimeLine = true;
         }
         this.timestamp += oneDay;
+        this.canDoPan = false;
+        setTimeout(() => {
+          this.canDoPan = true;
+        }, this.swipeDeadZone);
       }
     },
     panRight(event) {
@@ -203,6 +214,10 @@ export default {
           this.isShowTimeLine = true;
         }
         this.timestamp -= oneDay;
+        this.canDoPan = false;
+        setTimeout(() => {
+          this.canDoPan = true;
+        }, this.swipeDeadZone);
       }
     },
     pinch(event) {

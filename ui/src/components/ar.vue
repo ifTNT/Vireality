@@ -60,7 +60,7 @@ export default {
     started: false,
     videoWidth: 0,
     videoHeight: 0,
-    article_list,
+    article_list: [],
     loaded_article_id: new Set([]),
     lossLocation: false,
   }),
@@ -225,6 +225,15 @@ export default {
         this.vground.position.x = this.camera.position.x;
         this.vground.position.y = this.camera.position.y;
       }
+
+      // Update the visiblity of articles
+      let articles = this.$store.state.articles;
+      this.scene.traverse(function (child) {
+        if (child.userData.link !== undefined) {
+          child.visible = articles[child.userData.id].visible;
+        }
+      });
+
       this.renderer.render(this.scene, this.camera);
     },
 
@@ -283,13 +292,14 @@ export default {
               });
 
               // change time to time 00:00 of that date(same as timeline).
-              const postTime = parseInt(article.post_time / 86400000);
+              article.post_time = new Date(article.post_time);
+              const postTime = parseInt(article.post_time / (86400 * 1000));
               article.post_time = postTime;
 
               // Append article
               this.addArticle(x, y, articleMaterial, article.id);
               this.loaded_article_id.add(article.id);
-              this.$store.commit("add_article", { article });
+              this.$store.commit("add_article", article);
             });
           }
         });
@@ -313,6 +323,7 @@ export default {
 
       //Set the custom data
       newArticle.userData = {
+        id,
         link: `/main/article/${id}`,
       };
 

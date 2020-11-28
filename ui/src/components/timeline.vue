@@ -2,7 +2,12 @@
   <div class="wrap">
     <div class="month">
       <transition-group name="list-complete" tag="p" class="monthList">
-        <span v-for="item in items" v-bind:key="item" class="list-complete-item">{{ item }}</span>
+        <span
+          v-for="item in items"
+          v-bind:key="item"
+          class="list-complete-item"
+          >{{ item }}</span
+        >
       </transition-group>
     </div>
     <div class="line"></div>
@@ -11,7 +16,7 @@
         <p>
           ▲
           <br />
-          {{dateD}}
+          {{ dateD }}
         </p>
       </transition>
     </div>
@@ -28,7 +33,7 @@ export default {
     return {
       dateD: "",
       items: [],
-      isEditing: true
+      isEditing: true,
     };
   },
   props: {
@@ -44,20 +49,29 @@ export default {
             new Date().getDate()
           )
         )
-      )
-    }
+      ),
+    },
   },
   mounted() {
     this.getNowDate();
   },
   watch: {
-    date: function(newDate, oldDate) {
+    date: function (newDate, oldDate) {
+      let articles = this.$store.state.articles;
+      let newDay = Math.floor(newDate / (86400 * 1000));
+      for (let id in articles) {
+        if (articles[id].post_time === newDay) {
+          this.$store.commit("show_article", id);
+        } else {
+          this.$store.commit("hide_article", id);
+        }
+      }
       if (newDate > oldDate) {
         this.addChangDate();
       } else {
         this.minusChangDate();
       }
-    }
+    },
   },
   methods: {
     minusChangDate() {
@@ -303,20 +317,23 @@ export default {
         0,
         m === 12 ? "".concat(d.getFullYear() + 1, " ", "1") : m + 1
       );
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped lang="stylus">
 .wrap {
   z-index: 100;
+  color: white;
+  background: rgb(0, 0, 0);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.3) 38%, rgba(0, 0, 0, 0) 100%);
 }
 
 .line {
   box-sizing: border-box;
   border-bottom: solid 2px;
-  border-color: black;
+  border-color: white;
   width: 88vw;
   height: 2px;
   margin: 0 6vw;

@@ -1,3 +1,7 @@
+import Vuex from "vuex";
+import Vue from "vue";
+Vue.use(Vuex);
+
 const store = new Vuex.Store({
   state: {
     articles: {},
@@ -11,25 +15,29 @@ const store = new Vuex.Store({
   mutations: {
     add_article(state, data) {
       state.articles[data.id] = {
-        visible: false,
+        visible: true,
         post_time: data.post_time
       };
     },
     show_article(state, id) {
-      if (id in articles) {
+      if (id in state.articles) {
         state.articles[id].visible = true;
       }
     },
     hide_article(state, id) {
-      if (id in articles) {
+      if (id in state.articles) {
         state.articles[id].visible = false;
       }
+    },
+    show_all_articles(state) {
+      for (let id in state.articles) {
+        state.articles[id].visible = true;
+      }
     }
-  },
-  getters: {
-    get_all_article: state => state.articles,
-    get_article: state => id => state.articles[id]
   }
+  // getters: {
+  //   get_article: state => id => state.articles[id]
+  // }
 });
 
 export default store;
