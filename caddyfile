@@ -1,0 +1,7 @@
+vireality.world {
+	reverse_proxy localhost:8080
+}
+
+vireality.world:3000 {
+	reverse_proxy localhost:3001
+}
