@@ -12,7 +12,10 @@ var userRouter = require("./routes/user");
 var session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 
+
 var app = express();
+
+
 
 app.use(logger("dev"));
 app.use(cors());
@@ -25,9 +28,14 @@ app.use(cookieParser());
 //Session
 app.use(
   session({
-    secret: "recommand 128 bytes random string",
+    name:"test",
+    secret: "secret",
+    resave: true,
+    saveUninitialized: false,
     store: new MongoStore({ url: "mongodb://localhost:27017/sessionDB" }),
-    cookie: { maxAge: 86400000 * 1000 }, //一天到期
+    cookie: {
+      maxAge:  86400000 * 1000 //一天到期
+    }
   })
 );
 
