@@ -1,13 +1,6 @@
 <template>
   <div class="app">
-    <header>
-      <nav class="goBackBtn">
-        <img
-          src="static/media/back.svg"
-          @click.prevent="handleBack(fromRoute)"
-        />
-      </nav>
-    </header>
+      
     <div class="articleBody">
       <div class="articleHeader">
         <nav class="articleAuthor">
@@ -15,7 +8,14 @@
           <proPic :diameter="parentDiameter" :Id="authorName"></proPic>
           <p>{{ authorName }}</p>
         </nav>
-        <nav class="articleTime">{{ postTime }}</nav>
+        <nav class="goBackBtn">
+          <font-awesome-icon
+          icon="times"
+          class="backButton"
+          size="1x"
+          @click.prevent="handleBack(fromRoute)"
+        />
+        </nav>
       </div>
       <div id="articlePictures" class="articlePictures">
         <img
@@ -38,6 +38,7 @@
           >
         </li>
       </ul>
+      <nav class="articleTime">{{ postTime }}</nav>
       <div class="articleText">
         <p style="width: 300px; height: 100px">{{ articleTexts }}</p>
       </div>
@@ -199,18 +200,9 @@ export default {
 </script>
 
 <style scoped lang="stylus">
-.app {
-  background: rgba(0,0,0,0.6);
-  color: white;
-}
-
 header {
   .goBackBtn {
-    padding: 1vh 1vw;
-
-    img {
-      height: 1.5em;
-    }
+    padding: 0.5em;
   }
 }
 
@@ -225,14 +217,13 @@ header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin: 0.5em 2.5vw;
+    align-items: center;
+    margin: 0.5em 0.8em;
 
     .articleAuthor {
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
-      padding: 0 0.8em;
-
 
       proPic {
         display: inline-block;
@@ -248,23 +239,27 @@ header {
         text-align: center;
       }
     }
-    .articleTime{
-      padding: 0.5em 0.8em;
-    }
 
+  }
+  .articleTime{
+    text-align: right;
+    padding-right: 1em;
+    box-sizing: border-box;
   }
 
   .articlePictures {
     overflow: hidden;
     white-space: nowrap;
     transition: 1s;
-    padding: 0 2.5vw;
+    //padding: 0 2.5vw;
 
     img {
-      width: 90vw;
+      width: 80vw;
+      height: 80vw;
+      object-fit: cover;
       display: inline;
-      margin-right: 2.5vw;
-      margin-left: 2.5vw;
+      //margin-right: 2.5vw;
+      //margin-left: 2.5vw;
     }
   }
 
@@ -273,7 +268,6 @@ header {
     margin-right: 30vw;
     margin-left: 30vw;
     margin-top: -3vh;
-    margin-bottom: 3vh;
     width: 40vw;
     display: flex;
     justify-content: center;

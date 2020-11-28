@@ -60,7 +60,8 @@ export default {
     started: false,
     videoWidth: 0,
     videoHeight: 0,
-    articles: new Set([]),
+    article_list: [],
+    loaded_article_id: new Set([]),
     lossLocation: false,
   }),
   mounted() {
@@ -86,16 +87,14 @@ export default {
 
       //if there are at least one object intersected with the ray
       if (intersects.length > 0) {
-        for(var i = 0;i<intersects.length;i++){
-          if(typeof(intersects[i].object.userData.link) != "undefined"){
+        for (var i = 0; i < intersects.length; i++) {
+          if (typeof intersects[i].object.userData.link != "undefined") {
             this.openUrl(intersects[i].object.userData.link);
-            continue
+            continue;
           }
         }
         //Open the cloest article
         // this.openUrl(intersects[0].object.userData.link);
-        
-
       }
     },
   },
@@ -226,6 +225,15 @@ export default {
         this.vground.position.x = this.camera.position.x;
         this.vground.position.y = this.camera.position.y;
       }
+
+      // Update the visiblity of articles
+      let articles = this.$store.state.articles;
+      this.scene.traverse(function (child) {
+        if (child.userData.link !== undefined) {
+          child.visible = articles[child.userData.id].visible;
+        }
+      });
+
       this.renderer.render(this.scene, this.camera);
     },
 
@@ -268,7 +276,7 @@ export default {
             // Iterate the articles
             res.result.forEach(async (article) => {
               // If there existed same article, do not append.
-              if (this.articles.has(article.id)) return;
+              if (this.loaded_article_id.has(article.id)) return;
 
               // Fetch the texture from external website.
               const texture = await this.loadTexture(article.thumbnail);
@@ -283,9 +291,15 @@ export default {
                 latitude: lat,
               });
 
+              // change time to time 00:00 of that date(same as timeline).
+              article.post_time = new Date(article.post_time);
+              const postTime = parseInt(article.post_time / (86400 * 1000));
+              article.post_time = postTime;
+
               // Append article
               this.addArticle(x, y, articleMaterial, article.id);
-              this.articles.add(article.id);
+              this.loaded_article_id.add(article.id);
+              this.$store.commit("add_article", article);
             });
           }
         });
@@ -309,6 +323,7 @@ export default {
 
       //Set the custom data
       newArticle.userData = {
+        id,
         link: `/main/article/${id}`,
       };
 
@@ -323,6 +338,7 @@ export default {
       faceOnCamera();
 
       this.scene.add(newArticle);
+      this.article_list.push(newArticle);
     },
   },
   components: {
