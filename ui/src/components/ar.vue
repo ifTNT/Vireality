@@ -87,16 +87,14 @@ export default {
 
       //if there are at least one object intersected with the ray
       if (intersects.length > 0) {
-        for(var i = 0;i<intersects.length;i++){
-          if(typeof(intersects[i].object.userData.link) != "undefined"){
+        for (var i = 0; i < intersects.length; i++) {
+          if (typeof intersects[i].object.userData.link != "undefined") {
             this.openUrl(intersects[i].object.userData.link);
-            continue
+            continue;
           }
         }
         //Open the cloest article
         // this.openUrl(intersects[0].object.userData.link);
-        
-
       }
     },
   },
@@ -284,10 +282,14 @@ export default {
                 latitude: lat,
               });
 
+              // change time to time 00:00 of that date(same as timeline).
+              const postTime = parseInt(article.post_time / 86400000);
+              article.post_time = postTime;
+
               // Append article
               this.addArticle(x, y, articleMaterial, article.id);
               this.loaded_article_id.add(article.id);
-              this.$store.commit('add_article', {article})
+              this.$store.commit("add_article", { article });
             });
           }
         });
