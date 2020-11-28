@@ -86,8 +86,16 @@ export default {
 
       //if there are at least one object intersected with the ray
       if (intersects.length > 0) {
+        for(var i = 0;i<intersects.length;i++){
+          if(typeof(intersects[i].object.userData.link) != "undefined"){
+            this.openUrl(intersects[i].object.userData.link);
+            continue
+          }
+        }
         //Open the cloest article
-        this.openUrl(intersects[0].object.userData.link);
+        // this.openUrl(intersects[0].object.userData.link);
+        
+
       }
     },
   },
