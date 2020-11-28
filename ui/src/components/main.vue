@@ -8,7 +8,7 @@
     ></ar>
     <friendList v-if="isShowFriendList" v-on:open="openUrl"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
-    <div class="blackbg" v-if="showLightBox"></div>
+    <div class="blackbg" v-if="showLightBox" @click.prevent="$router.back()"></div>
     <div class="lightbox" v-show="showLightBox">
       <div class="container">
         <router-view name="lightBox" />

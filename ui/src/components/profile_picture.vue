@@ -34,7 +34,7 @@ export default {
     Id: {
       type: String,
       //預設為0px 避免父類別沒有傳入資料
-      default: "a123"
+      default: ""
     }
   },
   data() {
@@ -45,10 +45,10 @@ export default {
       w: this.diameter
     };
   },
-  mounted() {
-    axios
-    /* [TODO]:還沒抓到user_id */
-      .get(server.apiUrl("/user/" + this.Id + "/avatar"))
+  watch:{
+    Id: function(newId, oldId){
+      axios
+      .get(server.apiUrl(`/user/${newId}/avatar`))
       .then(
         function(response) {
           // console.log("AVA:"+response.data)
@@ -58,6 +58,10 @@ export default {
       .catch(error => {
         console.log(error);
       });
+    }
+  },
+  mounted() {
+    this.imgSrc = '/static/media/avatar.png'
   },
   methods: {}
 };
@@ -66,5 +70,6 @@ export default {
 <style scoped>
 .avatar {
   border-radius: 50%;
+  border: solid 1px lightgray;
 }
 </style>
