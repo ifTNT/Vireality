@@ -6,6 +6,7 @@
       size="2x"
       @click.prevent="$router.back()"
     />
+    <!-- <div class="error" v-show="articles.length === 0">這個人沒有任何文章哦</div> -->
     <ul id="example-1">
       <li v-for="(article, index) in articles" :key="index">
         <img
@@ -32,7 +33,7 @@ export default {
   },
   components: {},
   mounted() {
-    this.id = this.$route.params.id;
+    this.Id = this.$route.params.id;
     // To pass cookies to server
     this.axios.get(server.apiUrl(`/articles/user/${this.Id}`)).then((res) => {
       console.log(`[articleList] Article list fetched.`);
@@ -109,6 +110,10 @@ export default {
   box-sizing: border-box;
   overflow-y: scroll;
   overflow-x: hidden;
+  
+  .error{
+    margin 10vh 0
+  }
 
   ul {
     text-align: center;

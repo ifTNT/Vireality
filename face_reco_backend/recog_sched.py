@@ -79,7 +79,7 @@ def main():
         logging.info('[req_id={}] Rejected training request with empty label'.format(work.req_id))
         send_reject(reject_sender, work.req_id)
         continue
-      
+
       logging.info('[req_id={}] Buffering training request'.format(work.req_id))
 
       label = work.label
@@ -88,6 +88,12 @@ def main():
         train_buffer[label] = new_bundle
       else:
         train_buffer[label] = work.face_id
+
+      # Forward success recognize response to front-end-server
+      # The message multiplexed the UserIDMsg to prevent complex parsing.
+      elems_train_buffer = train_buffer[label].shape[0]
+      new_success_msg = UserIDMsg(work.req_id, ResState.OK, elems_train_buffer)
+      zmq_serdes.send_zipped_pickle(reject_sender, new_success_msg)
 
       logging.info('[req_id={}] Shape of training buffer = {}'.format(work.req_id, train_buffer[label].shape))
 

@@ -14,6 +14,7 @@
         <router-view name="lightBox" />
       </div>
     </div>
+    <logout style="position: fixed; bottom:0.2em; right:-0.6em; margin-top: -0.5em; width: 2em; z-index: -999"></logout>
   </div>
 </template>
 
@@ -23,6 +24,7 @@ import * as Hammer from "hammerjs";
 
 // Lazy loading components
 const Toolbar = () => import("./toolbar.vue");
+const Logout = () => import("./logout.vue");
 const AR = () => import("./ar.vue");
 const Gesture = () => import("./main_gesture.vue");
 const FriendList = () => import("./friend_list_around.vue");
@@ -50,6 +52,7 @@ export default {
   },
   components: {
     toolbar: Toolbar,
+    logout: Logout,
     ar: AR,
     gesture: Gesture,
     friendList: FriendList,

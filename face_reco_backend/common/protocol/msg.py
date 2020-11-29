@@ -40,6 +40,7 @@ FeatureMsg = namedtuple("FeatureMsg", "req_id req_type res_state face_id label")
 RecogMsg = namedtuple("RecogMsg", "req_id face_id")
 
 # The message carry recognize result from recog-unit to front-end-server
+# This message also indicate success new face recognition of deep-unit
 #
 # req_id: Same as RecogMsg.
 # res_state: The state of recognition result.

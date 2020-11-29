@@ -22,14 +22,14 @@ import Registration from "@/components/registration";
 import Login from "@/components/login";
 import Loading from "@/components/loading";
 import Chatroom from "@/components/chatroom";
+import Logout from "@/components/logout";
 
 Vue.use(Router);
 
 const AppName = "Vireality";
 
 let router = new Router({
-  routes: [
-    {
+  routes: [{
       path: "/",
       name: "Developing Index",
       component: ListRoute
@@ -88,6 +88,10 @@ let router = new Router({
       path: "/profile_right",
       name: "Profile-article-map",
       component: ProfileRight
+    }, {
+      path: "/logout",
+      name: "Logout",
+      component: Logout
     },
     {
       path: "/chatroom",
@@ -98,8 +102,7 @@ let router = new Router({
       path: "/main",
       name: "Main",
       component: Main,
-      children: [
-        {
+      children: [{
           path: "post",
           name: "Main-Post",
           components: {

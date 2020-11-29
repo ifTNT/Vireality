@@ -7,7 +7,6 @@
         icon="times"
         class="backButton"
         size="1x"
-        @click.prevent="$router.back()"
       />
     </nav>
     <div class="profileMidWrap">
@@ -18,14 +17,20 @@
         @click.prevent="handleLeft()"
       />
       <div class="profileMessage">
-        <div class="name">{{ nickName }}</div>
+        <div class="name">
+          {{ nickName }}
+          <input type="text" v-if="editFlag"  v-model="nickName" />
+          <p>{{ Id }}</p>
+        </div>
         <div class="hobbies">
           <p>interest</p>
           {{ interest }}
+          <input type="text" v-if="editFlag" v-model="interest" />
         </div>
         <div class="description">
           <p>intro</p>
           {{ intro }}
+          <input type="text" v-if="editFlag" v-model="intro" />
         </div>
       </div>
       <font-awesome-icon
@@ -56,6 +61,7 @@
       class="button"
       type="button"
       color="black"
+      @click.prevent="chatRoom()"
       v-if="friendship_state === 3"
     >
       聊天室
@@ -64,18 +70,19 @@
       class="button"
       type="button"
       color="black"
+      @click.prevent="edit()"
       v-if="friendship_state === 4"
     >
-      編輯
+      {{ editBtn }}
     </button>
     <button
       class="button"
       type="button"
       color="black"
-      @click="sendFriendRequest"
+      @click.prevent="sendFriendRequest()"
       v-if="friendship_state === 0"
     >
-      申請交友
+      {{sendFriendState}}
     </button>
   </div>
 </template>
@@ -121,6 +128,10 @@ export default {
       // isFriend:false,
       friendship_state: 0, //0:交友申請 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室 4:編輯,資料庫不存入
       Id: "",
+      editBtn: "編輯",
+      editFlag: false,
+      sendFriendState: "申請交友",
+      sendFriendflag: false,
     };
   },
   components: {
@@ -150,23 +161,55 @@ export default {
   },
   methods: {
     sendFriendRequest: function () {
+      if(this.sendFriendflag) return;
       console.log("friend req");
-      /* [TODO]:userid還沒 targetid要進入時收到*/
-      // axios
-      // .post(server.apiUrl("/chat/"+this.Id+"/friend_request"),{uid:"a123",targetUid: this.Id})
-      // .then(
-      //     function(response){
-      //         if(response.data.ok === "true"){
-      //             console.log("ok")
-      //         }
-      //         else{
-      //             console.log("not ok");
-      //         }
-      //     }.bind(this)
-      // )
-      // .catch(error => {
-      //     console.log(error);
-      // });
+      this.axios
+      .post(server.apiUrl("/chat/"+this.Id+"/friend_request"),{})
+      .then(
+          function(response){
+              if(response.data.ok === "true"){
+                  console.log("ok")
+              }
+              else{
+                  console.log("not ok");
+              }
+          }.bind(this)
+      )
+      .catch(error => {
+          console.log(error);
+      });
+      this.sendFriendflag = !this.sendFriendflag;
+      this.sendFriendState = "已送出邀請";
+    },
+    edit() {
+      if (!this.editFlag) {
+        this.editFlag = !this.editFlag;
+        console.log(this.edit);
+        this.editBtn = "儲存";
+      } else {
+        this.editFlag = !this.editFlag;
+        console.log(this.edit);
+        this.axios
+          .post(server.apiUrl("/user/editAccount"), {
+            uid: this.Id,
+            nickname: this.nickName,
+            interest: this.interest,
+            intro: this.intro,
+          })
+          .then(
+            function (response) {
+              if (response.data.ok === "true") {
+                console.log("更新成功!");
+              } else {
+                console.log("更新失敗TT");
+              }
+            }.bind(this)
+          )
+          .catch((error) => {
+            console.log(error);
+          });
+        this.editBtn = "編輯";
+      }
     },
     handleLeft() {
       this.$router.push(`/main/profile_left/${this.Id}`);
@@ -207,6 +250,10 @@ export default {
       overflow: scroll;
       height: 37vh;
       box-sizing: border-box;
+
+      input{
+        display block
+      }
 
       .name {
         font-size: 1.6em;
