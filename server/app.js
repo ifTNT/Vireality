@@ -1,6 +1,6 @@
 var express = require("express");
 var path = require("path");
-var cookieParser = require("cookie-parser");
+//var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
 
@@ -15,19 +15,35 @@ const MongoStore = require("connect-mongo")(session);
 var app = express();
 
 app.use(logger("dev"));
-app.use(cors());
+
+// [TODO] Change the origin in production mode
+app.use(
+  cors({
+    origin: [
+      "https://127.0.0.1:8080",
+      "https://127.0.0.1:3000",
+      "https://192.168.1.44:8080",
+      "https://192.168.1.44:3000",
+    ],
+    credentials: true,
+    exposedHeaders: ["set-cookie"],
+  })
+);
 
 // Enlarge the upperbound of uploading data
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+//app.use(cookieParser());
 
 //Session
 app.use(
   session({
-    secret: "recommand 128 bytes random string",
+    secret: "njsdmfk;sfvrverivrpogk93jmog e49,94fw09skpfp3Mdf,s;pok3po",
     store: new MongoStore({ url: "mongodb://localhost:27017/sessionDB" }),
     cookie: { maxAge: 86400000 * 1000 }, //一天到期
+    saveUninitialized: false,
+    resave: false,
+    unset: "destroy",
   })
 );
 

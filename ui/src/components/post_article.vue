@@ -102,7 +102,6 @@
 // import google from 'vue2-google-maps'
 import Mapbox from "./mapbox.vue";
 import Switches from "vue-switches";
-import axios from "axios";
 import screenfull from "screenfull";
 
 export default {
@@ -189,7 +188,7 @@ export default {
       console.log(this.file);
       formData.append("image", this.file); //required
       console.log(formData.get("image"));
-      axios
+      this.axios
         .post(server.apiUrl("/article/"), {
           text: this.content,
           isPublic: this.allOrFriend,
