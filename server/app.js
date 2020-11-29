@@ -19,10 +19,8 @@ app.use(logger("dev"));
 app.use(
   cors({
     origin: [
-      "https://127.0.0.1:8080",
-      "https://127.0.0.1:3000",
-      "https://192.168.1.44:8080",
-      "https://192.168.1.44:3000",
+      "https://vireality.world",
+      "https://api.vireality.world",
     ],
     credentials: true,
     exposedHeaders: ["set-cookie"],
@@ -34,13 +32,18 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false }));
 //app.use(cookieParser());
 
+app.set('trust proxy', 1) // trust first proxy
+
 //Session
 app.use(
   session({
     name: "vireality_session",
     secret: "njsdmfk;sfvrverivrpogk93jmog e49,94fw09skpfp3Mdf,s;pok3po",
     store: new MongoStore({ url: "mongodb://localhost:27017/sessionDB" }),
-    cookie: { maxAge: 86400000 * 1000 }, //一天到期
+    cookie: {
+	    maxAge: 86400000 * 1000,
+    	    secure: true
+    },
     saveUninitialized: false,
     resave: true,
     unset: "destroy",

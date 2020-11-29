@@ -4,7 +4,7 @@
 
 module.exports = {
   apiUrl: function(path) {
-    let serverLocation = `https://${window.location.hostname}:3000`;
+    let serverLocation = `https://api.vireality.world`;
     if (path.substring(0, 1) === "/") {
       //Endpoints must begin with '/'
       return serverLocation + path;
@@ -14,6 +14,6 @@ module.exports = {
     }
   },
   recogBackendUrl: function() {
-    return `wss://${window.location.hostname}:3000`;
+    return `wss://api.vireality.world`;
   }
 };
