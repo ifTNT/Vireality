@@ -253,7 +253,6 @@ router.post("/createAccount", async function (req, res, next) {
     res.json({ ok: "false" });
   }
   /*---- User's Account whether exist----*/
-  console.log(req.body);
   /*
     uid: this.userId,
     password:this.password,
@@ -301,7 +300,7 @@ router.post("/createAccount", async function (req, res, next) {
             reject();
           }
           const imgurRes = response.body;
-          const imgurURL = JSON.parse(imgurREs).data.link;
+          const imgurURL = JSON.parse(imgurRes).data.link;
           resolve(imgurURL);
         });
       });
