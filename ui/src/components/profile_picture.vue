@@ -1,10 +1,9 @@
 <template>
   <!-- 新增style 其height,width為父類別傳入的直徑大小 -->
-  <img class="avatar" :src="imgSrc" :style="{height : h, width : w}" />
+  <img class="avatar" :src="imgSrc" :style="{ height: h, width: w }" />
 </template>
 
 <script>
-import axios from "axios";
 /*前置條件
     需登入
     需輸入使用者ID
@@ -29,42 +28,43 @@ export default {
     diameter: {
       type: String,
       //預設為0px 避免父類別沒有傳入資料
-      default: "0px"
+      default: "0px",
     },
     Id: {
       type: String,
       //預設為0px 避免父類別沒有傳入資料
-      default: ""
-    }
+      default: "",
+    },
   },
   data() {
     return {
       imgSrc: null,
       //傳入父類別指定大小
+      h: this.diameter,
+      w: this.diameter,
     };
   },
-  watch:{
-    Id: function(newId, oldId){
-      axios
-      .get(server.apiUrl(`/user/${newId}/avatar`))
-      .then(
-        function(response) {
-          // console.log("AVA:"+response.data)
-          this.imgSrc = response.data.avatar;
-        }.bind(this)
-      )
-      .catch(error => {
-        console.log(error);
-      });
-    }
+  watch: {
+    Id: function (newId, oldId) {
+      this.axios
+        .get(server.apiUrl(`/user/${newId}/avatar`))
+        .then(
+          function (response) {
+            // console.log("AVA:"+response.data)
+            this.imgSrc = response.data.avatar;
+          }.bind(this)
+        )
+        .catch((error) => {
+          console.log(error);
+        });
+    },
   },
   mounted() {
-    console.log(this.diameter)
     this.h = this.diameter
     this.w = this.diameter
     this.imgSrc = '/static/media/avatar.png'
   },
-  methods: {}
+  methods: {},
 };
 </script>
 

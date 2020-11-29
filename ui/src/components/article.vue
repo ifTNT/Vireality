@@ -1,6 +1,5 @@
 <template>
   <div class="app">
-      
     <div class="articleBody">
       <div class="articleHeader">
         <nav class="articleAuthor" @click.prevent="handleProfile(authorName)">
@@ -10,11 +9,11 @@
         </nav>
         <nav class="goBackBtn">
           <font-awesome-icon
-          icon="times"
-          class="backButton"
-          size="1x"
-          @click.prevent="handleBack(fromRoute)"
-        />
+            icon="times"
+            class="backButton"
+            size="1x"
+            @click.prevent="handleBack(fromRoute)"
+          />
         </nav>
       </div>
       <div id="articlePictures" class="articlePictures">
@@ -55,7 +54,6 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import ProPic from "./profile_picture.vue";
 
 export default {
@@ -94,7 +92,7 @@ export default {
   methods: {
     getArticleDetail() {
       this.articleId = this.$route.query.articleId;
-      axios
+      this.axios
         .get(server.apiUrl("/article/" + this.articleId))
         // .get(server.apiUrl("/article/" + "a2")) // test
         .then(
@@ -149,7 +147,7 @@ export default {
         });
     },
     sendRespondMessage: function () {
-      axios
+      this.axios
         .post(server.apiUrl("/chat/" + this.articleId + "/response"), null, {
           params: {
             articleId: this.articleId,
@@ -210,8 +208,6 @@ header {
 }
 
 .articleBody {
-  // opacity: 1;
-
   margin: 1vh 0;
   height: 92vh;
   position: relative;
@@ -242,9 +238,9 @@ header {
         text-align: center;
       }
     }
-
   }
-  .articleTime{
+
+  .articleTime {
     text-align: right;
     padding-right: 1em;
     box-sizing: border-box;
@@ -254,15 +250,15 @@ header {
     overflow: hidden;
     white-space: nowrap;
     transition: 1s;
-    //padding: 0 2.5vw;
 
+    // padding: 0 2.5vw;
     img {
       width: 80vw;
       height: 80vw;
       object-fit: cover;
       display: inline;
-      //margin-right: 2.5vw;
-      //margin-left: 2.5vw;
+      // margin-right: 2.5vw;
+      // margin-left: 2.5vw;
     }
   }
 

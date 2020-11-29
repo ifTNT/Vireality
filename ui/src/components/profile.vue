@@ -37,7 +37,6 @@
         @click.prevent="handleRight()"
       />
     </div>
-
     <!-- 0:交友申請 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室 4:編輯,資料庫不存入-->
     <button
       class="button"
@@ -130,9 +129,7 @@ export default {
     profilePicture: ProPic,
   },
   mounted() {
-    // To pass cookies to server
-    axios.defaults.withCredentials = true;
-    axios
+    this.axios
       .get(server.apiUrl("/user/" + this.Id + "/info"))
       .then(
         function (response) {
