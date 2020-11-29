@@ -127,7 +127,7 @@ export default {
     profilePicture: ProPic,
   },
   mounted() {
-    this.Id = this.$route.query.
+    this.Id = this.$route.query.profileId;
     this.axios
       .get(server.apiUrl("/user/" + this.Id + "/info"))
       .then(
@@ -180,10 +180,10 @@ export default {
       }
     },
     handleLeft(){
-      this.$router.push(`./Profile_left?profileId=${this.Id}&Id=${this.nickName}`);
+      this.$router.push(`./Profile_left?profileId=${this.Id}`);
     },
     handleRight(){
-      this.$router.push(`./Profile_right?profileId=${this.Id}&Id=${this.nickName}`);
+      this.$router.push(`./Profile_right?profileId=${this.Id}`);
     },
   },
 };

@@ -194,7 +194,7 @@ export default {
       }
     },
     handleProfile(profileId){
-      this.$router.push(`./Profile?profileId=${profileId}&Id=${this.authorName}`);
+      this.$router.push(`./Profile?profileId=${profileId}`);
     }
   },
 };
