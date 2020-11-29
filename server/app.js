@@ -38,11 +38,12 @@ app.use(express.urlencoded({ extended: false }));
 //Session
 app.use(
   session({
+    name: "vireality_session",
     secret: "njsdmfk;sfvrverivrpogk93jmog e49,94fw09skpfp3Mdf,s;pok3po",
     store: new MongoStore({ url: "mongodb://localhost:27017/sessionDB" }),
     cookie: { maxAge: 86400000 * 1000 }, //一天到期
     saveUninitialized: false,
-    resave: false,
+    resave: true,
     unset: "destroy",
   })
 );

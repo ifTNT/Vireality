@@ -15,7 +15,7 @@ router.get("/geolocation", async function (req, res, next) {
     /*---- Find Session uid ----*/
 
     // [For debug purpose]
-    req.session.user_id = "a123";
+    //req.session.user_id = "a123";
     // console.log(req.session)
     uid = req.session.user_id;
     console.log(uid);

@@ -56,7 +56,7 @@ router.get("/:id", async function (req, res, next) {
 /* 上傳文章 */
 router.post("/", async function (req, res, next) {
   try{
-    req.session.user_id = "a123"
+    //req.session.user_id = "a123"
     console.log(req.session)
     uid = req.session.user_id
     console.log(uid)

@@ -126,7 +126,8 @@ router.get("/friend_direction", async function(req, res, next) {
     if (req === undefined) { throw "requst is undefined."}
     /*---- Find Session uid ----*/
     // req.session.user_id = "a123"
-    // console.log(req.session)
+    console.log(req.sessionID)
+    console.log(req.session)
     uid = req.session.user_id
     console.log(uid)
     if(uid === undefined){ throw "uid is undefined."}
@@ -197,12 +198,16 @@ router.post("/login", function(req, res, next) {
       if (user.length !== 0 && hashPW===user[0].password) {
         console.log("IN DB!")
         req.session.user_id = req.body.uid
-        req.session.save(() => {
-          console.log(req.session);
+        req.session.authenticated = true;
+        // req.session.save(() => {
+
+        console.log(req.session);
+        console.log(req.sessionID)
+
           return res.json({
             ok: "true",
           });
-        });
+        // });
       }
       else{
         return res.json({ ok: "false" ,result: "密碼錯誤"});
