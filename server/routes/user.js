@@ -6,7 +6,7 @@ const HashMethod = require("hash-anything").sha1;
 const imgur = require("./token");
 const request = require("request");
 
-/*[ALERT]:前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
+/* 前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
 /* [TODO]:have some error for client */
 /* 給定使用者ID，取得該使用者的個人資料(名字、興趣、一句話)。 */
 router.get("/:id/info", async function (req, res, next) {

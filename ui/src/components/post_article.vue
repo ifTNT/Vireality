@@ -1,5 +1,4 @@
  <template>
-  <!-- [TODO]: 高度修改(畫面 地圖大小 上傳圖片) -->
   <!-- 個人文章還沒抓到個人定位 -->
   <div>
     <nav class="backAndNextButton">
