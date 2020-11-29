@@ -21,14 +21,14 @@ import TestFriendListAround from "@/components/test_friend_list_around";
 import Registration from "@/components/registration";
 import Login from "@/components/login";
 import Loading from "@/components/loading";
+import Logout from "@/components/logout";
 
 Vue.use(Router);
 
 const AppName = "Vireality";
 
 let router = new Router({
-  routes: [
-    {
+  routes: [{
       path: "/",
       name: "Developing Index",
       component: ListRoute
@@ -87,13 +87,16 @@ let router = new Router({
       path: "/profile_right",
       name: "Profile-article-map",
       component: ProfileRight
+    }, {
+      path: "/logout",
+      name: "Logout",
+      component: Logout
     },
     {
       path: "/main",
       name: "Main",
       component: Main,
-      children: [
-        {
+      children: [{
           path: "post",
           name: "Main-Post",
           components: {

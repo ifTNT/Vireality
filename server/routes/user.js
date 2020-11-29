@@ -391,6 +391,12 @@ router.get("/state", function (req, res, next) {
   }
 });
 
+// logout
+router.get("/logout", function (req, res, next) {
+  delete req.session;
+  res.send('');
+});
+
 // 更新帳號資料
 router.post("/editAccount", async function (req, res, next) {
   if (req === undefined) {
