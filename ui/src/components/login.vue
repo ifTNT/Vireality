@@ -66,33 +66,31 @@ export default {
       this.errMassagePW = "";
       this.errMassageAC = "";
       const password = document.querySelector("#password").value;
-      if (!this.state && password.length >= 4 && password.length <= 20) {
-        console.log("OKLOGIN");
-        this.axios
-          .post(server.apiUrl("/user/login"), {
-            uid: this.userId,
-            password: password,
-          })
-          .then(
-            function (response) {
-              console.log(response.data);
-              if (response.data.ok === "true") {
-                this.$router.push("/main");
+      this.axios
+        .post(server.apiUrl("/user/login"), {
+          uid: this.userId,
+          password: password,
+        })
+        .then(
+          function (response) {
+            console.log(response.data);
+            if (response.data.ok === "true") {
+              this.$router.push("/main");
+            } else {
+              if (response.data.result === "帳號錯誤") {
+                this.state = true;
+                this.errMassageAC = ",帳號錯誤";
               } else {
-                if (response.data.result === "帳號錯誤") {
-                  this.state = true;
-                  this.errMassageAC = ",帳號錯誤";
-                } else {
-                  this.errMassagePW = ",密碼錯誤";
-                }
-                //this.errColor = "red"
+                this.errMassagePW = ",密碼錯誤";
               }
-            }.bind(this)
-          )
-          .catch((error) => {
-            console.log(error);
-          });
-      }
+              //this.errColor = "red"
+            }
+          }.bind(this)
+        )
+        .catch((error) => {
+          console.log(error);
+        });
+      
       //   else{
       //       this.errColor = "red"
       //   }
