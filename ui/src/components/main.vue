@@ -77,6 +77,13 @@ export default {
     var manager = new Hammer.Manager(testElement);
     var Test = this.$refs.arGesture;
 
+    // Fetch the login status
+    this.axios.get(server.apiUrl("/user/state")).then((res) => {
+      if (res.data.logined === true) {
+        this.$store.commit("set_user_id", res.data.user_id);
+      }
+    });
+
     // var count = 0
     var tap = new Hammer.Tap({
       taps: 1,

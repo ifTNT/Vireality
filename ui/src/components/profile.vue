@@ -2,12 +2,11 @@
   <div class="profile">
     <profilePicture :diameter="parentDiameter" :Id="Id"></profilePicture>
     <!-- <div class="profilePricture"></div> -->
-    <nav class="goBackBtn">
+    <nav class="goBackBtn" @click.prevent="handleBack(fromRoute)">
       <font-awesome-icon
         icon="times"
         class="backButton"
         size="1x"
-        @click.prevent="handleBack(fromRoute)"
       />
     </nav>
     <div class="profileMidWrap">
@@ -127,7 +126,7 @@ export default {
     profilePicture: ProPic,
   },
   mounted() {
-    this.Id = this.$route.query.
+    this.Id = this.$route.query.profileId;
     this.axios
       .get(server.apiUrl("/user/" + this.Id + "/info"))
       .then(
@@ -180,10 +179,10 @@ export default {
       }
     },
     handleLeft(){
-      this.$router.push(`./Profile_left?profileId=${this.Id}&Id=${this.nickName}`);
+      this.$router.push(`./Profile_left?profileId=${this.Id}`);
     },
     handleRight(){
-      this.$router.push(`./Profile_right?profileId=${this.Id}&Id=${this.nickName}`);
+      this.$router.push(`./Profile_right?profileId=${this.Id}`);
     },
   },
 };
@@ -205,8 +204,10 @@ export default {
 
   .goBackBtn {
     position: absolute;
-    top: 1.5vh;
-    right: 3vw;
+    top: 0.3em;
+    right: 0.3em;
+    padding 1em
+
   }
 
   .profileMidWrap {

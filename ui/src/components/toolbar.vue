@@ -5,16 +5,17 @@
     <!-- 兩個link 到個人頁/到聊天室 -->
     <div class="links">
       <!-- 連結待修改 -->
-      <a href="/#/">
-        <font-awesome-icon icon="user" class="userProfileLink" size="1x" />
-      </a>
-      <a href="/#/">
-        <font-awesome-icon
-          icon="comment-alt"
-          class="userChatroomLink"
-          size="1x"
-        />
-      </a>
+      <font-awesome-icon
+        icon="user"
+        class="userProfileLink"
+        size="1x"
+        @click="linkToUserProfile"
+      />
+      <font-awesome-icon
+        icon="comment-alt"
+        class="userChatroomLink"
+        size="1x"
+      />
     </div>
   </div>
 </template>
@@ -26,6 +27,16 @@ export default {
     return {
       appName: "Vireality",
     };
+  },
+  methods: {
+    linkToUserProfile() {
+      let user_id = this.$store.state.user_id;
+      if (user_id === undefined) {
+        this.$router.push("/login");
+      } else {
+        this.$router.push(`/main/profile?profileId=${user_id}`);
+      }
+    },
   },
 };
 </script>

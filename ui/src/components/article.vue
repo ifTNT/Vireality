@@ -7,12 +7,11 @@
           <proPic :diameter="parentDiameter" :Id="authorName"></proPic>
           <p>{{ authorName }}</p>
         </nav>
-        <nav class="goBackBtn">
+        <nav class="goBackBtn" @click.prevent="handleBack(fromRoute)">
           <font-awesome-icon
             icon="times"
             class="backButton"
             size="1x"
-            @click.prevent="handleBack(fromRoute)"
           />
         </nav>
       </div>
@@ -194,7 +193,7 @@ export default {
       }
     },
     handleProfile(profileId){
-      this.$router.push(`./Profile?profileId=${profileId}&Id=${this.authorName}`);
+      this.$router.push(`./Profile?profileId=${profileId}`);
     }
   },
 };

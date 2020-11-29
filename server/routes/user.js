@@ -200,9 +200,7 @@ router.post("/login", function (req, res, next) {
     res.json({ ok: "false", result: [] });
     return;
   }
-  console.log(req.body);
   const hashPW = HashMethod(req.body.password);
-  console.log(hashPW);
   User.find({ user_id: req.body.uid }, function (err, user) {
     if (err) {
       console.log(err);
@@ -322,4 +320,14 @@ router.post("/createAccount", async function (req, res, next) {
     res.json({ ok: "false" });
   }
 });
+
+router.get("/state", function (req, res, next) {
+  let user_id = req.session.user_id;
+  if (user_id !== undefined) {
+    res.json({ logined: true, user_id });
+  } else {
+    res.json({ logined: false });
+  }
+});
+
 module.exports = router;
