@@ -33,6 +33,11 @@ const store = new Vuex.Store({
       for (let id in state.articles) {
         state.articles[id].visible = true;
       }
+    },
+    set_geolocation(state, data) {
+      state.geolocation.latitude = data.latitude;
+      state.geolocation.longitude = data.longitude;
+      state.geolocation.accuracy = data.accuracy;
     }
   }
   // getters: {

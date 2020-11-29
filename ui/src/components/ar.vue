@@ -255,6 +255,12 @@ export default {
         accuracy,
       } = this.controls.getCurrentPosition();
 
+      this.$store.commit("set_geolocation", {
+        longitude,
+        latitude,
+        accuracy,
+      });
+
       // If accuracy is too low, display lost GPS signal.
       this.lossLocation = accuracy > 15;
 
