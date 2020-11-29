@@ -11,12 +11,7 @@
           <p>{{ authorName }}</p>
         </nav>
         <nav class="goBackBtn" @click.prevent="$router.back()">
-          <font-awesome-icon
-            icon="times"
-            class="backButton"
-            size="1x"
-            @click.prevent="$router.back()"
-          />
+          <font-awesome-icon icon="times" class="backButton" size="1x" />
         </nav>
       </div>
       <div id="articlePictures" class="articlePictures">
