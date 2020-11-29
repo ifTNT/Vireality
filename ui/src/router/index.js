@@ -21,6 +21,7 @@ import TestFriendListAround from "@/components/test_friend_list_around";
 import Registration from "@/components/registration";
 import Login from "@/components/login";
 import Loading from "@/components/loading";
+import Chatroom from "@/components/chatroom";
 
 Vue.use(Router);
 
@@ -87,6 +88,11 @@ let router = new Router({
       path: "/profile_right",
       name: "Profile-article-map",
       component: ProfileRight
+    },
+    {
+      path: "/chatroom",
+      name: "chatroom",
+      component: Chatroom
     },
     {
       path: "/main",
