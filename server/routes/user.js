@@ -391,6 +391,12 @@ router.get("/state", function (req, res, next) {
   }
 });
 
+// logout
+router.get("/logout", function (req, res, next) {
+  delete req.session;
+  res.send('');
+});
+
 // 更新帳號資料
 router.post("/editAccount", async function (req, res, next) {
   if (req === undefined) {
@@ -428,6 +434,21 @@ router.post("/ddFriend", async function (req, res, next) {
   }, {
     $push: {
       friend_list: req.body.target_user_id
+    }
+  }, (err, users) => {
+    if (err) {
+      return console.error(err);
+    } else {
+      res.json({
+        ok: "true",
+      });
+    }
+  });
+  User.update({
+    user_id: req.body.target_user_id
+  }, {
+    $push: {
+      friend_list: req.session.user_id
     }
   }, (err, users) => {
     if (err) {
