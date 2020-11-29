@@ -147,19 +147,10 @@ router.get("/user/:id", function (req, res, next) {
       return;
     }
     console.log("Result :\n", articles);
-    if (articles.length !== 0) {
-      console.log("Send!");
-      /* [TODO]: 還沒測試 */
-      res.json({
-        ok: "true",
-        result: articles,
-      });
-    } else {
-      res.json({
-        ok: "false",
-        result: [],
-      });
-    }
+    res.json({
+      ok: "true",
+      result: articles,
+    });
   });
   // res.json({
   //   ok: "true",

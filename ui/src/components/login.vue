@@ -59,7 +59,7 @@ export default {
   methods: {
     register() {
       console.log("註冊");
-      this.$route.push("/registration");
+      this.$router.push("/registration");
     },
     login() {
       console.log("登入");

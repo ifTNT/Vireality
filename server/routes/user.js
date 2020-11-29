@@ -6,7 +6,7 @@ const HashMethod = require("hash-anything").sha1;
 const imgur = require("./token");
 const request = require("request");
 
-/*[ALERT]:前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
+/* 前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
 /* [TODO]:have some error for client */
 /* 給定使用者ID，取得該使用者的個人資料(名字、興趣、一句話)。 */
 router.get("/:id/info", async function (req, res, next) {
@@ -21,7 +21,9 @@ router.get("/:id/info", async function (req, res, next) {
 
     uid = req.params.id;
     let err,
-      info = await User.find({ user_id: uid });
+      info = await User.find({
+        user_id: uid
+      });
     if (err) {
       throw "Find User info has error.";
     }
@@ -58,9 +60,13 @@ router.get("/:id/info", async function (req, res, next) {
     //0:交友申請，都沒有就會是這個，不存DB 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室,用USER SCHEMA確認，不存DB 4:編輯,資料庫不存入
     /* 有人發送交友給session id 或是 session id有發送 */
     err,
-      (friendship = await Friendship.find({
-        $or: [{ send_user_id: session_uid }, { target_user_id: session_uid }],
-      }));
+    (friendship = await Friendship.find({
+      $or: [{
+        send_user_id: session_uid
+      }, {
+        target_user_id: session_uid
+      }],
+    }));
     if (err) {
       throw "Find target user friendship has error.";
     }
@@ -101,20 +107,31 @@ router.get("/:id/info", async function (req, res, next) {
     });
   } catch (e) {
     console.log(e);
-    res.json({ ok: "false", result: [] });
+    res.json({
+      ok: "false",
+      result: []
+    });
   }
 });
 
 /* 給定使用者ID，取得該使用者的大頭照。*/
 router.get("/:id/avatar", function (req, res, next) {
   if (req.params.id === undefined) {
-    res.json({ ok: "false", result: [] });
+    res.json({
+      ok: "false",
+      result: []
+    });
     return;
   }
-  User.find({ user_id: req.params.id }, function (err, pic) {
+  User.find({
+    user_id: req.params.id
+  }, function (err, pic) {
     if (err) {
       console.log(err);
-      res.json({ ok: "false", result: [] });
+      res.json({
+        ok: "false",
+        result: []
+      });
       return;
     }
     // console.log("Result :\n", pic)
@@ -126,7 +143,10 @@ router.get("/:id/avatar", function (req, res, next) {
         avatar: pic[0].avator,
       });
     } else {
-      res.json({ ok: "false", result: [] });
+      res.json({
+        ok: "false",
+        result: []
+      });
     }
   });
 });
@@ -149,7 +169,9 @@ router.get("/friend_direction", async function (req, res, next) {
 
     /*---- Find user's friend list ----*/
     let err,
-      user = await User.find({ user_id: uid });
+      user = await User.find({
+        user_id: uid
+      });
     if (err) {
       throw err;
     }
@@ -160,7 +182,9 @@ router.get("/friend_direction", async function (req, res, next) {
 
     /*---- Find friend's info  ----*/
     let friend;
-    err, (friend = await User.find({ user_id: user[0].friend_list }));
+    err, (friend = await User.find({
+      user_id: user[0].friend_list
+    }));
     // console.log("friend",friend)
     if (err) {
       throw err;
@@ -181,7 +205,10 @@ router.get("/friend_direction", async function (req, res, next) {
 
       var direction = Math.atan2(y, x);
 
-      result_dir.push({ id: target.user_id, dir: direction });
+      result_dir.push({
+        id: target.user_id,
+        dir: direction
+      });
     });
     console.log("result_dir", result_dir);
     res.json({
@@ -190,30 +217,42 @@ router.get("/friend_direction", async function (req, res, next) {
     });
   } catch (e) {
     console.log(e);
-    res.json({ ok: "false", result: [] });
+    res.json({
+      ok: "false",
+      result: []
+    });
   }
 });
 
 /* 使用者登入 */
 router.post("/login", function (req, res, next) {
   if (req.body.uid === undefined || req.body.password === undefined) {
-    res.json({ ok: "false", result: [] });
+    res.json({
+      ok: "false",
+      result: []
+    });
     return;
   }
-  console.log(req.body);
   const hashPW = HashMethod(req.body.password);
-  console.log(hashPW);
-  User.find({ user_id: req.body.uid }, function (err, user) {
+  User.find({
+    user_id: req.body.uid
+  }, function (err, user) {
     if (err) {
       console.log(err);
-      res.json({ ok: "false", result: [] });
+      res.json({
+        ok: "false",
+        result: []
+      });
       return;
     }
     console.log("Result :\n", user);
     // console.log(typeof(hashPW))
     // console.log(typeof(user[0].password))
     if (user.length === 0) {
-      return res.json({ ok: "false", result: "帳號錯誤" });
+      return res.json({
+        ok: "false",
+        result: "帳號錯誤"
+      });
     }
     if (user.length !== 0 && hashPW === user[0].password) {
       req.session.user_id = req.body.uid;
@@ -222,24 +261,35 @@ router.post("/login", function (req, res, next) {
         ok: "true",
       });
     } else {
-      return res.json({ ok: "false", result: "密碼錯誤" });
+      return res.json({
+        ok: "false",
+        result: "密碼錯誤"
+      });
     }
   });
 });
 
 router.post("/findAccount", function (req, res, next) {
   if (req === undefined) {
-    res.json({ ok: "false" });
+    res.json({
+      ok: "false"
+    });
   }
   /*---- User's Account whether exist----*/
   console.log(req.body);
-  User.find({ user_id: req.body.uid }, function (err, person) {
+  User.find({
+    user_id: req.body.uid
+  }, function (err, person) {
     if (err) {
-      res.json({ ok: "false" });
+      res.json({
+        ok: "false"
+      });
     }
     console.log("Result :\n", person);
     if (person.length !== 0) {
-      res.json({ ok: "false" });
+      res.json({
+        ok: "false"
+      });
     } else {
       res.json({
         ok: "true",
@@ -250,7 +300,9 @@ router.post("/findAccount", function (req, res, next) {
 
 router.post("/createAccount", async function (req, res, next) {
   if (req === undefined) {
-    res.json({ ok: "false" });
+    res.json({
+      ok: "false"
+    });
   }
   /*---- User's Account whether exist----*/
   /*
@@ -319,7 +371,94 @@ router.post("/createAccount", async function (req, res, next) {
       }
     });
   } catch (err) {
-    res.json({ ok: "false" });
+    res.json({
+      ok: "false"
+    });
   }
 });
+
+router.get("/state", function (req, res, next) {
+  let user_id = req.session.user_id;
+  if (user_id !== undefined) {
+    res.json({
+      logined: true,
+      user_id
+    });
+  } else {
+    res.json({
+      logined: false
+    });
+  }
+});
+
+// logout
+router.get("/logout", function (req, res, next) {
+  delete req.session;
+  res.send('');
+});
+
+// 更新帳號資料
+router.post("/editAccount", async function (req, res, next) {
+  if (req === undefined) {
+    res.json({
+      ok: "false"
+    });
+  }
+  let insertObj = {
+    interest: req.body.interest,
+    intro: req.body.intro,
+    nickname: req.body.nickname,
+  };
+  User.update({
+    user_id: req.session.user_id
+  }, insertObj, (err, users) => {
+    if (err) {
+      return console.error(err);
+    } else {
+      res.json({
+        ok: "true",
+      });
+    }
+  });
+});
+
+// 新增好友 req.body.target_user_id
+router.post("/ddFriend", async function (req, res, next) {
+  if (req === undefined) {
+    res.json({
+      ok: "false"
+    });
+  }
+  User.update({
+    user_id: req.session.user_id
+  }, {
+    $push: {
+      friend_list: req.body.target_user_id
+    }
+  }, (err, users) => {
+    if (err) {
+      return console.error(err);
+    } else {
+      res.json({
+        ok: "true",
+      });
+    }
+  });
+  User.update({
+    user_id: req.body.target_user_id
+  }, {
+    $push: {
+      friend_list: req.session.user_id
+    }
+  }, (err, users) => {
+    if (err) {
+      return console.error(err);
+    } else {
+      res.json({
+        ok: "true",
+      });
+    }
+  });
+});
+
 module.exports = router;

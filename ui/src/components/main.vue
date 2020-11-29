@@ -1,12 +1,8 @@
 <template>
   <div ref="arGesture" class="arGesture">
     <toolbar style="position: fixed; width: 100vw; z-index: -999"></toolbar>
-    <ar
-      class="ar"
-      v-bind:tap-coordinate="this.tapCoordinate"
-      v-on:open="openUrl"
-    ></ar>
-    <friendList v-if="isShowFriendList" v-on:open="openUrl"></friendList>
+    <ar class="ar" v-bind:tap-coordinate="this.tapCoordinate"></ar>
+    <friendList v-if="isShowFriendList"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
     <div
       class="blackbg"
@@ -18,6 +14,7 @@
         <router-view name="lightBox" />
       </div>
     </div>
+    <logout style="position: fixed; bottom:0.2em; right:-0.6em; margin-top: -0.5em; width: 2em; z-index: -999"></logout>
   </div>
 </template>
 
@@ -27,6 +24,7 @@ import * as Hammer from "hammerjs";
 
 // Lazy loading components
 const Toolbar = () => import("./toolbar.vue");
+const Logout = () => import("./logout.vue");
 const AR = () => import("./ar.vue");
 const Gesture = () => import("./main_gesture.vue");
 const FriendList = () => import("./friend_list_around.vue");
@@ -54,6 +52,7 @@ export default {
   },
   components: {
     toolbar: Toolbar,
+    logout: Logout,
     ar: AR,
     gesture: Gesture,
     friendList: FriendList,
@@ -76,6 +75,13 @@ export default {
     var testElement = this.$refs.arGesture;
     var manager = new Hammer.Manager(testElement);
     var Test = this.$refs.arGesture;
+
+    // Fetch the login status
+    this.axios.get(server.apiUrl("/user/state")).then((res) => {
+      if (res.data.logined === true) {
+        this.$store.commit("set_user_id", res.data.user_id);
+      }
+    });
 
     // var count = 0
     var tap = new Hammer.Tap({
@@ -173,11 +179,6 @@ export default {
     window.addEventListener("resize", this.onWindowResize.bind(this));
   },
   methods: {
-    openUrl(url) {
-      var urlSlit = url.split("/");
-      var urlSend = `${urlSlit[0]}/${urlSlit[1]}/${urlSlit[2]}?articleId=${urlSlit[3]}`;
-      this.$router.push(urlSend);
-    },
     click(event) {
       if (this.disableGesture) return;
       let { x, y } = event.center; //Get the tapping point
@@ -190,7 +191,7 @@ export default {
       console.log("swipeup");
       this.isShowTimeLine = false;
       this.$store.commit("show_all_articles");
-      this.openUrl("/main/post");
+      this.$router.push("/main/post");
     },
     panLeft(event) {
       if (this.disableGesture) return;

@@ -1,5 +1,4 @@
 <template>
-  <!-- [TODO]:bottom加一點高度 生日的部分會灰底 -->
   <div class="registration">
     <div class="profile" v-if="pageState === 0">
       <div class="uploadPic">
@@ -94,7 +93,13 @@
       </div>
     </div>
     <div class="camera" v-if="pageState === 2">
-      <camera class="fullScreen" facingMode="user" />
+      <camera-reg
+        class="fullScreen"
+        facingMode="user"
+        v-bind:label="userId"
+        @face-accepted="update_progress"
+        ref="camera"
+      />
       <div class="firstFaceDetection">
         <!-- 告訴使用者要如何偵測 -->
         <div class="teachDescription">{{ teachMessage }}</div>
@@ -115,7 +120,7 @@
           class="compeleteFaceDetection"
           src="/static/media/compelete.png"
         /> -->
-        
+
         <loading-progress
           v-if="showProgress"
           :progress="progressValue"
@@ -127,29 +132,22 @@
 
         <div class="checkmarkVue compeleteFaceDetection">
           <!-- class="checkmark" -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 52 52"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
             <!-- class="checkmark__circle" -->
-            <circle  cx="26" cy="26" r="25" fill="none" />
+            <circle cx="26" cy="26" r="25" fill="none" />
             <!-- class="checkmark__check" -->
-            <path
-                
-              fill="none"
-              d="M14.1 27.2l7.1 7.2 16.7-16.8"
-            />
-        </svg>
+            <path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+          </svg>
+        </div>
       </div>
-      </div>
-      <div>
+      <!-- <div>
         <img
           class="nextPageImg"
           src="/static/media/rightarrow_green.png"
           @click="finish"
           style="opacity: 0.8"
         />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -160,7 +158,7 @@ import Vue from "vue";
 Vue.use(VueProgress);
 
 const consentContent = require("./consent");
-const Camera = () => import("./camera.vue");
+const CameraReg = () => import("./camera_registeration.vue");
 const Checkmark = () => import("./checkmark.vue");
 
 export default {
@@ -194,11 +192,10 @@ export default {
       agreeConsent: false,
       errNotAgree: "",
       progressValue: 0.0,
-      timer: null,
     };
   },
   components: {
-    camera: Camera,
+    cameraReg: CameraReg,
     checkmark: Checkmark,
     // Progress,
   },
@@ -214,22 +211,15 @@ export default {
   },
   mounted() {
     this.MaxChooseDate();
-    /* ------- Progress Test -------- */
-    this.timer = setInterval(this.countdown, 5000);
   },
   methods: {
-    /* ------- Progress Test Start -------- */
-    countdown() {
-      this.progressValue = Math.round(this.progressValue * 10 + 1) / 10;
+    update_progress(new_progress) {
+      this.progressValue = new_progress / 10;
       console.log(this.progressValue);
       if (this.progressValue >= 1) {
-        clearInterval(this.timer);
+        this.finish();
       }
     },
-    beforeDestroy() {
-      clearInterval(this.timer);
-    },
-    /* ------- Progress Test End -------- */
 
     changeImage(e) {
       const file = event.target.files.item(0); //取得File物件
@@ -301,11 +291,11 @@ export default {
     finish() {
       console.log("finish");
       /* COMPLETED Animated*/
-      this.showProgress = false
-      const checkmarkSelect = document.querySelector(".checkmarkVue")
-      const checkmarkCircle = checkmarkSelect.querySelector("circle")
-      const checkmarkSvg = checkmarkSelect.querySelector("svg")
-      const checkmarkPath = checkmarkSelect.querySelector("path")
+      this.showProgress = false;
+      const checkmarkSelect = document.querySelector(".checkmarkVue");
+      const checkmarkCircle = checkmarkSelect.querySelector("circle");
+      const checkmarkSvg = checkmarkSelect.querySelector("svg");
+      const checkmarkPath = checkmarkSelect.querySelector("path");
       checkmarkSvg.classList.add("checkmark");
       checkmarkCircle.classList.add("checkmark__circle");
       checkmarkPath.classList.add("checkmark__check");
@@ -320,16 +310,18 @@ export default {
           intro: this.intro,
           avator: this.img,
         })
-        .then(
-          function (response) {
-            if (response.data.ok === "true") {
-              console.log("新增使用者成功!");
-            } 
-            else {
-              console.log("新增使用者失敗TT");
-            }
-          }.bind(this)
-        )
+        .then((response) => {
+          if (response.data.ok === "true") {
+            console.log("新增使用者成功!");
+          } else {
+            console.log("新增使用者失敗TT");
+          }
+          window.setTimeout(() => {
+            // Distroy the camera to prevent getContext error from pico.
+            this.pageState = 3;
+            this.$router.push("/main");
+          }, 1000);
+        })
         .catch((error) => {
           console.log(error);
         });
@@ -547,7 +539,6 @@ camera {
 .progressFaceDetection,
 .compeleteFaceDetection {
   width: 30vw;
-  /* [TODO]:要固定位置還是用margin */
   /* position: fixed; */
   /* top: 75vw;17em */
   /* left: 50vw;

@@ -4,9 +4,10 @@ import ARView from "@/components/ar";
 import ListRoute from "@/components/list_route";
 import Camera from "@/components/camera";
 import Post from "@/components/post_article";
-import FirstFaceDetection from "@/components/first_face_detection";
 import Article from "@/components/article";
 import Profile from "@/components/profile";
+import ProfileLeft from "@/components/profile_left";
+import ProfileRight from "@/components/profile_right";
 import Gesture from "@/components/main_gesture";
 import Toolbar from "@/components/toolbar";
 import ProfilePicture from "@/components/profile_picture";
@@ -14,21 +15,21 @@ import TimeLine from "@/components/timeline";
 import TestGeolocator from "@/components/test_geolocator";
 import FriendListAround from "@/components/friend_list_around";
 import Main from "@/components/main";
-import PostLocation from "@/components/post_article_location";
 import TestAbsSpeed from "@/components/test_absolute_speed_sensor";
 import TestTimeLine from "@/components/test_timeline";
 import TestFriendListAround from "@/components/test_friend_list_around";
 import Registration from "@/components/registration";
 import Login from "@/components/login";
 import Loading from "@/components/loading";
+import Chatroom from "@/components/chatroom";
+import Logout from "@/components/logout";
 
 Vue.use(Router);
 
 const AppName = "Vireality";
 
 let router = new Router({
-  routes: [
-    {
+  routes: [{
       path: "/",
       name: "Developing Index",
       component: ListRoute
@@ -47,11 +48,6 @@ let router = new Router({
       path: "/post",
       name: "Post",
       component: Post
-    },
-    {
-      path: "/first_face_detection",
-      name: "First face detection",
-      component: FirstFaceDetection
     },
     {
       path: "/registration",
@@ -89,11 +85,24 @@ let router = new Router({
       component: ProfilePicture
     },
     {
+      path: "/profile_right",
+      name: "Profile-article-map",
+      component: ProfileRight
+    }, {
+      path: "/logout",
+      name: "Logout",
+      component: Logout
+    },
+    {
+      path: "/chatroom",
+      name: "chatroom",
+      component: Chatroom
+    },
+    {
       path: "/main",
       name: "Main",
       component: Main,
-      children: [
-        {
+      children: [{
           path: "post",
           name: "Main-Post",
           components: {
@@ -102,7 +111,7 @@ let router = new Router({
           }
         },
         {
-          path: "article",
+          path: "article/:id",
           name: "Main-Article",
           components: {
             default: Main,
@@ -110,19 +119,30 @@ let router = new Router({
           }
         },
         {
-          path: "profile",
+          path: "profile/:id",
           name: "Main-Profile",
           components: {
             default: Main,
             lightBox: Profile
           }
+        },
+        {
+          path: "profile_left/:id",
+          name: "Profile-article-list",
+          components: {
+            default: Main,
+            lightBox: ProfileLeft
+          }
+        },
+        {
+          path: "profile_right/:id",
+          name: "Profile-article-map",
+          components: {
+            default: Main,
+            lightBox: ProfileRight
+          }
         }
       ]
-    },
-    {
-      path: "/post_article_location",
-      name: "Post Choose location",
-      component: PostLocation
     },
     //==========test================
     {

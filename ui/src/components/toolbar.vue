@@ -4,17 +4,21 @@
     <div class="appName">{{ appName }}</div>
     <!-- 兩個link 到個人頁/到聊天室 -->
     <div class="links">
-      <!-- 連結待修改 -->
-      <a href="/#/">
-        <font-awesome-icon icon="user" class="userProfileLink" size="1x" />
-      </a>
-      <a href="/#/">
+      <span>
+        <font-awesome-icon
+          icon="user"
+          class="userProfileLink"
+          size="1x"
+          @click="linkToUserProfile"
+        />
+      </span>
+      <span>
         <font-awesome-icon
           icon="comment-alt"
           class="userChatroomLink"
           size="1x"
         />
-      </a>
+      </span>
     </div>
   </div>
 </template>
@@ -27,11 +31,22 @@ export default {
       appName: "Vireality",
     };
   },
+  methods: {
+    linkToUserProfile() {
+      let user_id = this.$store.state.user_id;
+      if (user_id === undefined) {
+        this.$router.push("/login");
+      } else {
+        this.$router.push(`/main/profile/${user_id}`);
+      }
+    },
+  },
 };
 </script>
 
-<style scoped>
+<style scoped lang="stylus">
 .toolbar {
+  margin-top: 0.3em;
   height: 1.8em;
   font-size: 25px;
   /* background-color: #d0e0e390; */
@@ -41,29 +56,39 @@ export default {
   justify-content: space-between;
   align-items: center;
 }
+
 .appName {
   margin-left: 1vw;
   text-shadow: 1px 1px #b4a7d6;
-  font-family: "Audiowide", cursive;
+  font-family: 'Audiowide', cursive;
 }
-.userProfileLink,
-.userChatroomLink {
+
+.userProfileLink, .userChatroomLink {
   height: 1.2em;
-  color: #d0e0e3;
+  color: white;
 }
+
 /* .link沒設定高的話 在.components設定margin-right跑版 */
 .links {
-  width: 2.75em;
+  width: 4em;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-right: 0.5em;
-}
-/* 以下為響應式的設定 
-       主要調整APP名稱字體大小就好(px)*/
-@media screen and (max-width: 583px) {
-  /*.appName {
-    font-size: 20px;
-  }*/
+
+  span {
+    height: 1.5em;
+    width: 1.5em;
+    border-radius: 50%;
+    background: #76a5af;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    :active {
+      color: #76a5af;
+      background: #45818e;
+    }
+  }
 }
 </style>

@@ -46,7 +46,7 @@ export default {
   },
   methods: {
     openProfile(id) {
-      this.$emit("open", "/main/profile");
+      this.$router.push(`/main/profile/${id}`);
     },
     // test() {
     //   this.sensorStarter();
