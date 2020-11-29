@@ -444,6 +444,21 @@ router.post("/ddFriend", async function (req, res, next) {
       });
     }
   });
+  User.update({
+    user_id: req.body.target_user_id
+  }, {
+    $push: {
+      friend_list: req.session.user_id
+    }
+  }, (err, users) => {
+    if (err) {
+      return console.error(err);
+    } else {
+      res.json({
+        ok: "true",
+      });
+    }
+  });
 });
 
 module.exports = router;
