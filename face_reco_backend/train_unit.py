@@ -14,17 +14,21 @@ from common import zmq_serdes
 from common.protocol.msg import *
 from common.protocol.constant import *
 from common.neural_network import create_base_network
+from libs.model_db_util import *
 import codecs, json 
 import random
 from pymongo import MongoClient
 import pickle
 from bson.binary import Binary
 import threading
+from recog_unit import create_model_from_mongodb
 
 ## for Model definition/training
 from keras.models import Model, load_model
 from keras.layers import Input, Flatten, Dense, concatenate,  Dropout, Lambda
 from keras.optimizers import Adam
+import keras.backend as K
+import tensorflow as tf
 from libs.PSOkeras.psokeras import Optimizer as PSOptimizer
 
 from keras.utils import plot_model
@@ -97,8 +101,6 @@ def train_main(features, user_ids):
     y_train = np.array(y_train)
     x_val = np.array(x_val)
     y_val = np.array(y_val)
-
-    print(x_train.shape, y_train.shape, x_val.shape, y_val.shape)
 
     # The constants of training and the neural network
     batch_size = 256
@@ -220,6 +222,8 @@ def train_main(features, user_ids):
     return testing_model
 
 def gen_user_id_embs(model, features, user_ids):
+    global graph
+
     # Ensure the shape of input features
     if features.shape[1] != FEATURE_SIZE():
         logging.error(
@@ -230,7 +234,8 @@ def gen_user_id_embs(model, features, user_ids):
         )
         return []
 
-    embeddings = model.predict(features)
+    with graph.as_default():
+        embeddings = model.predict(features)
 
     # Save test embeddings for visualization in projector
     vecs_path = Path('visualization/vecs.tsv')
@@ -247,68 +252,8 @@ def gen_user_id_embs(model, features, user_ids):
 
     return grouped_db
 
-def addTrainSampleToMongoDB(db, user_id, features):
-    # Select the collection from db
-    train_collection = db['train']
-
-    # Construct the new training data by flatten the training requests
-    new_train_data = [
-        {
-            'user_id': user_id,
-            'feature': feature.tolist()
-        } for feature in features
-    ]
-
-    # Save to MongoDB
-    train_collection.insert_many(new_train_data)
-
-def fetchTrainSampleFromMongo(db):
-    # Select the collection from db
-    train_collection = db['train']
-
-    # The value that stored the faceID and the label
-    x_faceId = []
-    y_label = []
-
-    # Enumerate all of the faces
-    for sample in train_collection.find():
-        y_label.append(sample['user_id'])
-        x_faceId.append(sample['feature'])
-
-    # Convert to numpy array
-    x_faceId = np.array(x_faceId)
-    y_label = np.array(y_label)
-
-    return (x_faceId, y_label)
-
-def saveWeightToMongoDB(db, weight):
-    # Select the collection from db
-    weight_collection = db['weight']
-
-    # Serialized weight
-    bin_weight = Binary(pickle.dumps(weight))
-
-    # Remove the old weights and insert new weights
-    weight_collection.drop()
-    weight_collection.insert({'model': bin_weight})
-
-def saveEmbeddingToMongoDB(db, new_database):
-    # Select the collection from db
-    embedding_collection = db['face_id']
-
-    # Remove the old datas.
-    # Due to all of the data will be modified when training new model. 
-    embedding_collection.drop()
-
-    new_documents = [{
-            'user_id': user_id,
-            'embedding': embedding.tolist()
-        } for user_id, embedding in new_database]
-
-    # Save to MongoDB
-    embedding_collection.insert_many(new_documents)
-
-# The mutex to protect database between feature receiver and trainer
+# The mutex to protect database and shared model
+# between feature receiver and trainer
 mutex = threading.Lock()
 
 # This flag is also shared between feature receiver and trainer.
@@ -316,31 +261,68 @@ mutex = threading.Lock()
 # no additional mutex is needed.
 need_train = False
 
+# The newest model produced by trainer and consume by the feature receiver.
+shared_model = None
+
+# The shared graph of tensorflow to prevent error
+graph = None
+
 # The thread to receive result from socket
 class FeatureReceiver(threading.Thread):
-    def __init__(self, socket, db):
+    def __init__(self, recv_socket, send_socket, db):
         threading.Thread.__init__(self)
-        self.socket = socket
+        self.recv_socket = recv_socket
+        self.send_socket = send_socket
         self.db = db
 
     def run(self):
         global mutex
         global need_train
+        global shared_model
 
         logging.info('Begin receive feature from recog-sched')
         while True:
-            work = zmq_serdes.recv_zipped_pickle(self.socket)
+            work = zmq_serdes.recv_zipped_pickle(self.recv_socket)
             logging.info('Received a work from recog-sched (label={})'.format(work.label))
 
-            # Critical Section (database)
+            # If the shared_model existed,
+            # calculate the embedding of incoming user with old model.
+            if shared_model != None:
+                # Critical section: Calculate embeddings of given user ids
+                # and add it to database
+                mutex.acquire()
+                labels = np.array(
+                    [work.label for _ in range(len(work.face_id))]
+                )
+                new_user_id_embs = gen_user_id_embs(
+                    shared_model,
+                    np.array(work.face_id),
+                    labels
+                )
+                add_emb_to_mongodb(self.db, new_user_id_embs)
+                mutex.release()
+
+                # Issue early deploy message to recog-units
+                early_deploy_msg = DeployModelMsg(
+                    int(datetime.now().timestamp()*1000)
+                )
+                zmq_serdes.send_zipped_pickle(
+                    self.send_socket,
+                    early_deploy_msg
+                )
+                logging.info("Published early deploing message with serial={}.".format(early_deploy_msg.serial))
+
+            # Critical Section: Write samples to database
             mutex.acquire()
-            addTrainSampleToMongoDB(self.db, work.label, work.face_id)
+            add_train_sample_to_mongodb(self.db, work.label, work.face_id)
             need_train = True
             mutex.release()
 
 def main():
   global mutex
   global need_train
+  global shared_model
+  global graph
   LOG_FORMAT = '%(asctime)s [train-unit]: [%(levelname)s] %(message)s'
   logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
@@ -356,6 +338,15 @@ def main():
   except:
     logging.critical("Connect to database failed. Check if mongoDB alive.")
 
+  # Try construct model from MongoDB
+  try:
+    shared_model = create_model_from_mongodb(db_database)
+    # Save the default graph of tensorflow to prevent error 
+    graph = tf.get_default_graph() 
+    logging.info("Pre-computed model loaded")
+  except:
+    pass
+
   context = zmq.Context()
   # Socket to receive work
   work_recv = context.socket(zmq.PULL)
@@ -365,7 +356,7 @@ def main():
   result_sender.bind(get_zmq_uri(TRAIN_IP(), TRAIN_PUBLISH_PORT()))
 
   # Start result receiver thread
-  feature_recv_thread = FeatureReceiver(work_recv, db_database)
+  feature_recv_thread = FeatureReceiver(work_recv, result_sender, db_database)
   feature_recv_thread.start()
 
   while True:
@@ -377,12 +368,17 @@ def main():
     # Critical section: Read faceID DB from MongoDB.
     mutex.acquire()
     need_train = False
-    x_faceId, y_label = fetchTrainSampleFromMongo(db_database)
+    x_faceId, y_label = fetch_train_sample_from_mongodb(db_database)
     mutex.release()
 
     # Training new model with incoming faces.
     new_model = train_main(x_faceId, y_label)
     new_user_id_embs = gen_user_id_embs(new_model, x_faceId, y_label)
+
+    # Critical section: Write new model to shared model
+    mutex.acquire()
+    shared_model = new_model
+    mutex.release()
 
     # Extract the weights and biases form new-trained model.
     # Only extract the weight of fully connected layer.
@@ -391,8 +387,8 @@ def main():
         output_weight.append(i.get_weights())
 
     # Save weights and embeddings to MongoDB.
-    saveWeightToMongoDB(db_database, output_weight)
-    saveEmbeddingToMongoDB(db_database, new_user_id_embs)
+    save_weight_to_mongodb(db_database, output_weight)
+    flush_and_save_emb_to_mongodb(db_database, new_user_id_embs)
 
     # Issue deploy message to recog-units
     deploy_msg = DeployModelMsg(int(datetime.now().timestamp()*1000))
