@@ -33,7 +33,6 @@
 import * as THREE from "three";
 import GeolocationARControls from "../lib/geolocation_ar_controls.js";
 import convertGeolocation from "../lib/geolocation_converter.js";
-import axios from "axios";
 import screenfull from "screenfull";
 
 // Lazy-loading components
@@ -260,7 +259,7 @@ export default {
       this.lossLocation = accuracy > 15;
 
       // Refresh the article thumbnail
-      axios
+      this.axios
         .get(server.apiUrl("/articles/geolocation"), {
           params: {
             lon: longitude,

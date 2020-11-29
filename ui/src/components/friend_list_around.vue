@@ -3,9 +3,9 @@
     <nav>
       <!-- <proPic :diameter="parentDiameter" :Id="src[0]"></proPic> -->
       <div
-        v-for="(user,index) in friendRad"
+        v-for="(user, index) in friendRad"
         v-bind:key="index"
-        v-bind:style="{left: `${user.pos}px`, color: 'red'}"
+        v-bind:style="{ left: `${user.pos}px`, color: 'red' }"
         v-show="user.visible"
       >
         <profilePicture
@@ -20,7 +20,6 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import ProPic from "./profile_picture.vue";
 import * as THREE from "three";
 export default {
@@ -32,11 +31,11 @@ export default {
       parentDiameter: "2em",
       currentDir: 0, // The calculated direction. (rad)
       FOV: Math.PI / 3, // The FoV that the friend will be displyed. (rad)
-      widthDisplay: 300 // The range of projected direction. (px)
+      widthDisplay: 300, // The range of projected direction. (px)
     };
   },
   components: {
-    profilePicture: ProPic
+    profilePicture: ProPic,
   },
   mounted() {
     this.getFriends();
@@ -54,12 +53,13 @@ export default {
     // },
     show() {
       this.styleList.length = 0;
-      this.listShowFriend.forEach(index => {
+      this.listShowFriend.forEach((index) => {
         // console.log(index);
         // if(index.dir - Math.PI / 6)
         this.styleList.push(
-          `${100 -
-            (100 * (Math.sin(index.dir - Math.PI / 6) + 0.5)).toFixed(2)}%`
+          `${
+            100 - (100 * (Math.sin(index.dir - Math.PI / 6) + 0.5)).toFixed(2)
+          }%`
         );
         console.log(100 * (Math.sin(index.dir - Math.PI / 6) + 0.5).toFixed(2));
         console.log((index.dir / Math.PI).toFixed(2));
@@ -74,7 +74,7 @@ export default {
         // model.quaternion.fromArray(sensor.quaternion).inverse();
         this.updateDir(sensor.quaternion);
       });
-      sensor.addEventListener("error", error => {
+      sensor.addEventListener("error", (error) => {
         if (event.error.name == "NotReadableError") {
           console.log("Sensor is not available.");
         }
@@ -159,23 +159,25 @@ export default {
       //   });
       //   this.getFrientFlag = true;
       //   this.sensorStarter();
-      axios
+      this.axios
         .get(server.apiUrl("/user/friend_direction"))
-        .then(response => {
+        .then((response) => {
           if (response.data.ok === "true") {
             this.friendRad = response.data.result;
             console.log(this.friendRad);
-            this.friendRad.forEach(friend => {
+            this.friendRad.forEach((friend) => {
               friend["pos"] = 0;
               friend["visible"] = false;
             });
             this.getFrientFlag = true;
           } else {
             console.log("can't get friend place without ok");
-            getFriends();
+            setTimeout(() => {
+              this.getFriends();
+            }, 1000);
           }
         })
-        .catch(response => {
+        .catch((response) => {
           console.log("can't get friends place");
           console.log(response);
           // getFriends();
@@ -204,14 +206,14 @@ export default {
       // console.log(radDevice);
       while (true) {
         if (this.getFrientFlag === true) {
-          this.friendRad.forEach(element => {
+          this.friendRad.forEach((element) => {
             if (
               element["dir"] <= radDevice[0] &&
               element["dir"] >= radDevice[1]
             ) {
               listToShow.push({
                 id: element["id"],
-                dir: Math.cos(element["dir"] - radDevice[1] + Math.PI / 6)
+                dir: Math.cos(element["dir"] - radDevice[1] + Math.PI / 6),
               });
             }
           });
@@ -240,7 +242,7 @@ export default {
       // Clear the displayed lables
       this.listShowFriend = [];
       // Enumerate whole circle.
-      this.friendRad = this.friendRad.map(friend => {
+      this.friendRad = this.friendRad.map((friend) => {
         // Display the test lable if the test direction is in visible range.
         friend["visible"] = this.inVisibleRange(friend["dir"]);
         friend["pos"] = this.calculatePosition(friend["dir"]);
@@ -322,8 +324,8 @@ export default {
     projVec2XY(testVec) {
       testVec.z = 0;
       return testVec;
-    }
-  }
+    },
+  },
 };
 </script>
 
