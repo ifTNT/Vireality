@@ -322,8 +322,9 @@ router.post("/createAccount", async function (req, res, next) {
 });
 
 router.get("/state", function (req, res, next) {
-  if (req.session.user_id !== undefined) {
-    res.json({ logined: true, user_id: req.session.user_id });
+  let user_id = req.session.user_id;
+  if (user_id !== undefined) {
+    res.json({ logined: true, user_id });
   } else {
     res.json({ logined: false });
   }
