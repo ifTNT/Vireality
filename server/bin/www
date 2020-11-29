@@ -61,6 +61,7 @@ io.on("connection", (client) => {
     delete io.connected[client.id];
   });
   client.on("recog", handleRecogReq(client));
+  client.on("new", handleNewReq(client));
 });
 
 /**
@@ -139,6 +140,25 @@ function handleRecogReq(client) {
       req_id: req_id,
       type: "recog",
       img: data.img,
+    });
+    face_recog_issue_sock.send(work_json);
+    console.log("Sent to backend");
+  };
+}
+
+/**
+ * [Face recognition]
+ * Handler of create new face request
+ */
+function handleNewReq(client) {
+  return (data) => {
+    let req_id = client.id + ";" + data.req_id;
+    console.log(`Received new request. req_id=${req_id}`);
+    work_json = JSON.stringify({
+      req_id: req_id,
+      type: "new",
+      img: data.img,
+      label: data.label,
     });
     face_recog_issue_sock.send(work_json);
     console.log("Sent to backend");
