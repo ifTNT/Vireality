@@ -7,10 +7,8 @@
         icon="times"
         class="backButton"
         size="1x"
-        @click.prevent="$router.back()"
+        @click.prevent="handleBack(fromRoute)"
       />
-        <!-- @click.prevent="handleBack(fromRoute)" -->
-
     </nav>
     <div class="profileMidWrap">
       <font-awesome-icon
@@ -129,6 +127,7 @@ export default {
     profilePicture: ProPic,
   },
   mounted() {
+    this.Id = this.$route.query.
     this.axios
       .get(server.apiUrl("/user/" + this.Id + "/info"))
       .then(

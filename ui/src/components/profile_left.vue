@@ -89,7 +89,7 @@ export default {
   methods: {
     handleBack(fallback) {
       //處理點下上一頁按鈕的動作
-      console.log("testtest")
+      console.log("testtest");
       if (!this.fromRoute.name) {
         this.$router.push(fallback);
       } else {
@@ -102,5 +102,16 @@ export default {
 
 <style scoped lang="stylus">
 .profile_left {
+  width: 80vw;
+  height: 80vh;
+  text-align: center;
+  padding: 5vh 5vw;
+  box-sizing: border-box;
+  overflow: scroll;
+  li{
+      height 40vh
+      width 70vw
+      margin 1em 5vw
+  }
 }
 </style>

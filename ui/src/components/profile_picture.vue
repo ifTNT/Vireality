@@ -40,8 +40,8 @@ export default {
     return {
       imgSrc: null,
       //傳入父類別指定大小
-      h: this.diameter,
-      w: this.diameter,
+      h: '',
+      w: '',
     };
   },
   watch: {
