@@ -7,7 +7,7 @@ const imgur = require("./token");
 const request = require("request");
 
 /* 前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
-/* [TODO]:have some error for client */
+/* [ALERT]:have some error for client */
 /* 給定使用者ID，取得該使用者的個人資料(名字、興趣、一句話)。 */
 router.get("/:id/info", async function (req, res, next) {
   try {
@@ -53,8 +53,8 @@ router.get("/:id/info", async function (req, res, next) {
           intro: info[0].intro,
           friendship_state: 3,
         });
+        return;
       }
-      return;
     });
     let friendship;
     //0:交友申請，都沒有就會是這個，不存DB 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室,用USER SCHEMA確認，不存DB 4:編輯,資料庫不存入
@@ -316,7 +316,6 @@ router.post("/createAccount", async function (req, res, next) {
   */
   /* Transfer password to hash */
   const hashPW = HashMethod(req.body.password);
-  //[TODO]:faceID
   let insertObj = {
     user_id: req.body.uid,
     password: hashPW,
