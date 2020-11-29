@@ -3,7 +3,6 @@
     <camera
       class="fullScreen"
       v-on:camera-ready="onCameraReady"
-      v-on:open="openUrl"
       v-bind:tap-coordinate="this.tapCoordinate"
     />
     <canvas class="fullScreen" ref="arCanvas"></canvas>

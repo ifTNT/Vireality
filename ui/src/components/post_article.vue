@@ -7,7 +7,7 @@
         icon="chevron-left"
         class="backButton"
         size="2x"
-        @click.prevent="handleBack(fromRoute)"
+        @click.prevent="$router.back()"
       />
       <div
         class="btn"
@@ -112,7 +112,6 @@ export default {
       postButtonName: "發佈",
       hasUploadPic: false,
       img: null,
-      fromRoute: null, //上一頁的參數
       content: "",
       choosePicAndContent: true,
       chooseLocation: false,
@@ -128,11 +127,6 @@ export default {
     };
   },
 
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      vm.fromRoute = from; //放上一頁參數
-    });
-  },
   components: {
     // 新增大頭照的components tag命名為proPic
     mapbox: Mapbox,
@@ -160,15 +154,6 @@ export default {
 
       // Enter full screen again
       screenfull.request();
-    },
-
-    handleBack(fallback) {
-      //處理點下上一頁按鈕的動作
-      if (!this.fromRoute.name) {
-        this.$router.push(fallback);
-      } else {
-        this.$router.back();
-      }
     },
     nextSetPage() {
       // document.location.href="/#/post_article_location";

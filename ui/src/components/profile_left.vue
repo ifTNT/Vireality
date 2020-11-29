@@ -4,12 +4,15 @@
       icon="chevron-right"
       class="rightButton"
       size="2x"
-      @click.prevent="handleback()"
+      @click.prevent="$router.back()"
     />
     <ul id="example-1">
       <li v-for="(article, index) in articles" :key="index">
-        <img :src="article.img" alt="" 
-        @click.prevent="handleToArticle(article.articleId)"/>
+        <img
+          :src="article.img"
+          alt=""
+          @click.prevent="handleToArticle(article.articleId)"
+        />
         <p>{{ article.postTime }}</p>
         <div class="bottomLine"></div>
       </li>
@@ -29,8 +32,7 @@ export default {
   },
   components: {},
   mounted() {
-    this.Id = this.$route.query.profileId;
-    this.Id = "a123";
+    this.id = this.$route.params.id;
     // To pass cookies to server
     this.axios.get(server.apiUrl(`/articles/user/${this.Id}`)).then((res) => {
       console.log(`[articleList] Article list fetched.`);
@@ -91,18 +93,9 @@ export default {
     friendship_state = 0;
   },
   methods: {
-    handleBack(fallback) {
-      //處理點下上一頁按鈕的動作
-      console.log("testtest");
-      if (!this.fromRoute.name) {
-        this.$router.push(fallback);
-      } else {
-        this.$router.back();
-      }
+    handleToArticle(articleId) {
+      this.$router.push(`/main/article/${articleId}`);
     },
-    handleToArticle(articleId){
-        this.$router.push(`/main/article/${articleId}`);
-    }
   },
 };
 </script>
@@ -130,7 +123,7 @@ export default {
         height: 40vh;
         width: 70vw;
         // overflow hidden
-        object-fit cover
+        object-fit: cover;
         object-position: 50% 50%;
       }
 
@@ -142,7 +135,7 @@ export default {
         box-sizing: border-box;
         border-bottom: solid 2px;
         border-color: gray;
-        border-radius 6px
+        border-radius: 6px;
         width: 70vw;
         height: 2px;
         margin-top: 1em;

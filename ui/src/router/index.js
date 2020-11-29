@@ -4,7 +4,6 @@ import ARView from "@/components/ar";
 import ListRoute from "@/components/list_route";
 import Camera from "@/components/camera";
 import Post from "@/components/post_article";
-import FirstFaceDetection from "@/components/first_face_detection";
 import Article from "@/components/article";
 import Profile from "@/components/profile";
 import ProfileLeft from "@/components/profile_left";
@@ -16,7 +15,6 @@ import TimeLine from "@/components/timeline";
 import TestGeolocator from "@/components/test_geolocator";
 import FriendListAround from "@/components/friend_list_around";
 import Main from "@/components/main";
-import PostLocation from "@/components/post_article_location";
 import TestAbsSpeed from "@/components/test_absolute_speed_sensor";
 import TestTimeLine from "@/components/test_timeline";
 import TestFriendListAround from "@/components/test_friend_list_around";
@@ -49,11 +47,6 @@ let router = new Router({
       path: "/post",
       name: "Post",
       component: Post
-    },
-    {
-      path: "/first_face_detection",
-      name: "First face detection",
-      component: FirstFaceDetection
     },
     {
       path: "/registration",
@@ -125,7 +118,7 @@ let router = new Router({
           }
         },
         {
-          path: "profile_left",
+          path: "profile_left/:id",
           name: "Profile-article-list",
           components: {
             default: Main,
@@ -133,7 +126,7 @@ let router = new Router({
           }
         },
         {
-          path: "profile_right",
+          path: "profile_right/:id",
           name: "Profile-article-map",
           components: {
             default: Main,
@@ -141,11 +134,6 @@ let router = new Router({
           }
         }
       ]
-    },
-    {
-      path: "/post_article_location",
-      name: "Post Choose location",
-      component: PostLocation
     },
     //==========test================
     {

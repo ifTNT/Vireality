@@ -188,7 +188,7 @@ export default {
       console.log("swipeup");
       this.isShowTimeLine = false;
       this.$store.commit("show_all_articles");
-      this.openUrl("/main/post");
+      this.$router.push("/main/post");
     },
     panLeft(event) {
       if (this.disableGesture) return;

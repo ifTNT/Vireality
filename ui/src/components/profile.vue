@@ -2,7 +2,7 @@
   <div class="profile">
     <profilePicture :diameter="parentDiameter" :Id="Id"></profilePicture>
     <!-- <div class="profilePricture"></div> -->
-    <nav class="goBackBtn" @click.prevent="handleBack(fromRoute)">
+    <nav class="goBackBtn" @click.prevent="$router.back()">
       <font-awesome-icon
         icon="times"
         class="backButton"
@@ -169,10 +169,10 @@ export default {
       // });
     },
     handleLeft() {
-      this.$router.push(`./Profile_left?profileId=${this.Id}`);
+      this.$router.push(`/main/profile_left/${this.Id}`);
     },
     handleRight() {
-      this.$router.push(`./Profile_right?profileId=${this.Id}`);
+      this.$router.push(`/main/profile_right/${this.Id}`);
     },
   },
 };
