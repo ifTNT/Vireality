@@ -2,7 +2,10 @@
   <div class="app">
     <div class="articleBody">
       <div class="articleHeader">
-        <nav class="articleAuthor" @click.prevent="handleProfile(authorName)">
+        <nav
+          class="articleAuthor"
+          @click.prevent="$router.push(`/main/profile/${authorName}`)"
+        >
           <!-- 前者是要丟給child(profile_picture) props的參數名稱 後者是在parent(article) data區域之參數名稱 -->
           <proPic :diameter="parentDiameter" :Id="authorName"></proPic>
           <p>{{ authorName }}</p>
@@ -12,7 +15,7 @@
             icon="times"
             class="backButton"
             size="1x"
-            @click.prevent="handleBack(fromRoute)"
+            @click.prevent="$router.back()"
           />
         </nav>
       </div>
@@ -61,7 +64,6 @@ export default {
 
   data() {
     return {
-      fromRoute: null, //上一頁的參數
       message: "",
       authorName: "Author",
       articleTexts: "",
@@ -77,11 +79,6 @@ export default {
       articleId: "",
     };
   },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      vm.fromRoute = from; //放上一頁參數
-    });
-  },
   components: {
     // 新增大頭照的components tag命名為proPic
     proPic: ProPic,
@@ -91,7 +88,7 @@ export default {
   },
   methods: {
     getArticleDetail() {
-      this.articleId = this.$route.query.articleId;
+      this.articleId = this.$route.params.id;
       this.axios
         .get(server.apiUrl("/article/" + this.articleId))
         // .get(server.apiUrl("/article/" + "a2")) // test
@@ -185,17 +182,6 @@ export default {
         this.show(--this.showIndex);
       }
     },
-    handleBack(fallback) {
-      //處理點下上一頁按鈕的動作
-      if (!this.fromRoute.name) {
-        this.$router.push(fallback);
-      } else {
-        this.$router.back();
-      }
-    },
-    handleProfile(profileId){
-      this.$router.push(`./Profile?profileId=${profileId}`);
-    }
   },
 };
 </script>

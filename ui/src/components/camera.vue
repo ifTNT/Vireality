@@ -30,25 +30,23 @@ export default {
   },
   watch: {
     tapCoordinate: function (newCoord, oldCoord) {
-      for (let face of this.dets) {
-        if (face[3] > 50.0) {
-          let width = face[2] / 2;
-          let x = face[1] - width / 2;
-          let y = face[0] - width / 2;
-
-          // The box of detected face
-          const aspect_ratio = 1;
-          let height = width * aspect_ratio;
-          y -= height * 1.8; //Calculate offset. Negative is ok.
-          if (
-            Math.abs(newCoord.y - y) < width &&
-            Math.abs(newCoord.x - x) < width
-          ) {
-            // Tap in region of detection
-            // [TODO] Lookup table to translate faces to link.
-            this.$emit("open", "/main/profile");
-            break;
-          }
+      for (let face of this.confiTable) {
+        if (face.userID === undefined) continue;
+        let face_x = face.position[0];
+        let face_y = face.position[1];
+        let face_width = face.position[2];
+        let face_height = face_width;
+        face_y -= face_height * 0.5;
+        face_height *= 1.5;
+        if (
+          newCoord.y > face_y &&
+          newCoord.y < face_y + face_height &&
+          newCoord.x > face_x &&
+          newCoord.x < face_x + face_width
+        ) {
+          // Tap in region of detection
+          this.$router.push(`/main/profile/${face.userID}`);
+          break;
         }
       }
     },

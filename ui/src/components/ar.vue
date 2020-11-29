@@ -88,7 +88,7 @@ export default {
       if (intersects.length > 0) {
         for (var i = 0; i < intersects.length; i++) {
           if (typeof intersects[i].object.userData.link != "undefined") {
-            this.openUrl(intersects[i].object.userData.link);
+            this.$router.push(intersects[i].object.userData.link);
             break;
           }
         }
@@ -104,10 +104,6 @@ export default {
       console.re.log(
         `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
       );
-    },
-    openUrl(url) {
-      // Open url in router view of upper components
-      this.$emit("open", url);
     },
     initAR: function () {
       this.started = true;

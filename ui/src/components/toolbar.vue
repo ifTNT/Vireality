@@ -34,7 +34,7 @@ export default {
       if (user_id === undefined) {
         this.$router.push("/login");
       } else {
-        this.$router.push(`/main/profile?profileId=${user_id}`);
+        this.$router.push(`/main/profile/${user_id}`);
       }
     },
   },

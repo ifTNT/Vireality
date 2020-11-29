@@ -7,7 +7,7 @@
         icon="times"
         class="backButton"
         size="1x"
-        @click.prevent="handleBack(fromRoute)"
+        @click.prevent="$router.back()"
       />
     </nav>
     <div class="profileMidWrap">
@@ -127,9 +127,9 @@ export default {
     profilePicture: ProPic,
   },
   mounted() {
-    this.Id = this.$route.query.profileId;
+    this.Id = this.$route.params.id;
     this.axios
-      .get(server.apiUrl("/user/" + this.Id + "/info"))
+      .get(server.apiUrl(`/user/${this.Id}/info`))
       .then(
         function (response) {
           if (response.data.ok === "true") {
@@ -168,21 +168,10 @@ export default {
       //     console.log(error);
       // });
     },
-    handleBack(fallback) {
-      //處理點下上一頁按鈕的動作
-
-      console.log("[this.$router]")
-      console.log(this.$router)
-      if (!this.fromRoute.name) {
-        this.$router.push(fallback);
-      } else {
-        this.$router.back();
-      }
-    },
-    handleLeft(){
+    handleLeft() {
       this.$router.push(`./Profile_left?profileId=${this.Id}`);
     },
-    handleRight(){
+    handleRight() {
       this.$router.push(`./Profile_right?profileId=${this.Id}`);
     },
   },

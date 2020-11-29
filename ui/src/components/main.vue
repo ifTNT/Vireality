@@ -1,12 +1,8 @@
 <template>
   <div ref="arGesture" class="arGesture">
     <toolbar style="position: fixed; width: 100vw; z-index: -999"></toolbar>
-    <ar
-      class="ar"
-      v-bind:tap-coordinate="this.tapCoordinate"
-      v-on:open="openUrl"
-    ></ar>
-    <friendList v-if="isShowFriendList" v-on:open="openUrl"></friendList>
+    <ar class="ar" v-bind:tap-coordinate="this.tapCoordinate"></ar>
+    <friendList v-if="isShowFriendList"></friendList>
     <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
     <div
       class="blackbg"
@@ -180,11 +176,6 @@ export default {
     window.addEventListener("resize", this.onWindowResize.bind(this));
   },
   methods: {
-    openUrl(url) {
-      var urlSlit = url.split("/");
-      var urlSend = `${urlSlit[0]}/${urlSlit[1]}/${urlSlit[2]}?articleId=${urlSlit[3]}`;
-      this.$router.push(urlSend);
-    },
     click(event) {
       if (this.disableGesture) return;
       let { x, y } = event.center; //Get the tapping point

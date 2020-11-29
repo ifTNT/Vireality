@@ -104,7 +104,7 @@ let router = new Router({
           }
         },
         {
-          path: "article",
+          path: "article/:id",
           name: "Main-Article",
           components: {
             default: Main,
@@ -112,20 +112,22 @@ let router = new Router({
           }
         },
         {
-          path: "profile",
+          path: "profile/:id",
           name: "Main-Profile",
           components: {
             default: Main,
             lightBox: Profile
           }
-        },{
+        },
+        {
           path: "profile_left",
           name: "Profile-article-list",
           components: {
             default: Main,
             lightBox: ProfileLeft
           }
-        },{
+        },
+        {
           path: "profile_right",
           name: "Profile-article-map",
           components: {
