@@ -1,5 +1,11 @@
 <template>
   <div class="profile_right">
+    <font-awesome-icon
+      icon="chevron-left"
+      class="rightButton"
+      size="2x"
+      @click.prevent="$router.back()"
+    />
     <div class="error" v-show="articles.length === 0">這個人沒有任何文章哦</div>
     <div ref="basicMapbox" class="map"></div>
     <!-- {{this.articles}} -->
@@ -90,10 +96,25 @@ export default {
 @import url('https://api.mapbox.com/mapbox-gl-js/v1.10.1/mapbox-gl.css');
 
 .profile_right {
+  width: 80vw;
+  height: 80vh;
+  text-align: center;
+  padding: 5vh 5vw;
+  box-sizing: border-box;
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  .error{
+    margin 10vh 0
+  }
+
+  .map {
+    margin-top 2vh
+    width: 100%;
+    // height: calc(80vh - 3rem);
+    height: calc(100% - 8vh);
+}
 }
 
-.map {
-  width: 100%;
-  height: calc(80vh - 3rem);
-}
+
 </style>
