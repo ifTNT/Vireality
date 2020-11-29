@@ -30,12 +30,11 @@ export default {
   },
   components: {},
   mounted() {
-    this.id = this.$route.query.profileId;
-    this.id = "a123";
+    this.Id = this.$route.query.profileId;
+    this.Id = "a123";
     // To pass cookies to server
-    axios.defaults.withCredentials = true;
-    axios
-      .get(server.apiUrl(`/articles/user/${this.id}`))
+    this.axios
+      .get(server.apiUrl(`/articles/user/${this.Id}`))
       .then((res) => {
         console.log(`[articleList] Article list fetched.`);
         res = res.data;
