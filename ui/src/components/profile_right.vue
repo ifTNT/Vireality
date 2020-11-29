@@ -2,16 +2,6 @@
   <div class="profile">
     <profilePicture :diameter="parentDiameter" :Id="Id"></profilePicture>
     <!-- <div class="profilePricture"></div> -->
-    <nav class="goBackBtn">
-      <font-awesome-icon
-        icon="times"
-        class="backButton"
-        size="1x"
-        @click.prevent="$router.back()"
-      />
-        <!-- @click.prevent="handleBack(fromRoute)" -->
-
-    </nav>
     <div class="profileMidWrap">
       <font-awesome-icon
         icon="chevron-left"
@@ -20,14 +10,14 @@
         @click.prevent="handleLeft()"
       />
       <div class="profileMessage">
-        <div class="name">{{ nickName }}</div>
+        <div class="name">{{ nickName }}nickName</div>
         <div class="hobbies">
           <p>interest</p>
-          {{ interest }}
+          {{ interest }}intro
         </div>
         <div class="description">
           <p>intro</p>
-          {{ intro }}
+          {{ intro }}intro
         </div>
       </div>
       <font-awesome-icon
@@ -117,7 +107,7 @@ export default {
   // },
   data() {
     return {
-      nickName: "Author",
+      nickName: "",
       interest: "",
       intro: "",
       parentDiameter: "23vh",
@@ -130,6 +120,7 @@ export default {
     profilePicture: ProPic,
   },
   mounted() {
+    this.id = Author;
     // To pass cookies to server
     axios.defaults.withCredentials = true;
     axios
@@ -172,23 +163,6 @@ export default {
       //     console.log(error);
       // });
     },
-    handleBack(fallback) {
-      //處理點下上一頁按鈕的動作
-
-      console.log("[this.$router]")
-      console.log(this.$router)
-      if (!this.fromRoute.name) {
-        this.$router.push(fallback);
-      } else {
-        this.$router.back();
-      }
-    },
-    handleLeft(){
-      this.$router.push(`./Profile_left?profileId=${this.Id}&Id=${this.nickName}`);
-    },
-    handleRight(){
-      this.$router.push(`./Profile_right?profileId=${this.Id}&Id=${this.nickName}`);
-    },
   },
 };
 </script>
@@ -202,15 +176,8 @@ export default {
   box-sizing: border-box;
   font-family: Microsoft JhengHei;
   color: black;
-  position: relative;
 
   .profilePicture {
-  }
-
-  .goBackBtn {
-    position: absolute;
-    top: 1.5vh;
-    right: 3vw;
   }
 
   .profileMidWrap {

@@ -3,7 +3,7 @@
       
     <div class="articleBody">
       <div class="articleHeader">
-        <nav class="articleAuthor">
+        <nav class="articleAuthor" @click.prevent="handleProfile(authorName)">
           <!-- 前者是要丟給child(profile_picture) props的參數名稱 後者是在parent(article) data區域之參數名稱 -->
           <proPic :diameter="parentDiameter" :Id="authorName"></proPic>
           <p>{{ authorName }}</p>
@@ -195,6 +195,9 @@ export default {
         this.$router.back();
       }
     },
+    handleProfile(profileId){
+      this.$router.push(`./Profile?profileId=${profileId}&Id=${this.authorName}`);
+    }
   },
 };
 </script>
@@ -207,7 +210,7 @@ header {
 }
 
 .articleBody {
-  opacity: 1;
+  // opacity: 1;
 
   margin: 1vh 0;
   height: 92vh;

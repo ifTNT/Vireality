@@ -41,8 +41,6 @@ export default {
     return {
       imgSrc: null,
       //傳入父類別指定大小
-      h: this.diameter,
-      w: this.diameter
     };
   },
   watch:{
@@ -61,6 +59,9 @@ export default {
     }
   },
   mounted() {
+    console.log(this.diameter)
+    this.h = this.diameter
+    this.w = this.diameter
     this.imgSrc = '/static/media/avatar.png'
   },
   methods: {}
