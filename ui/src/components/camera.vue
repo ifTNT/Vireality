@@ -12,7 +12,6 @@
 
 <script>
 import pico from "../lib/pico.js";
-import Axios from "axios";
 import io from "socket.io-client";
 
 export default {

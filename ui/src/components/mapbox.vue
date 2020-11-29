@@ -21,30 +21,12 @@ export default {
     };
   },
   mounted() {
-    this.setCurrentPosition();
+    //this.setCurrentPosition();
+    let lng = this.$store.state.geolocation.longitude;
+    let lat = this.$store.state.geolocation.latitude;
+    this.init(lng, lat);
   },
   methods: {
-    setCurrentPosition() {
-      var lng = 0.0;
-      var lat = 0.0;
-      // 找到現在的位置
-      var getPosition = function (options) {
-        return new Promise(function (resolve, reject) {
-          navigator.geolocation.getCurrentPosition(resolve, reject, options);
-        });
-      };
-      getPosition()
-        .then((position) => {
-          console.log(position);
-          console.log(position.coords.latitude, position.coords.longitude);
-          lng = position.coords.longitude;
-          lat = position.coords.latitude;
-          this.init(lng, lat);
-        })
-        .catch((err) => {
-          console.error(err.message);
-        });
-    },
     // 初始化
     init(lng, lat) {
       /* [TODO]:藏token */
