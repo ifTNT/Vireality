@@ -13,6 +13,7 @@ import { faPlayCircle } from "@fortawesome/free-solid-svg-icons/faPlayCircle";
 import { faUser } from "@fortawesome/free-solid-svg-icons/faUser";
 import { faCommentAlt } from "@fortawesome/free-solid-svg-icons/faCommentAlt";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons/faChevronRight";
 import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
@@ -28,6 +29,7 @@ export function init() {
   library.add(faUser);
   library.add(faCommentAlt);
   library.add(faChevronLeft);
+  library.add(faChevronRight);
   library.add(faUpload);
   library.add(faTimesCircle);
   library.add(faTimes);

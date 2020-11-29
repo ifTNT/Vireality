@@ -7,6 +7,8 @@ import Post from "@/components/post_article";
 import FirstFaceDetection from "@/components/first_face_detection";
 import Article from "@/components/article";
 import Profile from "@/components/profile";
+import ProfileLeft from "@/components/profile_left";
+import ProfileRight from "@/components/profile_right";
 import Gesture from "@/components/main_gesture";
 import Toolbar from "@/components/toolbar";
 import ProfilePicture from "@/components/profile_picture";
@@ -115,6 +117,20 @@ let router = new Router({
           components: {
             default: Main,
             lightBox: Profile
+          }
+        },{
+          path: "profile_left",
+          name: "Profile-article-list",
+          components: {
+            default: Main,
+            lightBox: ProfileLeft
+          }
+        },{
+          path: "profile_right",
+          name: "Profile-article-map",
+          components: {
+            default: Main,
+            lightBox: ProfileRight
           }
         }
       ]
