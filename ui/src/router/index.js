@@ -91,6 +91,11 @@ let router = new Router({
       component: ProfilePicture
     },
     {
+      path: "/profile_right",
+      name: "Profile-article-map",
+      component: ProfileRight
+    },
+    {
       path: "/main",
       name: "Main",
       component: Main,
