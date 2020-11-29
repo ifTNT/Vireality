@@ -89,7 +89,7 @@ export default {
         for (var i = 0; i < intersects.length; i++) {
           if (typeof intersects[i].object.userData.link != "undefined") {
             this.openUrl(intersects[i].object.userData.link);
-            continue;
+            break;
           }
         }
         //Open the cloest article

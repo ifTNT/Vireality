@@ -165,9 +165,6 @@ router.get("/friend_direction", async function (req, res, next) {
     if (err) {
       throw err;
     }
-    if (friend.length === 0) {
-      throw "NO friend.";
-    }
     /*---- Find friend's direction and response  ----*/
     result_dir = [];
     friend.forEach((target) => {
