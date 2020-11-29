@@ -1,5 +1,4 @@
 <template>
-  <!-- [TODO]:bottom加一點高度 生日的部分會灰底 -->
   <div class="registration">
     <div class="profile" v-if="pageState === 0">
       <div class="uploadPic">
@@ -547,7 +546,6 @@ camera {
 .progressFaceDetection,
 .compeleteFaceDetection {
   width: 30vw;
-  /* [TODO]:要固定位置還是用margin */
   /* position: fixed; */
   /* top: 75vw;17em */
   /* left: 50vw;

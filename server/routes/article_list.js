@@ -149,7 +149,6 @@ router.get("/user/:id", function (req, res, next) {
     console.log("Result :\n", articles);
     if (articles.length !== 0) {
       console.log("Send!");
-      /* [TODO]: 還沒測試 */
       res.json({
         ok: "true",
         result: articles,
