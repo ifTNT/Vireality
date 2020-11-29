@@ -43,10 +43,9 @@ export default {
             });
           });
           const lat = this.articles[0].location.latitude
-          console.log(lat)
+          // console.log(lat)
           const lng = this.articles[0].location.longitude
-          console.log(lng)
-
+          // console.log(lng)
           mapboxgl.accessToken =
             "pk.eyJ1IjoibG92ZTEyNDM1NiIsImEiOiJja2FiY2l0OXMwMG9kMnJxZ3N6d2Z3cTNvIn0.bYm9ygwRCG_cRVRU3695bA";
           const map = new mapboxgl.Map({
@@ -68,13 +67,18 @@ export default {
             .setLngLat([article.location.longitude, article.location.latitude])
             .addTo(map);
 
-            this.markers.push(marker);
-            marker.getElement().addEventListener('click', () => {
+            //this.markers.push(marker);
+            marker.getElement().addEventListener('click', (e) => {
               console.log("Clicked");
-
+              //[TODO]:跳轉到文章
+              console.log(article.articleId)
+              // var popup = new mapboxgl.Popup({ closeOnClick: true })
+              //     .setLngLat([article.location.longitude, article.location.latitude])
+              //     .setHTML('<h1>'+ article.articleId +'</h1>')
+              //     .addTo(map);
             });
             
-          });
+          })
           
           }
       });
