@@ -89,7 +89,7 @@ export default {
         for (var i = 0; i < intersects.length; i++) {
           if (typeof intersects[i].object.userData.link != "undefined") {
             this.openUrl(intersects[i].object.userData.link);
-            continue;
+            break;
           }
         }
         //Open the cloest article
@@ -254,6 +254,12 @@ export default {
         latitude,
         accuracy,
       } = this.controls.getCurrentPosition();
+
+      this.$store.commit("set_geolocation", {
+        longitude,
+        latitude,
+        accuracy,
+      });
 
       // If accuracy is too low, display lost GPS signal.
       this.lossLocation = accuracy > 15;

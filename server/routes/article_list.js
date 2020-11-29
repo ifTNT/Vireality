@@ -13,12 +13,7 @@ router.get("/geolocation", async function (req, res, next) {
       throw "requst is undefined.";
     }
     /*---- Find Session uid ----*/
-
-    // [For debug purpose]
-    //req.session.user_id = "a123";
-    // console.log(req.session)
     uid = req.session.user_id;
-    console.log(uid);
     if (uid === undefined) {
       throw "uid is undefined.";
     }
@@ -97,7 +92,6 @@ router.get("/geolocation", async function (req, res, next) {
       s = Math.round(s * 10000) / 10000; //單位為公尺
       console.log(`Article ${target.article_id}: Distance is ${s}m`);
       if (s < 20)
-        /* [ALERT,TODO]:先丟一張照片出去 避免錯誤 */
         dis.push({
           id: target.article_id,
           thumbnail: target.thumbnail[0],

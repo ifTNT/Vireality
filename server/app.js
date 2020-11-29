@@ -4,7 +4,6 @@ var path = require("path");
 var logger = require("morgan");
 var cors = require("cors");
 
-var miscRouter = require("./routes/misc");
 var articleListRouter = require("./routes/article_list");
 var articleRouter = require("./routes/article");
 var chatRouter = require("./routes/chat");
@@ -52,7 +51,6 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", miscRouter);
 app.use("/user", userRouter);
 app.use("/articles", articleListRouter);
 app.use("/article", articleRouter);
