@@ -10,7 +10,7 @@
           <proPic :diameter="parentDiameter" :Id="authorName"></proPic>
           <p>{{ authorName }}</p>
         </nav>
-        <nav class="goBackBtn">
+        <nav class="goBackBtn" @click.prevent="handleBack(fromRoute)">
           <font-awesome-icon
             icon="times"
             class="backButton"

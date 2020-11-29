@@ -25,6 +25,8 @@ app.use(
       "https://192.168.1.44:3000",
       "https://192.168.1.141:8080",
       "https://192.168.1.141:3000",
+      "https://192.168.1.252:8080",
+      "https://192.168.1.252:3000",
     ],
     credentials: true,
     exposedHeaders: ["set-cookie"],

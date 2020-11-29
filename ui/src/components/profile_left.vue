@@ -6,12 +6,12 @@
       size="2x"
       @click.prevent="handleback()"
     />
-    <h2>{{ articles.length }}</h2>
-    <h2>{{ testMessage }}</h2>
     <ul id="example-1">
       <li v-for="(article, index) in articles" :key="index">
-        <img src="article.img" alt="" />
-        <p>article.post_time</p>
+        <img :src="article.img" alt="" 
+        @click.prevent="handleToArticle(article.articleId)"/>
+        <p>{{ article.postTime }}</p>
+        <div class="bottomLine"></div>
       </li>
     </ul>
   </div>
@@ -25,7 +25,6 @@ export default {
     return {
       Id: "",
       articles: [],
-      testMessage: "",
     };
   },
   components: {},
@@ -33,56 +32,62 @@ export default {
     this.Id = this.$route.query.profileId;
     this.Id = "a123";
     // To pass cookies to server
-    this.axios
-      .get(server.apiUrl(`/articles/user/${this.Id}`))
-      .then((res) => {
-        console.log(`[articleList] Article list fetched.`);
-        res = res.data;
-        if (res.ok !== "true") {
-          console.log("[articleList] Get article list failed.");
-        } else {
-          res.result.forEach(async (article) => {
-            console.log(article);
-            this.articles.push({
-              img: article.thumbnail,
-              postTime: article.post_time,
-              articleId: article.article_id,
-            });
+    this.axios.get(server.apiUrl(`/articles/user/${this.Id}`)).then((res) => {
+      console.log(`[articleList] Article list fetched.`);
+      res = res.data;
+      if (res.ok !== "true") {
+        console.log("[articleList] Get article list failed.");
+      } else {
+        res.result.forEach(async (article) => {
+          console.log(article);
+          this.articles.push({
+            img: article.thumbnail,
+            postTime: article.post_time,
+            articleId: article.article_id,
           });
-        }
-      })
-      .then(() => {
-        for (var i in this.articles.length) {
-          if (Date.now() - parseInt(this.articles[i].post_time) < 86400000) {
-            const pathTime =
-              (Date.now() - parseInt(this.articles[i].post_time)) / 1000;
-            if (pathTime < 60)
-              this.articles[i].post_time = "".concat(
-                parseInt(pathTime),
-                " sec ago"
-              );
-            else if (pathTime < 3600)
-              this.articles[i].post_time = "".concat(
-                parseInt(pathTime / 60),
-                " min ago"
-              );
-            else
-              this.articles[i].post_time = "".concat(
-                parseInt(pathTime / 3600),
-                " hour ago"
-              );
-          } else {
-            const d = new Date(parseInt(this.articles.post_time));
-            this.articles[i].post_time = "".concat(
-              d.getFullYear(),
-              "/",
-              d.getMonth() + 1,
-              "/",
-              d.getDate()
+        });
+      }
+      for (var i = 0; i < this.articles.length; i++) {
+        console.log(i);
+
+        console.log(parseInt(new Date(this.articles[i].postTime).getTime()));
+
+        if (
+          Date.now() - parseInt(new Date(this.articles[i].postTime).getTime()) <
+          86400000
+        ) {
+          const pathTime =
+            (Date.now() -
+              parseInt(new Date(this.articles[i].postTime).getTime())) /
+            1000;
+          if (pathTime < 60)
+            this.articles[i].postTime = "".concat(
+              parseInt(pathTime),
+              " sec ago"
             );
-          }
+          else if (pathTime < 3600)
+            this.articles[i].postTime = "".concat(
+              parseInt(pathTime / 60),
+              " min ago"
+            );
+          else
+            this.articles[i].postTime = "".concat(
+              parseInt(pathTime / 3600),
+              " hour ago"
+            );
+        } else {
+          const d = new Date(this.articles[i].postTime);
+          this.articles[i].postTime = "".concat(
+            d.getFullYear(),
+            "/",
+            d.getMonth() + 1,
+            "/",
+            d.getDate()
+          );
         }
-      });
+      }
+      //   console.log(this.articles);
+    });
     friendship_state = 0;
   },
   methods: {
@@ -95,6 +100,9 @@ export default {
         this.$router.back();
       }
     },
+    handleToArticle(articleId){
+        this.$router.push(`/main/article/${articleId}`);
+    }
   },
 };
 </script>
@@ -106,11 +114,40 @@ export default {
   text-align: center;
   padding: 5vh 5vw;
   box-sizing: border-box;
-  overflow: scroll;
-  li{
-      height 40vh
-      width 70vw
-      margin 1em 5vw
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  ul {
+    text-align: center;
+
+    li {
+      height: 40vh;
+      width: 70vw;
+      padding: 1em 0;
+      margin: 2em 0;
+
+      img {
+        height: 40vh;
+        width: 70vw;
+        // overflow hidden
+        object-fit cover
+        object-position: 50% 50%;
+      }
+
+      p {
+        text-align: end;
+      }
+
+      .bottomLine {
+        box-sizing: border-box;
+        border-bottom: solid 2px;
+        border-color: gray;
+        border-radius 6px
+        width: 70vw;
+        height: 2px;
+        margin-top: 1em;
+      }
+    }
   }
 }
 </style>
