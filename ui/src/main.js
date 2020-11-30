@@ -24,10 +24,10 @@ import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons/faSignOutAlt";
 //import { fab } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import store from "./store";
-import {initFirebase} from "./lib/firebase_config"
+// import {initFirebase} from "./lib/firebase_config"
 
 export function init() {
-  initFirebase();
+  // initFirebase();
 
   library.add(faPlayCircle);
   library.add(faUser);
