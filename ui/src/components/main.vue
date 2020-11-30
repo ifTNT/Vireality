@@ -2,8 +2,8 @@
   <div ref="arGesture" class="arGesture">
     <toolbar style="position: fixed; width: 100vw; z-index: -999"></toolbar>
     <ar class="ar" v-bind:tap-coordinate="this.tapCoordinate"></ar>
-    <friendList v-if="isShowFriendList"></friendList>
-    <timeLine v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
+    <friendList style="position: fixed; top: 2.8em; width: 100vw; z-index: -999" v-if="isShowFriendList"></friendList>
+    <timeLine style="position: fixed; top: 2.8em; width: 100vw; z-index: -999" v-if="isShowTimeLine" v-bind:date="timestamp"></timeLine>
     <div
       class="blackbg"
       v-if="showLightBox"

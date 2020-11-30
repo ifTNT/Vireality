@@ -422,12 +422,15 @@ router.post("/editAccount", async function (req, res, next) {
 });
 
 // 新增好友 req.body.target_user_id
-router.post("/ddFriend", async function (req, res, next) {
+router.post("/addFriend", async function (req, res, next) {
   if (req === undefined) {
     res.json({
       ok: "false"
     });
   }
+  console.log("test")
+  console.log(req.body)
+
   User.update({
     user_id: req.session.user_id
   }, {
@@ -443,21 +446,21 @@ router.post("/ddFriend", async function (req, res, next) {
       });
     }
   });
-  User.update({
-    user_id: req.body.target_user_id
-  }, {
-    $push: {
-      friend_list: req.session.user_id
-    }
-  }, (err, users) => {
-    if (err) {
-      return console.error(err);
-    } else {
-      res.json({
-        ok: "true",
-      });
-    }
-  });
+  // User.update({
+  //   user_id: req.body.target_user_id
+  // }, {
+  //   $push: {
+  //     friend_list: req.session.user_id
+  //   }
+  // }, (err, users) => {
+  //   if (err) {
+  //     return console.error(err);
+  //   } else {
+  //     res.json({
+  //       ok: "true",
+  //     });
+  //   }
+  // });
 });
 
 module.exports = router;
