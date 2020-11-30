@@ -26,11 +26,11 @@ var ChatroomSchema = new Schema({
             type: String,
         }, 
         date: {//可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
-            type: Number,
+            type: String,
         } 
     },
     user:[{
-        user_id: {
+        _id: {
             type: String,
         },
         username: {
@@ -39,9 +39,8 @@ var ChatroomSchema = new Schema({
         //avatar: "assets/imgs/snow.png",
     }],
     message:[{
-        message_id: {
+        _id: {
             type: String,
-            unique: true
         },
         content: {
             type: String,
@@ -56,7 +55,7 @@ var ChatroomSchema = new Schema({
             type: String,
         }, 
         date: {//可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
-            type: Number,
+            type: String,
         } 
     }]
     

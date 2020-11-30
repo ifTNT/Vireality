@@ -333,40 +333,40 @@ db.once("open", (db) =>
 //   room_id: "qlove124356",
 //   room_name: "q/love124356",
 //   lastMessage: {
-//     ontent: "HIHIHIHIHI",
+//     content: "HIHIHIHIHI",
 //     sender_id: "q",
 //     username: "匿名人士",
 //     timestamp: "10:20", //顯示在列表聊天室框右邊
-//     date: 123242424, //可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
+//     date: "123242424", //可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
 //   },
 //   user: [
 //     {
-//       user_id: "q",
+//       _id: "q",
 //       username: "匿名人士",
 //     },
 //     {
-//       user_id: "love124356",
+//       _id: "love124356",
 //       username: "匿名人士",
 //     }
 //   ],
-//   message: [{
-//     message_id: "",
-//     content: {
-//       type: String,
+//   message: [
+//     {
+//       _id: "q123242424",
+//       content: "HIHIHIHIHI",
+//       sender_id: "q",
+//       username: "匿名人士",
+//       timestamp:"10:20",
+//       date: "13 November"
 //     },
-//     sender_id: {
-//       type: String,
-//     },
-//     username: {
-//       type: String,
-//     },
-//     timestamp: { //顯示在列表聊天室框右邊
-//       type: String,
-//     },
-//     date: { //可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
-//       type: Number,
+//     {
+//       _id: "q123242400",
+//       content: "1231231231313123312",
+//       sender_id: "love124356",
+//       username: "匿名人士",
+//       timestamp:"10:19",
+//       date: "13 November"
 //     }
-//   }]
+//   ]
 // }];
 
 // ChatRoom.insertMany(userData, (err, users) => {

@@ -313,9 +313,25 @@ export default {
         .then((response) => {
           if (response.data.ok === "true") {
             console.log("新增使用者成功!");
+             /* 新增使用者到firebase */
+            let nicknameForFirebase = ""
+            if(this.nickname===""){
+                nicknameForFirebase = "匿名人士"
+            }
+            else{
+              nicknameForFirebase = this.nickname
+            }
+            const user1 = {
+              _id: this.userId,
+              username: nicknameForFirebase,
+              // avatar: this.img
+            }
+            // await usersRef.doc(user1._id).set(user1)
           } else {
             console.log("新增使用者失敗TT");
+            this.pageState = 0;
           }
+         
           window.setTimeout(() => {
             // Distroy the camera to prevent getContext error from pico.
             this.pageState = 3;
@@ -325,6 +341,7 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+        
     },
   },
 };
