@@ -43,9 +43,16 @@ router.get("/:id/info", async function (req, res, next) {
     }
     /* 確定是不是已經是朋友,顯示聊天室、已追蹤(3) */
 
-    info[0].friend_list.forEach((person) => {
+    let err,
+      own_info = await User.find({
+      user_id: session_uid
+    });
+    if (err) {
+      throw "Find User info has error.";
+    }
+    own_info[0].friend_list.forEach((person) => {
       console.log("friend_list:", person);
-      if (session_uid === person) {
+      if (uid === person) {
         res.json({
           ok: "true",
           nickName: info[0].nickname,
@@ -83,7 +90,7 @@ router.get("/:id/info", async function (req, res, next) {
     // }
     // /* 當有的話 查看該session id 是發送端 還是 接受端 */
     // console.log(friendship);
-    // let state = 0;
+    let state = 0;
     // friendship.forEach((person) => {
     //   if (
     //     person.send_user_id === session_uid &&
