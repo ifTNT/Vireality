@@ -311,7 +311,7 @@ export default {
           intro: this.intro,
           avator: this.img,
         })
-        .then((response) => {
+        .then(async (response) => {
           if (response.data.ok === "true") {
             console.log("新增使用者成功!");
              /* 新增使用者到firebase */
@@ -327,7 +327,7 @@ export default {
               username: nicknameForFirebase,
               // avatar: this.img
             }
-            // await usersRef.doc(user1._id).set(user1)
+            await usersRef.doc(user1._id).set(user1)
           } else {
             console.log("新增使用者失敗TT");
             this.pageState = 0;
