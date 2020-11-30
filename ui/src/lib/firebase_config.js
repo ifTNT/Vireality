@@ -7,17 +7,19 @@
 //     firebase.initializeApp(firebaseConfig);
 // }
 
-// export {firebase}
-// export const db = firebase.firestore()
-// export const storageRef = firebase.storage().ref()
+// const _firebase = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase
+// console.log(_firebase)
+// export {_firebase as firebase}
+// export const db = _firebase.firestore()
+// // export const storageRef = _firebase.storage().ref()
 
 // export const usersRef = db.collection('users')
 // export const roomsRef = db.collection('chatRooms')
 
-// export const filesRef = storageRef.child('files')
+// // export const filesRef = storageRef.child('files')
 
-// export const dbTimestamp = firebase.firestore.FieldValue.serverTimestamp()
-// export const deleteDbField = firebase.firestore.FieldValue.delete()
+// // export const dbTimestamp = firebase.firestore.FieldValue.serverTimestamp()
+// // export const deleteDbField = firebase.firestore.FieldValue.delete()
 
 // const firebaseConfig = {
 //   apiKey: "AIzaSyBnDO5kPUSJmMN413GXCjCpN-Ye5hnga7I",

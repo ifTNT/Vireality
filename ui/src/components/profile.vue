@@ -164,9 +164,9 @@ export default {
       if(this.sendFriendflag) return;
       console.log("friend req");
       this.axios
-      .post(server.apiUrl("/user/friend_request"),{
-        targetUid:this.Id
-      })
+      .post(server.apiUrl("/user/addFriend"),{
+        target_user_id: this.Id,
+        })
       .then(
           function(response){
             if(response.data.ok === "true"){

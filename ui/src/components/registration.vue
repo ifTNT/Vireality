@@ -314,7 +314,7 @@ export default {
         .then(async (response) => {
           if (response.data.ok === "true") {
             console.log("新增使用者成功!");
-             /* 新增使用者到firebase */
+            //  /* 新增使用者到firebase */
             // let nicknameForFirebase = ""
             // if(this.nickname===""){
             //     nicknameForFirebase = "匿名人士"

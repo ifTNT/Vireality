@@ -429,19 +429,17 @@ router.post("/editAccount", async function (req, res, next) {
 });
 
 // 新增好友 req.body.target_user_id
-router.post("/:targetUid/addfriend", async function (req, res, next) {
-  // Pre condition
-  var uid = req.session.user_id;
-  if (req.params.targetUid === undefined || uid === undefined) {
-    res.json({ ok: "false", result: []});
-    return;
+router.post("/addFriend", async function (req, res, next) {
+  if (req === undefined) {
+    res.json({
+      ok: "false"
+    });
   }
-  /*  uid 現有的friend_list內新增一筆資料 */ 
   User.update({
-    user_id: uid
+    user_id: req.session.user_id
   }, {
     $push: {
-      friend_list: req.params.targetUid
+      friend_list: req.body.target_user_id
     }
   }, (err, users) => {
     if (err) {
@@ -449,10 +447,24 @@ router.post("/:targetUid/addfriend", async function (req, res, next) {
     } else {
       res.json({
         ok: "true",
-        result:[]
       });
     }
   });
+  // User.update({
+  //   user_id: req.body.target_user_id
+  // }, {
+  //   $push: {
+  //     friend_list: req.session.user_id
+  //   }
+  // }, (err, users) => {
+  //   if (err) {
+  //     return console.error(err);
+  //   } else {
+  //     res.json({
+  //       ok: "true",
+  //     });
+  //   }
+  // });
 });
 
 module.exports = router;
