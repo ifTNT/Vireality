@@ -21,6 +21,7 @@ import TestFriendListAround from "@/components/test_friend_list_around";
 import Registration from "@/components/registration";
 import Login from "@/components/login";
 import Loading from "@/components/loading";
+import Chatroom from "@/components/chatroom";
 import Logout from "@/components/logout";
 
 import * as app from 'firebase/app'
@@ -120,6 +121,11 @@ let router = new Router({
       path: "/logout",
       name: "Logout",
       component: Logout
+    },
+    {
+      path: "/chatroom",
+      name: "chatroom",
+      component: Chatroom
     },
     {
       path: "/main",

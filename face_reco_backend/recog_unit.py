@@ -11,7 +11,7 @@ from common.network import *
 from common import zmq_serdes
 from common.protocol.msg import *
 from common.protocol.constant import *
-from common.neural_network import create_base_network
+from libs.model_db_util import *
 import codecs, json 
 import random
 from pymongo import MongoClient
@@ -36,38 +36,6 @@ import tensorflow as tf
 
 # Packages for approximate nearest neighbor
 from annoy import AnnoyIndex
-
-def fetch_weight_from_mongodb(db):
-    # Selection collection from database
-    weight_collection = db['weight']
-
-    bin_weight = weight_collection.find()
-
-    if bin_weight.count(True)==0:
-        raise "The weight is not in the MnogoDB. Please traing first."
-    bin_weight = bin_weight[0]['model']
-
-    logging.info("Weight loaded from MongoDB succesfully.")
-
-    return pickle.loads(bin_weight)
-
-
-def copy_weights(target, weights):
-    for layer_target, weight in zip(target.layers, weights):
-      layer_target.set_weights(weight)
-    
-    return target
-
-def create_model_from_mongodb(db):
-    base_model = create_base_network()
-
-    # Fetch weights from MongoDB
-    weights = fetch_weight_from_mongodb(db)
-
-    # Copy weights to base model
-    weighted_model = copy_weights(base_model, weights)
-
-    return weighted_model
 
 def construct_ann_from_mongodb(db):
     # Selection collection from database

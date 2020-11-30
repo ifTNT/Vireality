@@ -23,12 +23,12 @@
           <p>{{ Id }}</p>
         </div>
         <div class="hobbies">
-          <p>interest</p>
+          <p>興趣</p>
           {{ interest }}
           <input type="text" v-if="editFlag" v-model="interest" />
         </div>
         <div class="description">
-          <p>intro</p>
+          <p>簡介</p>
           {{ intro }}
           <input type="text" v-if="editFlag" v-model="intro" />
         </div>

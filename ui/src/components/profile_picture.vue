@@ -40,8 +40,8 @@ export default {
     return {
       imgSrc: null,
       //傳入父類別指定大小
-      h: '',
-      w: '',
+      h: "",
+      w: "",
     };
   },
   watch: {
@@ -60,9 +60,9 @@ export default {
     },
   },
   mounted() {
-    this.h = this.diameter
-    this.w = this.diameter
-    this.imgSrc = '/static/media/avatar.png'
+    this.h = this.diameter;
+    this.w = this.diameter;
+    this.imgSrc = "/static/media/avatar.png";
   },
   methods: {},
 };
@@ -72,5 +72,7 @@ export default {
 .avatar {
   border-radius: 50%;
   border: solid 1px lightgray;
+  object-fit: cover;
+  object-position: 50% 50%;
 }
 </style>
