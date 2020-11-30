@@ -428,9 +428,6 @@ router.post("/addFriend", async function (req, res, next) {
       ok: "false"
     });
   }
-  console.log("test")
-  console.log(req.body)
-
   User.update({
     user_id: req.session.user_id
   }, {
