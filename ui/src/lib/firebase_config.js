@@ -1,14 +1,15 @@
-import * as app from 'firebase/app'
-import 'firebase/firestore'
-import 'firebase/database'
-import 'firebase/storage'
+import {firebase} from '@firebase/app'
+import '@firebase/firestore'
+import '@firebase/database'
+import '@firebase/storage'
 
+export function initFirebase(){
+    firebase.initializeApp(firebaseConfig);
+}
 
-app.initializeApp(firebaseConfig)
-
-export const firebase = app
-export const db = app.firestore()
-export const storageRef = app.storage().ref()
+export {firebase}
+export const db = firebase.firestore()
+export const storageRef = firebase.storage().ref()
 
 export const usersRef = db.collection('users')
 export const roomsRef = db.collection('chatRooms')
