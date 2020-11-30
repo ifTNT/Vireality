@@ -275,6 +275,7 @@ export default {
 
       p {
         color: gray;
+        margin: 0.2em
       }
     }
   }

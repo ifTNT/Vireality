@@ -83,7 +83,7 @@ router.get("/:id/info", async function (req, res, next) {
     // }
     // /* 當有的話 查看該session id 是發送端 還是 接受端 */
     // console.log(friendship);
-    // let state = 0;
+    let state = 0;
     // friendship.forEach((person) => {
     //   if (
     //     person.send_user_id === session_uid &&
