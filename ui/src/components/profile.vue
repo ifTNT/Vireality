@@ -41,7 +41,7 @@
       />
     </div>
     <!-- 0:交友申請 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室 4:編輯,資料庫不存入-->
-    <button
+    <!-- <button
       class="button"
       type="button"
       color="black"
@@ -56,7 +56,7 @@
       v-if="friendship_state === 2"
     >
       收到交友申請
-    </button>
+    </button> -->
     <button
       class="button"
       type="button"
@@ -64,7 +64,7 @@
       @click.prevent="chatRoom()"
       v-if="friendship_state === 3"
     >
-      聊天室
+      已追蹤
     </button>
     <button
       class="button"
@@ -130,7 +130,7 @@ export default {
       Id: "",
       editBtn: "編輯",
       editFlag: false,
-      sendFriendState: "申請交友",
+      sendFriendState: "追蹤",
       sendFriendflag: false,
     };
   },
@@ -169,19 +169,20 @@ export default {
         })
       .then(
           function(response){
-              if(response.data.ok === "true"){
-                  console.log("ok")
-              }
-              else{
-                  console.log("not ok");
-              }
+            if(response.data.ok === "true"){
+                console.log("ok")
+                this.sendFriendState = "已追蹤";
+            }
+            else{
+                console.log("not ok");
+            }
+            this.sendFriendflag = !this.sendFriendflag;
           }.bind(this)
       )
       .catch(error => {
           console.log(error);
       });
-      this.sendFriendflag = !this.sendFriendflag;
-      this.sendFriendState = "已送出邀請";
+      
     },
     edit() {
       if (!this.editFlag) {
