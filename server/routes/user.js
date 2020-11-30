@@ -43,8 +43,7 @@ router.get("/:id/info", async function (req, res, next) {
     }
     /* 確定是不是已經是朋友,顯示聊天室、已追蹤(3) */
 
-    let err,
-      own_info = await User.find({
+    err, own_info = await User.find({
       user_id: session_uid
     });
     if (err) {
