@@ -155,6 +155,7 @@
 import "vue-progress-path/dist/vue-progress-path.css";
 import VueProgress from "vue-progress-path";
 import Vue from "vue";
+import { roomsRef, usersRef } from '../lib/firebase_config';
 Vue.use(VueProgress);
 
 const consentContent = require("./consent");
