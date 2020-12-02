@@ -100,7 +100,7 @@ export default {
     onCameraReady(videoWidth, videoHeight) {
       this.videoWidth = videoWidth;
       this.videoHeight = videoHeight;
-      console.re.log(
+      console.log(
         `[AR] Camera Ready: Width: ${this.videoWidth} Height: ${videoHeight}`
       );
     },
@@ -140,7 +140,7 @@ export default {
         (180 / Math.PI) *
         2 *
         Math.atan(((refCCDSize / 2) * scale) / refFocalLength);
-      console.re.log(`[AR] FoV of Virtual Camera: ${cameraFoV}`);
+      console.log(`[AR] FoV of Virtual Camera: ${cameraFoV}`);
 
       //Make a camera that have equivlent FoV of device's camera
       this.camera = new THREE.PerspectiveCamera(
@@ -268,10 +268,10 @@ export default {
           },
         })
         .then((res) => {
-          console.re.log(`[AR] Article list fetched.`);
+          console.log(`[AR] Article list fetched.`);
           res = res.data;
           if (res.ok !== "true") {
-            console.re.log("[AR] Get article list failed.");
+            console.log("[AR] Get article list failed.");
           } else {
             // Iterate the articles
             res.result.forEach(async (article) => {

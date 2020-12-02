@@ -86,10 +86,10 @@ export default {
           let width = this.$refs.capture.videoWidth;
           let height = this.$refs.capture.videoHeight;
           this.cameraReady = true;
-          console.re.log(
+          console.log(
             `[Face Detection Reg] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
           );
-          console.re.log(
+          console.log(
             `[Face Detection Reg] CanvasWidth: ${this.canvasWidth}, CanvasHeight: ${this.canvasHeight}`
           );
           //==========Scale video to fit canvas============
@@ -109,7 +109,7 @@ export default {
             width: width * scale,
             height: height * scale,
           };
-          console.re.log(
+          console.log(
             `[Face Detection Reg] Scaled Video Width: ${
               width * scale
             } Height: ${height * scale}`
@@ -125,7 +125,7 @@ export default {
       );
 
       if (navigator.mediaDevices.getUserMedia) {
-        console.re.log(`[Face Detection Reg] Facing Mode:${this.facingMode}`);
+        console.log(`[Face Detection Reg] Facing Mode:${this.facingMode}`);
         navigator.mediaDevices
           .getUserMedia({
             video: {
@@ -136,11 +136,11 @@ export default {
             },
           })
           .then((stream) => {
-            console.re.log("[Face Detection Reg] Setting stream");
+            console.log("[Face Detection Reg] Setting stream");
             this.$refs.capture.srcObject = stream;
           })
           .catch((error) => {
-            console.re.log(`[Face Detection Reg] Get webcam error`, error);
+            console.log(`[Face Detection Reg] Get webcam error`, error);
           });
       }
     },
@@ -152,7 +152,7 @@ export default {
           let bytes = new Int8Array(buffer);
           this.facefinderClassifyRegion = pico.unpack_cascade(bytes);
           this.cascadeReady = true;
-          console.re.log("[Face Detection Reg] facefinder loaded");
+          console.log("[Face Detection Reg] facefinder loaded");
         });
     },
 
@@ -162,11 +162,11 @@ export default {
 
       // The common event handler of websockets
       ws.on("connect", () => {
-        console.re.log("[Reg-backend WS] Connection opened");
+        console.log("[Reg-backend WS] Connection opened");
       });
 
       ws.on("disconnect", () => {
-        console.re.log("[Reg-backend WS] Connection closed");
+        console.log("[Reg-backend WS] Connection closed");
       });
 
       // The event which will be triggred while receive data from server

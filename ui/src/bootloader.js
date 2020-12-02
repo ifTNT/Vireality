@@ -6,6 +6,6 @@ import(
   /* webpackChunkName: "app" */
   "./main"
 ).then(({ init }) => {
-  console.re.log("[Bootloader] Main loaded");
+  console.log("[Bootloader] Main loaded");
   init();
 });
