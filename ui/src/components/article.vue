@@ -258,6 +258,10 @@ header {
       width: 2em;
       height: 2em;
       text-align: center;
+
+      span{
+        display none
+      }
     }
   }
 
@@ -275,6 +279,7 @@ header {
   }
 
   .articleRespondBlock {
+    display none
     /* [TODO]:聊天框太下去 */
     margin: 1vh 2.5vw;
     width: 95vw;
