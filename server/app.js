@@ -47,7 +47,7 @@ app.use(
       url: "mongodb://localhost:27017/sessionDB"
     }),
     cookie: {
-      maxAge: 86400000 * 1000
+	    maxAge: 86400000 * 1000,
       secure: true
     }, //一天到期
     saveUninitialized: false,
