@@ -11,10 +11,49 @@ router.post("/:targetUid/friend_request", function(req, res, next) {
     res.json({ ok: "false", result: []});
     return;
   }
-  res.json({
-    ok: "true", 
-    result: []
-  }); 
+  /*  uid 現有的friend_list內新增一筆資料 */ 
+  User.update({
+    user_id: uid
+  }, {
+    $push: {
+      friend_list: req.params.targetUid
+    }
+  }, (err, users) => {
+    if (err) {
+      return console.error(err);
+    } else {
+      res.json({
+        ok: "true",
+        result:[]
+      });
+    }
+  });
+  // User.find({user_id: uid}, function (err, person) {
+  //   if (err) {
+  //     console.log(err);
+  //     res.json({
+  //       ok: "false",
+  //       result: []
+  //     });
+  //     return;
+  //   }
+  //   console.log("Result :\n", person)
+  //   if (person.length !== 0) {
+  //     console.log("Send!");
+  //     res.json({
+  //       ok: "true",
+  //     });
+  //   } else {
+  //     res.json({
+  //       ok: "false",
+  //       result: []
+  //     });
+  //   }
+  // });
+  // res.json({
+  //   ok: "true", 
+  //   result: []
+  // }); 
 });
 
 /* 回覆文章至作者聊天室 */

@@ -28,6 +28,8 @@ Vue.use(Router);
 
 const AppName = "Vireality";
 
+
+
 let router = new Router({
   routes: [{
       path: "/",

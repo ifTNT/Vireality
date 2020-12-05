@@ -67,7 +67,7 @@ router.get("/geolocation", async function (req, res, next) {
 
     // console.log(articles)
     dis = [];
-    articles.forEach((target) => {
+    articles.forEach(async (target) => {
       // google map 計算距離方式
       var lon1 = user_location.longitude;
       var lat1 = user_location.latitude;
@@ -91,15 +91,37 @@ router.get("/geolocation", async function (req, res, next) {
       s = s * 6378137.0; // 取WGS84標準參考橢球中的地球長半徑(單位:m)
       s = Math.round(s * 10000) / 10000; //單位為公尺
       console.log(`Article ${target.article_id}: Distance is ${s}m`);
-      if (s < 20)
-        dis.push({
-          id: target.article_id,
-          thumbnail: target.thumbnail[0],
-          lon: target.location.longitude,
-          lat: target.location.latitude,
-          author: target.author,
-          post_time: target.post_time,
-        });
+
+      let errUser, userInfo = await User.find({
+        user_id: req.session.user_id
+      });
+      if (errUser) throw err;
+      if (userInfo.length === 0) throw "NO user";
+
+      if (s < 20) {
+        // if(target.public===false){
+        if (!target.public && userInfo[0].friend_list.indexOf(target.author) === -1 && target.author !== req.session.user_id)
+          console.log(`[article list] ${req.session.user_id} is unable to see ${target.article_id}`)
+        else {
+          dis.push({
+            id: target.article_id,
+            thumbnail: target.thumbnail[0],
+            lon: target.location.longitude,
+            lat: target.location.latitude,
+            author: target.author,
+            post_time: target.post_time,
+          });
+        }
+
+        // dis.push({
+        //   id: target.article_id,
+        //   thumbnail: target.thumbnail[0],
+        //   lon: target.location.longitude,
+        //   lat: target.location.latitude,
+        //   author: target.author,
+        //   post_time: target.post_time,
+        // });
+      }
     });
     res.json({
       ok: "true",

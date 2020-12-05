@@ -373,6 +373,9 @@ def main():
 
     # Training new model with incoming faces.
     new_model = train_main(x_faceId, y_label)
+    
+    # Save the default graph of tensorflow to prevent error 
+    graph = tf.get_default_graph()
     new_user_id_embs = gen_user_id_embs(new_model, x_faceId, y_label)
 
     # Critical section: Write new model to shared model

@@ -28,8 +28,12 @@ app.use(
 );
 
 // Enlarge the upperbound of uploading data
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({
+  limit: "50mb"
+}));
+app.use(express.urlencoded({
+  extended: false
+}));
 //app.use(cookieParser());
 
 app.set('trust proxy', 1) // trust first proxy
@@ -39,11 +43,13 @@ app.use(
   session({
     name: "vireality_session",
     secret: "njsdmfk;sfvrverivrpogk93jmog e49,94fw09skpfp3Mdf,s;pok3po",
-    store: new MongoStore({ url: "mongodb://localhost:27017/sessionDB" }),
+    store: new MongoStore({
+      url: "mongodb://localhost:27017/sessionDB"
+    }),
     cookie: {
-	    maxAge: 86400000 * 1000,
-    	    secure: true
-    },
+      maxAge: 86400000 * 1000
+      secure: true
+    }, //一天到期
     saveUninitialized: false,
     resave: true,
     unset: "destroy",
@@ -59,7 +65,10 @@ app.use("/chat", chatRouter);
 
 //404 Router
 app.use(function (req, res) {
-  res.status(404).json({ ok: false, msg: "Endpoint not found" });
+  res.status(404).json({
+    ok: false,
+    msg: "Endpoint not found"
+  });
 });
 
 module.exports = app;
@@ -310,4 +319,55 @@ db.once("open", (db) =>
 //   }
 //   console.log('document saved');
 //   db.close(); // 結束與 database 的連線
+// });
+
+
+
+/* ----- Test insert many CHATROOM doc -----*/
+// const ChatRoom = require('./models/chatroom_schema');
+
+// const userData = [{
+//   room_id: "qlove124356",
+//   room_name: "q/love124356",
+//   lastMessage: {
+//     content: "HIHIHIHIHI",
+//     sender_id: "q",
+//     username: "匿名人士",
+//     timestamp: "10:20", //顯示在列表聊天室框右邊
+//     date: "123242424", //可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
+//   },
+//   user: [
+//     {
+//       _id: "q",
+//       username: "匿名人士",
+//     },
+//     {
+//       _id: "love124356",
+//       username: "匿名人士",
+//     }
+//   ],
+//   message: [
+//     {
+//       _id: "q123242424",
+//       content: "HIHIHIHIHI",
+//       sender_id: "q",
+//       username: "匿名人士",
+//       timestamp:"10:20",
+//       date: "13 November"
+//     },
+//     {
+//       _id: "q123242400",
+//       content: "1231231231313123312",
+//       sender_id: "love124356",
+//       username: "匿名人士",
+//       timestamp:"10:19",
+//       date: "13 November"
+//     }
+//   ]
+// }];
+
+// ChatRoom.insertMany(userData, (err, users) => {
+//   if (err) {
+//     return console.error(err);
+//   }
 // });

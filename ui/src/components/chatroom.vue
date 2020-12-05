@@ -3,15 +3,18 @@
     :currentUserId="currentUserId"
     :rooms="rooms"
     :messages="messages"
+    :height="height"
     :showFiles="false"
     :showAudio="false"
     :showEmojis="false"
     :showReactionEmojis="false"
     :messageActions="[]"
     :textMessages="textMessages"
-    :menuActions="menuActions"
+    :messagesLoaded="messagesLoaded"
+    :showNewMessagesDivider="false"
+    :showAddRoom="false"
     @fetchMessages="fetchMessages"
-    @menuActionHandler="menuActionHandler"
+    @sendMessage="sendMessage"
   />
 </template>
 
@@ -37,60 +40,11 @@ export default {
         LAST_SEEN: "最後上線時間",
         IS_TYPING: "正在輸入...",
       },
-      menuActions: [
-        {
-          name: "deleteRoom",
-          title: "Delete Room",
-        },
-      ],
-      rooms: [
-        {
-          roomId: 1,
-          roomName: "Test Room 1",
-          avatar: "/static/media/camera_g.png",
-          //unreadCount: 4,
-          lastMessage: {
-            content: "HIHIHIHIHI",
-            sender_id: 1234,
-            username: "John Doe",
-            timestamp: "10:20",
-            date: 123242424, //可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
-            // saved: true,
-            // distributed: false,
-            // seen: false,
-            // new: true,
-          },
-          users: [
-            {
-              _id: 1234,
-              username: "John Doe",
-              avatar: "assets/imgs/doe.png",
-            },
-            {
-              _id: 4321,
-              username: "John Snow",
-              avatar: "assets/imgs/snow.png",
-            },
-          ],
-        },
-      ],
-      messages: [
-        {
-          _id: 7890,
-          content: "message 1",
-          sender_id: 1234, // 如果和currentUserId一樣 聊天室的訊息在右邊
-          username: "John Doe",
-          date: "13 November",
-          timestamp: "10:20",
-          // system: false,
-          // saved: true,
-          // distributed: true,
-          // seen: false,
-          // disable_actions: false,
-          // disable_reactions: false,
-        },
-      ],
-      currentUserId: 1234,
+      rooms: [],
+      messages: [],
+      currentUserId: "1234",
+      messagesLoaded:true,
+      height:"90vh"
     };
   },
   mounted() {
@@ -99,26 +53,140 @@ export default {
     //      rooms.push(res)
     //   }
     //   this.rooms = rooms
+    this.rooms = [
+      {
+        roomId: "1",
+        roomName: "Test Room 1",
+        avatar: "https://i.imgur.com/keUgCC5.png",
+        lastMessage: {
+          content: "HIHIHIHIHI",
+          sender_id: "1234",
+          username: "John Doe",
+          timestamp: "10:20", //顯示
+          date: "123242424", //可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
+        },
+        users: [
+          {
+            _id: "1234",
+            username: "John Doe",
+            //avatar: "assets/imgs/doe.png",
+          },
+          {
+            _id: "4321",
+            username: "John Snow",
+            //avatar: "assets/imgs/snow.png",
+          },
+        ],
+      },
+      {
+        roomId: "2",
+        roomName: "Test Room 22222",
+        avatar: "/static/media/avatar.png",
+        lastMessage: {
+          content: "HIHIHIHIHI",
+          sender_id: "4444",
+          username: "John Doe",
+          timestamp: "10:30",
+          date: "123242420", //可以讓套件幫你排序聊天室 類型不限 eg.string, datetime, timestamp
+        },
+        users: [
+          {
+            _id: "1234",
+            username: "John Doe",
+            //avatar: "assets/imgs/doe.png",
+          },
+          {
+            _id: "4444",
+            username: "John Snow",
+            //avatar: "assets/imgs/snow.png",
+          },
+        ],
+      },
+    ];
     // this.$set(this.rooms, roomIndex, room)
   },
   methods: {
+    addRoom(){
+      console.log("addroom")
+    },
     fetchMessages(room) {
       console.log("fetchMessages");
       console.log(room);
-      // this.messagesLoaded = false;
-      // this.messages = [];
-
-      // // use timeout to imitate async server fetched data
-      // setTimeout(() => {
-      //   this.messagesLoaded = true;
-      // }, 0);
-    },
-    menuActionHandler({ roomId, action }) {
-      switch (action.name) {
-        case "deleteRoom":
-          console.log(roomId);
-          console.log("delete room");
+      this.messagesLoaded = false;
+      // console.log(roomInfo())
+      console.log(room.room.roomId)
+      if(room.room.roomId==="1"){
+      this.messages = [
+        {
+          _id: "1111",
+          content: "嗨嗨嗨 嗨嗨嗨",
+          sender_id: "1234", // 如果和currentUserId一樣 聊天室的訊息在右邊
+          username: "John Doe",
+          date: "13 November",
+          timestamp: "10:20",
+          // system: false,
+          // saved: true,
+          // distributed: true,
+          //seen: true,
+          // disable_actions: false,
+          // disable_reactions: false,
+        },
+        {
+          _id: "1112",
+          content: "message 222222",
+          sender_id: "1111", // 如果和currentUserId一樣 聊天室的訊息在右邊
+          username: "John Doe",
+          date: "13 November",
+          timestamp: "10:30",
+          // system: false,
+          // saved: true,
+          // distributed: true,
+          //seen: true,
+          // disable_actions: false,
+          // disable_reactions: false,
+        },
+      ];}else {
+        this.messages = [
+        {
+          _id: "1111",
+          content: "*111111111*",
+          sender_id: "1234", // 如果和currentUserId一樣 聊天室的訊息在右邊
+          username: "John Doe",
+          date: "13 November",
+          timestamp: "10:20",
+          // system: false,
+          // saved: true,
+          // distributed: true,
+          //seen: true,
+          // disable_actions: false,
+          // disable_reactions: false,
+        },
+        {
+          _id: "1112",
+          content: "message 222222",
+          sender_id: "5555", // 如果和currentUserId一樣 聊天室的訊息在右邊
+          username: "John Doe",
+          date: "13 November",
+          timestamp: "10:30",
+          // system: false,
+          // saved: true,
+          // distributed: true,
+          //seen: true,
+          // disable_actions: false,
+          // disable_reactions: false,
+        },
+      ];
       }
+
+      // use timeout to imitate async server fetched data
+      setTimeout(() => {
+        this.messagesLoaded = true;
+      }, 0);
+    },
+    sendMessage({ roomId, content }) {
+      console.log("sendMessage");
+      console.log(roomId);
+      console.log(content);
     },
   },
 };

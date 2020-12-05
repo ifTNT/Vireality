@@ -1,14 +1,14 @@
 <template>
   <div class="logout">
-      <span>
-        <font-awesome-icon
-          icon="sign-out-alt"
-          class="signout"
-          size="1x"
-          @click="sendLogout"
-        />
-      </span>
-    </div>
+    <span>
+      <font-awesome-icon
+        icon="sign-out-alt"
+        class="signout"
+        size="1x"
+        @click="sendLogout"
+      />
+    </span>
+  </div>
 </template>
 
 <script>
@@ -23,12 +23,17 @@ export default {
   },
   methods: {
     sendLogout() {
-      this.axios
-      .get(server.apiUrl(`/user/logout`))
-      .catch((error) => {
+      var logoutCheck = confirm("確定登出？");
+
+      if (logoutCheck) {
+        this.axios.get(server.apiUrl(`/user/logout`)).catch((error) => {
         console.log(error);
       });
       this.$router.push("/login");
+      } else {
+        return;
+      }
+      
     },
   },
 };
@@ -42,7 +47,7 @@ export default {
   align-items: center;
   margin-right: 0.5em;
   font-size: 25px;
-  color rgb(255,255,255)
+  color: rgb(255, 255, 255);
 
   span {
     height: 1.5em;

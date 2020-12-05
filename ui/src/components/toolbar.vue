@@ -12,13 +12,13 @@
           @click="linkToUserProfile"
         />
       </span>
-      <span>
+      <!-- <span>
         <font-awesome-icon
           icon="comment-alt"
           class="userChatroomLink"
           size="1x"
         />
-      </span>
+      </span> -->
     </div>
   </div>
 </template>
@@ -70,7 +70,7 @@ export default {
 
 /* .link沒設定高的話 在.components設定margin-right跑版 */
 .links {
-  width: 4em;
+  // width: 4em;
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -50,6 +50,11 @@ export default {
           });
         });
       }
+
+      this.articles.sort(function (a, b) {
+        return new Date(a.postTime).getTime() < new Date(b.postTime).getTime() ? 1 : -1;
+      });
+
       for (var i = 0; i < this.articles.length; i++) {
         console.log(i);
 

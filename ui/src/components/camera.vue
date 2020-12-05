@@ -111,10 +111,10 @@ export default {
           let width = this.$refs.capture.videoWidth;
           let height = this.$refs.capture.videoHeight;
           this.cameraReady = true;
-          console.re.log(
+          console.log(
             `[Face Detection] Camera stream loaded. VideoWidth: ${width}, VideoHeight: ${height}`
           );
-          console.re.log(
+          console.log(
             `[Face Detection] CanvasWidth: ${this.canvasWidth}, CanvasHeight: ${this.canvasHeight}`
           );
           //==========Scale video to fit canvas============
@@ -134,7 +134,7 @@ export default {
             width: width * scale,
             height: height * scale,
           };
-          console.re.log(
+          console.log(
             `[Face Detection] Scaled Video Width: ${width * scale} Height: ${
               height * scale
             }`
@@ -157,7 +157,7 @@ export default {
       );
 
       if (navigator.mediaDevices.getUserMedia) {
-        console.re.log(`[Face Detection] Facing Mode:${this.facingMode}`);
+        console.log(`[Face Detection] Facing Mode:${this.facingMode}`);
         navigator.mediaDevices
           .getUserMedia({
             video: {
@@ -168,11 +168,11 @@ export default {
             },
           })
           .then((stream) => {
-            console.re.log("[Face Detection] Setting stream");
+            console.log("[Face Detection] Setting stream");
             this.$refs.capture.srcObject = stream;
           })
           .catch((error) => {
-            console.re.log(`[Face Detection] Get webcam error`, error);
+            console.log(`[Face Detection] Get webcam error`, error);
           });
       }
     },
@@ -184,12 +184,12 @@ export default {
           let bytes = new Int8Array(buffer);
           this.facefinderClassifyRegion = pico.unpack_cascade(bytes);
           this.cascadeReady = true;
-          console.re.log("[Face Detection] facefinder loaded");
+          console.log("[Face Detection] facefinder loaded");
         });
     },
     initMarkImage: function () {
       this.markImg.addEventListener("load", () => {
-        console.re.log("[Face Detection] marker loaded");
+        console.log("[Face Detection] marker loaded");
         this.markImgReady = true;
       });
       this.markImg.src = "/static/media/placeholder.png";
@@ -201,11 +201,11 @@ export default {
 
       // The common event handler of websockets
       ws.on("connect", () => {
-        console.re.log("[Recog-backend WS] Connection opened");
+        console.log("[Recog-backend WS] Connection opened");
       });
 
       ws.on("disconnect", () => {
-        console.re.log("[Recog-backend WS] Connection closed");
+        console.log("[Recog-backend WS] Connection closed");
       });
 
       // The event which will be triggred while receive data from server
@@ -547,7 +547,7 @@ export default {
       // Append to pending list.
       this.recogPending.add(faceDeviceID);
 
-      console.re.log(
+      console.log(
         `[Recog-backend WS] Fetching face with faceDeviceID=${faceDeviceID}`
       );
 
@@ -571,7 +571,7 @@ export default {
       // If not found the face in database, do nothing.
       if (!res["found"]) return;
 
-      console.re.log(`[Recog-backend WS] ${res.faceDeviceID} is ${res.userID}`);
+      console.log(`[Recog-backend WS] ${res.faceDeviceID} is ${res.userID}`);
 
       // Linearly searching the confiTable entity cooresponsed to faceDeviceID
       for (let i = 0; i < this.confiTable.length; i++) {

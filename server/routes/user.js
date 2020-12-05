@@ -7,7 +7,7 @@ const imgur = require("./token");
 const request = require("request");
 
 /* 前端也要會抓session userid。當交友完畢後 記得session user and target user 的friendlist要加上他*/
-/* [TODO]:have some error for client */
+/* [ALERT]:have some error for client */
 /* 給定使用者ID，取得該使用者的個人資料(名字、興趣、一句話)。 */
 router.get("/:id/info", async function (req, res, next) {
   try {
@@ -41,11 +41,17 @@ router.get("/:id/info", async function (req, res, next) {
       });
       return;
     }
-    /* 確定是不是已經是朋友,顯示聊天室(3) */
+    /* 確定是不是已經是朋友,顯示聊天室、已追蹤(3) */
 
-    info[0].friend_list.forEach((person) => {
+    err, own_info = await User.find({
+      user_id: session_uid
+    });
+    if (err) {
+      throw "Find User info has error.";
+    }
+    own_info[0].friend_list.forEach((person) => {
       console.log("friend_list:", person);
-      if (session_uid === person) {
+      if (uid === person) {
         res.json({
           ok: "true",
           nickName: info[0].nickname,
@@ -53,50 +59,50 @@ router.get("/:id/info", async function (req, res, next) {
           intro: info[0].intro,
           friendship_state: 3,
         });
+        return;
       }
-      return;
     });
-    let friendship;
-    //0:交友申請，都沒有就會是這個，不存DB 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室,用USER SCHEMA確認，不存DB 4:編輯,資料庫不存入
-    /* 有人發送交友給session id 或是 session id有發送 */
-    err,
-    (friendship = await Friendship.find({
-      $or: [{
-        send_user_id: session_uid
-      }, {
-        target_user_id: session_uid
-      }],
-    }));
-    if (err) {
-      throw "Find target user friendship has error.";
-    }
-    /* 當session id 不存在朋友關係的DB中 */
-    if (friendship.length === 0) {
-      res.json({
-        ok: "true",
-        nickName: info[0].nickname,
-        interest: info[0].interest,
-        intro: info[0].intro,
-        friendship_state: 0,
-      });
-      return;
-    }
-    /* 當有的話 查看該session id 是發送端 還是 接受端 */
-    console.log(friendship);
+    // let friendship;
+    // //0:交友申請，都沒有就會是這個，不存DB 1:送出交友申請 2:收到交友申請,資料庫不存入 3:聊天室,用USER SCHEMA確認，不存DB 4:編輯,資料庫不存入
+    // /* 有人發送交友給session id 或是 session id有發送 */
+    // err,
+    // (friendship = await Friendship.find({
+    //   $or: [{
+    //     send_user_id: session_uid
+    //   }, {
+    //     target_user_id: session_uid
+    //   }],
+    // }));
+    // if (err) {
+    //   throw "Find target user friendship has error.";
+    // }
+    // /* 當session id 不存在朋友關係的DB中 */
+    // if (friendship.length === 0) {
+    //   res.json({
+    //     ok: "true",
+    //     nickName: info[0].nickname,
+    //     interest: info[0].interest,
+    //     intro: info[0].intro,
+    //     friendship_state: 0,
+    //   });
+    //   return;
+    // }
+    // /* 當有的話 查看該session id 是發送端 還是 接受端 */
+    // console.log(friendship);
     let state = 0;
-    friendship.forEach((person) => {
-      if (
-        person.send_user_id === session_uid &&
-        person.target_user_id === uid
-      ) {
-        state = person.status; //已送出(1))
-      } else if (
-        person.send_user_id === uid &&
-        person.target_user_id === _uid
-      ) {
-        state = person.status + 1; //已送出(1+1=2)
-      }
-    });
+    // friendship.forEach((person) => {
+    //   if (
+    //     person.send_user_id === session_uid &&
+    //     person.target_user_id === uid
+    //   ) {
+    //     state = person.status; //已送出(1))
+    //   } else if (
+    //     person.send_user_id === uid &&
+    //     person.target_user_id === _uid
+    //   ) {
+    //     state = person.status + 1; //已送出(1+1=2)
+    //   }
+    // });
     console.log("Send!");
     res.json({
       ok: "true",
@@ -316,7 +322,6 @@ router.post("/createAccount", async function (req, res, next) {
   */
   /* Transfer password to hash */
   const hashPW = HashMethod(req.body.password);
-  //[TODO]:faceID
   let insertObj = {
     user_id: req.body.uid,
     password: hashPW,
@@ -423,7 +428,7 @@ router.post("/editAccount", async function (req, res, next) {
 });
 
 // 新增好友 req.body.target_user_id
-router.post("/ddFriend", async function (req, res, next) {
+router.post("/addFriend", async function (req, res, next) {
   if (req === undefined) {
     res.json({
       ok: "false"
@@ -444,21 +449,21 @@ router.post("/ddFriend", async function (req, res, next) {
       });
     }
   });
-  User.update({
-    user_id: req.body.target_user_id
-  }, {
-    $push: {
-      friend_list: req.session.user_id
-    }
-  }, (err, users) => {
-    if (err) {
-      return console.error(err);
-    } else {
-      res.json({
-        ok: "true",
-      });
-    }
-  });
+  // User.update({
+  //   user_id: req.body.target_user_id
+  // }, {
+  //   $push: {
+  //     friend_list: req.session.user_id
+  //   }
+  // }, (err, users) => {
+  //   if (err) {
+  //     return console.error(err);
+  //   } else {
+  //     res.json({
+  //       ok: "true",
+  //     });
+  //   }
+  // });
 });
 
 module.exports = router;
