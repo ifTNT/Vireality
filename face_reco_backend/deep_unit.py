@@ -117,10 +117,10 @@ def main():
       aligned_img = resize(cropped_img, (IMAGE_SIZE(), IMAGE_SIZE()), mode='reflect')
 
       # [DEBUG] Display aligned images
-      disp_img = np.array(aligned_img, dtype=np.float32)
-      disp_img = cv2.cvtColor(disp_img, cv2.COLOR_RGB2BGR)
-      cv2.imshow('Aligned image', disp_img)
-      cv2.waitKey(1)
+      #disp_img = np.array(aligned_img, dtype=np.float32)
+      #disp_img = cv2.cvtColor(disp_img, cv2.COLOR_RGB2BGR)
+      #cv2.imshow('Aligned image', disp_img)
+      #cv2.waitKey(1)
 
       aligned_img = np.array([aligned_img])
     

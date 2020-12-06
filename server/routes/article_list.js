@@ -67,7 +67,7 @@ router.get("/geolocation", async function (req, res, next) {
 
     // console.log(articles)
     dis = [];
-    articles.forEach(async (target) => {
+    for(let target of articles){
       // google map 計算距離方式
       var lon1 = user_location.longitude;
       var lat1 = user_location.latitude;
@@ -112,17 +112,11 @@ router.get("/geolocation", async function (req, res, next) {
             post_time: target.post_time,
           });
         }
-
-        // dis.push({
-        //   id: target.article_id,
-        //   thumbnail: target.thumbnail[0],
-        //   lon: target.location.longitude,
-        //   lat: target.location.latitude,
-        //   author: target.author,
-        //   post_time: target.post_time,
-        // });
       }
-    });
+    }
+
+    console.log("test dis")
+    console.log(dis)
     res.json({
       ok: "true",
       result: dis,

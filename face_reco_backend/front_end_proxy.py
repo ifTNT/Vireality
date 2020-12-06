@@ -94,8 +94,8 @@ class WorkSender(threading.Thread):
     np_img = np.array(np_img, dtype=np.uint8 )
 
     # [DEBUG] Show the image
-    cv2.imshow('Received image from express', np_img)
-    cv2.waitKey(1)
+    #cv2.imshow('Received image from express', np_img)
+    #cv2.waitKey(1)
 
     np_img = cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
 
